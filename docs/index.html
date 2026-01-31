@@ -3,8 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>claw-daw — terminal-first music making</title>
-  <meta name="description" content="claw-daw is an offline, deterministic, terminal-first MIDI DAW for fast iteration and agent automation." />
+  <title>claw-daw — offline, terminal-first MIDI DAW</title>
+  <meta name="description" content="Offline, deterministic, terminal-first MIDI DAW. Drive it from a TUI or headless scripts and export WAV/MP3/MIDI." />
+
+  <!-- Social / sharing -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="claw-daw — offline, terminal-first MIDI DAW" />
+  <meta property="og:description" content="Drive it from a TUI or headless scripts. Reproducible renders. WAV/MP3/MIDI export." />
+  <meta property="og:url" content="https://sdiaoune.github.io/claw-daw/" />
+  <meta name="twitter:card" content="summary" />
+
+  <meta name="theme-color" content="#070A12" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%237C5CFF'/%3E%3Cstop offset='1' stop-color='%2332D6FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='%23070A12'/%3E%3Cpath d='M34 70V30h9v32l18-20h12L52 63l22 7v10L49 71 43 79H34z' fill='url(%23g)'/%3E%3C/svg%3E" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -34,6 +46,22 @@
         linear-gradient(180deg, #050714, #070A12 55%, #050714);
     }
     a{color:inherit}
+
+    .skip{
+      position:absolute;
+      left:-999px;
+      top:12px;
+      z-index:999;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(13,18,36,.92);
+      color:var(--text);
+      text-decoration:none;
+      font-weight:600;
+    }
+    .skip:focus{left:12px}
+
     .wrap{max-width:1100px; margin:0 auto; padding:32px 20px 80px}
     .topbar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 2px;}
     .logo{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px}
@@ -106,10 +134,37 @@
     .callout{padding:18px; border-radius:var(--radius); border:1px solid rgba(234,240,255,.14); background:rgba(13,18,36,.6)}
     .callout strong{color:var(--text)}
 
+    .tabs{display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 10px}
+    .tabbtn{
+      appearance:none; border:1px solid var(--border);
+      background:rgba(13,18,36,.7);
+      color:var(--muted);
+      font-weight:700; font-size:12.5px;
+      padding:8px 10px; border-radius:999px;
+      cursor:pointer;
+    }
+    .tabbtn[aria-selected="true"]{color:var(--text); border-color:rgba(234,240,255,.22)}
+    .tabpanel{display:none}
+    .tabpanel.active{display:block}
+
+    .row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    .copybtn{
+      appearance:none;
+      border:1px solid var(--border);
+      background:rgba(13,18,36,.7);
+      color:var(--text);
+      font-weight:700;
+      font-size:12px;
+      padding:7px 10px;
+      border-radius:12px;
+      cursor:pointer;
+    }
+
     .kicker{font-weight:700; background:linear-gradient(135deg,var(--brand),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent}
   </style>
 </head>
 <body>
+  <a href="#main" class="skip">Skip to content</a>
   <div class="wrap">
     <div class="topbar">
       <div class="logo"><span class="dot"></span> claw-daw</div>
@@ -117,18 +172,20 @@
         <a href="#features">Features</a>
         <a href="#how">How it works</a>
         <a href="#prompting">Prompting</a>
-        <a href="#get">Get started</a>
+        <a href="#install">Install</a>
+        <a href="#faq">FAQ</a>
       </div>
     </div>
 
+    <main id="main">
     <section class="hero">
       <div class="hero-grid">
         <div>
           <div class="badge"><strong>Offline</strong> • deterministic • terminal-first</div>
-          <h1>Music making that feels like coding.</h1>
+          <h1>Make beats from the terminal—offline and reproducible.</h1>
           <p class="sub">
-            <span class="kicker">claw-daw</span> is a minimal MIDI DAW you can drive from a TUI or from scripts.
-            It’s built for fast iteration, reproducible renders, and agent automation.
+            <span class="kicker">claw-daw</span> is a minimal MIDI DAW you drive from a TUI or headless scripts.
+            Same script + same seed → same render. Export WAV/MP3/MIDI and keep everything Git-friendly.
           </p>
           <div class="tagrow">
             <div class="tag">TUI-first workflow</div>
@@ -159,7 +216,10 @@ $ curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
 # macOS
 $ curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
 
-# then
+# sanity check
+$ claw-daw doctor
+
+# then (pick a SoundFont path from `claw-daw paths --soundfont`)
 $ claw-daw --headless \
     --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
     --script templates/hiphop_1min.txt
@@ -264,27 +324,89 @@ Deliverables:
       </div>
     </section>
 
+    <section id="faq" class="section">
+      <div class="card pad">
+        <h3 style="margin:0 0 10px">FAQ (the stuff that usually breaks)</h3>
+        <div class="small">
+          <p style="margin:0 0 10px"><strong>What’s a SoundFont?</strong><br>
+            It’s a <code class="inline">.sf2</code> file that turns MIDI notes into actual instrument audio.
+            claw-daw uses it via <code class="inline">fluidsynth</code>.
+          </p>
+          <p style="margin:0 0 10px"><strong>Why do I get “command not found” after install?</strong><br>
+            The install uses a user-level bin directory. Restart your terminal, or add
+            <code class="inline">$HOME/.local/bin</code> (Linux) / <code class="inline">$HOME/bin</code> (some mac installs) to your <code class="inline">PATH</code>.
+          </p>
+          <p style="margin:0 0 10px"><strong>Is this a full DAW?</strong><br>
+            No—intentionally. It’s built for fast, reproducible sketches and automation.
+          </p>
+          <p style="margin:0"><strong>How do I sanity-check my setup?</strong><br>
+            Run <code class="inline">claw-daw doctor</code> to verify <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and a SoundFont.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section id="install" class="section">
       <div class="two">
         <div class="card pad">
           <h3 style="margin:0 0 10px">Get started</h3>
           <p class="small" style="margin:0 0 12px">
-            You’ll need a SoundFont (<code class="inline">.sf2</code>), plus <code class="inline">fluidsynth</code> and <code class="inline">ffmpeg</code>.
+            You’ll need <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and a SoundFont (<code class="inline">.sf2</code>).
+            The installers below try to set this up for you.
           </p>
+
           <div class="callout" style="margin-bottom:12px">
-            <div style="font-weight:700; margin-bottom:8px">Install (one-go) — Linux</div>
-            <pre><code>curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash</code></pre>
-            <div class="small" style="margin-top:8px">Best on Debian/Ubuntu • attempts common distros • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (when available), and <code class="inline">claw-daw</code>.</div>
+            <div class="row" style="margin-bottom:8px">
+              <div style="font-weight:700">Install (recommended)</div>
+              <button class="copybtn" type="button" data-copy="install-active">Copy</button>
+            </div>
+
+            <div class="tabs" role="tablist" aria-label="Install options">
+              <button class="tabbtn" role="tab" aria-selected="true" data-tab="linux" type="button">Linux</button>
+              <button class="tabbtn" role="tab" aria-selected="false" data-tab="macos" type="button">macOS</button>
+              <button class="tabbtn" role="tab" aria-selected="false" data-tab="manual" type="button">Manual (Ubuntu)</button>
+            </div>
+
+            <div class="tabpanel active" data-panel="linux">
+              <pre><code id="install-linux">curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash</code></pre>
+              <div class="small" style="margin-top:8px">
+                Best on Debian/Ubuntu • attempts common distros • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (when available), and <code class="inline">claw-daw</code>.
+              </div>
+            </div>
+
+            <div class="tabpanel" data-panel="macos">
+              <pre><code id="install-macos">curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash</code></pre>
+              <div class="small" style="margin-top:8px">
+                Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and <code class="inline">claw-daw</code>.
+              </div>
+            </div>
+
+            <div class="tabpanel" data-panel="manual">
+              <pre><code id="install-manual">sudo apt-get update
+sudo apt-get install -y fluidsynth ffmpeg fluid-soundfont-gm pipx
+pipx reinstall "git+https://github.com/sdiaoune/claw-daw.git"</code></pre>
+              <div class="small" style="margin-top:8px">Use this if you prefer explicit package installs.</div>
+            </div>
           </div>
+
           <div class="callout" style="margin-bottom:12px">
-            <div style="font-weight:700; margin-bottom:8px">Install (one-go) — macOS</div>
-            <pre><code>curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash</code></pre>
-            <div class="small" style="margin-top:8px">Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and <code class="inline">claw-daw</code> (via an internal pipx install).</div>
+            <div style="font-weight:700; margin-bottom:8px">After install</div>
+            <pre><code>claw-daw doctor
+claw-daw --help</code></pre>
+            <div class="small" style="margin-top:8px">
+              If <code class="inline">claw-daw</code> is not found, restart your terminal.
+              Still not found? Try:
+              <code class="inline">export PATH="$HOME/.local/bin:$PATH"</code> (Linux)
+              or <code class="inline">export PATH="$HOME/bin:$PATH"</code> (some mac installs).
+            </div>
           </div>
+
           <div class="callout">
-            <div style="font-weight:700; margin-bottom:8px">Manual install (Linux)</div>
-            <pre><code>sudo apt-get install fluidsynth ffmpeg
-sudo apt-get install fluid-soundfont-gm</code></pre>
+            <div style="font-weight:700; margin-bottom:8px">Update</div>
+            <div class="small">
+              Rerun the installer (safe) or use:
+              <code class="inline">pipx reinstall "git+https://github.com/sdiaoune/claw-daw.git"</code>
+            </div>
           </div>
           <p class="small" style="margin:12px 0 0">
             Prefer automation? Run headless scripts from <code class="inline">templates/</code> and export to <code class="inline">out/</code>.
@@ -305,14 +427,70 @@ sudo apt-get install fluid-soundfont-gm</code></pre>
       </div>
     </section>
 
+    </main>
+
     <div class="footer">
       <div>© claw-daw • offline, deterministic, terminal-first</div>
       <div>
-        <a href="#get">Get started</a> ·
+        <a href="#install">Install</a> ·
+        <a href="#faq">FAQ</a> ·
         <a href="#prompting">Prompting</a> ·
         <a href="#features">Features</a>
       </div>
     </div>
+
+    <script>
+      (function(){
+        function setActive(tab){
+          var root = tab.closest('.callout');
+          if(!root) return;
+          var name = tab.getAttribute('data-tab');
+          root.querySelectorAll('.tabbtn').forEach(function(b){
+            b.setAttribute('aria-selected', b === tab ? 'true' : 'false');
+          });
+          root.querySelectorAll('.tabpanel').forEach(function(p){
+            p.classList.toggle('active', p.getAttribute('data-panel') === name);
+          });
+          root.setAttribute('data-active-install', name);
+        }
+
+        document.querySelectorAll('.tabbtn').forEach(function(tab){
+          tab.addEventListener('click', function(){ setActive(tab); });
+        });
+
+        async function copyText(text){
+          try{
+            await navigator.clipboard.writeText(text);
+            return true;
+          }catch(e){
+            try{
+              var ta = document.createElement('textarea');
+              ta.value = text;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+              return true;
+            }catch(e2){
+              return false;
+            }
+          }
+        }
+
+        document.querySelectorAll('[data-copy="install-active"]').forEach(function(btn){
+          btn.addEventListener('click', async function(){
+            var callout = btn.closest('.callout');
+            var active = callout ? callout.querySelector('.tabpanel.active code') : null;
+            var text = active ? active.textContent.trim() : '';
+            if(!text) return;
+            var ok = await copyText(text);
+            btn.textContent = ok ? 'Copied' : 'Copy failed';
+            setTimeout(function(){ btn.textContent = 'Copy'; }, 1200);
+          });
+        });
+      })();
+    </script>
+
   </div>
 </body>
 </html>
