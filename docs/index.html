@@ -40,10 +40,12 @@
       margin:0;
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
       color:var(--text);
+      /* Softer, less "bandy" gradient (especially on mobile) */
       background:
-        radial-gradient(1200px 700px at 15% 10%, rgba(124,92,255,.22), transparent 55%),
-        radial-gradient(900px 600px at 70% 25%, rgba(50,214,255,.14), transparent 55%),
-        linear-gradient(180deg, #050714, #070A12 55%, #050714);
+        radial-gradient(900px 600px at 12% 8%, rgba(124,92,255,.18), transparent 60%),
+        radial-gradient(900px 650px at 88% 18%, rgba(50,214,255,.12), transparent 62%),
+        radial-gradient(700px 520px at 50% 115%, rgba(124,92,255,.10), transparent 55%),
+        linear-gradient(180deg, #050714 0%, #070A12 55%, #050714 100%);
     }
     a{color:inherit}
 
