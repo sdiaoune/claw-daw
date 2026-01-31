@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Virtualenv
+.venv/
+venv/
+
+# Audio / renders / assets
+out/
+out_v2/
+tmp_export/
+audio/
+spectrograms/
+*.wav
+*.mp3
+*.m4a
+
+# Local soundfonts / large binaries
+soundfonts/
+*.sf2
+
+# Local workspace artifacts
+.pytest_cache/
+.ruff_cache/
+
+# OpenClaw personal memory (DO NOT COMMIT)
+MEMORY.md
+memory/
+
+# Misc
+.DS_Store

@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>claw-daw — terminal-first music making</title>
+  <meta name="description" content="claw-daw is an offline, deterministic, terminal-first MIDI DAW for fast iteration and agent automation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#070A12;
+      --panel:#0D1224;
+      --panel2:#0B1020;
+      --text:#EAF0FF;
+      --muted:#A7B2D6;
+      --brand:#7C5CFF;
+      --brand2:#32D6FF;
+      --ok:#4ade80;
+      --border:rgba(234,240,255,.10);
+      --shadow: 0 25px 80px rgba(0,0,0,.55);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 15% 10%, rgba(124,92,255,.22), transparent 55%),
+        radial-gradient(900px 600px at 70% 25%, rgba(50,214,255,.14), transparent 55%),
+        linear-gradient(180deg, #050714, #070A12 55%, #050714);
+    }
+    a{color:inherit}
+    .wrap{max-width:1100px; margin:0 auto; padding:32px 20px 80px}
+    .topbar{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 2px;}
+    .logo{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px}
+    .dot{width:10px;height:10px;border-radius:99px;background:linear-gradient(135deg,var(--brand),var(--brand2)); box-shadow:0 0 18px rgba(124,92,255,.6)}
+    .nav{display:flex; gap:14px; align-items:center; color:var(--muted); font-weight:500; font-size:14px}
+    .nav a{opacity:.9; text-decoration:none}
+    .nav a:hover{opacity:1; color:var(--text)}
+
+    .hero{padding:42px 0 22px}
+    .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:28px; align-items:start}
+    @media (max-width: 900px){.hero-grid{grid-template-columns:1fr;}}
+
+    .badge{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid var(--border); background:rgba(13,18,36,.7); color:var(--muted); font-size:13px}
+    .badge strong{color:var(--text); font-weight:600}
+
+    h1{font-size:46px; line-height:1.04; margin:16px 0 12px; letter-spacing:-.8px}
+    .sub{color:var(--muted); font-size:16px; line-height:1.6; max-width:62ch}
+
+    .cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:20px}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px; padding:12px 14px; border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(13,18,36,.8);
+      text-decoration:none; font-weight:600; font-size:14px
+    }
+    .btn.primary{background:linear-gradient(135deg, rgba(124,92,255,.95), rgba(50,214,255,.75)); border-color:transparent; color:#050714}
+    .btn.primary:hover{filter:brightness(1.06)}
+    .btn:hover{border-color:rgba(234,240,255,.2)}
+
+    .card{background:linear-gradient(180deg, rgba(13,18,36,.9), rgba(11,16,32,.75)); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .card.pad{padding:18px}
+
+    .terminal{padding:16px; position:relative; overflow:hidden}
+    .term-top{display:flex; gap:8px; padding:10px 12px; border-bottom:1px solid var(--border); color:var(--muted); font-size:12px}
+    .bubble{width:10px; height:10px; border-radius:99px; opacity:.8}
+    .b1{background:#ff5f56} .b2{background:#ffbd2e} .b3{background:#27c93f}
+    pre{
+      margin:0; padding:14px 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12.5px; line-height:1.5;
+      color:#DDE6FF;
+      white-space:pre-wrap;
+    }
+    code.inline{background:rgba(234,240,255,.08); padding:2px 6px; border-radius:8px; border:1px solid rgba(234,240,255,.10)}
+
+    .section{margin-top:34px}
+    .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+    @media (max-width: 900px){.grid3{grid-template-columns:1fr;}}
+
+    .feature{padding:18px}
+    .feature h3{margin:2px 0 6px; font-size:16px}
+    .feature p{margin:0; color:var(--muted); font-size:13.5px; line-height:1.55}
+
+    .pill{display:inline-flex; gap:8px; align-items:center; color:var(--muted); font-size:12px; margin-top:10px}
+    .tick{width:16px;height:16px;border-radius:999px; background:rgba(74,222,128,.16); border:1px solid rgba(74,222,128,.35)}
+
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    @media (max-width: 900px){.two{grid-template-columns:1fr;}}
+
+    .small{color:var(--muted); font-size:12.5px; line-height:1.6}
+
+    .footer{margin-top:44px; display:flex; justify-content:space-between; gap:18px; flex-wrap:wrap; color:var(--muted); font-size:12.5px}
+    .footer a{text-decoration:none; opacity:.9}
+    .footer a:hover{opacity:1; color:var(--text)}
+
+    .tagrow{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+    .tag{font-size:12px; color:var(--muted); border:1px solid var(--border); background:rgba(13,18,36,.55); padding:6px 10px; border-radius:999px}
+
+    .callout{padding:18px; border-radius:var(--radius); border:1px solid rgba(234,240,255,.14); background:rgba(13,18,36,.6)}
+    .callout strong{color:var(--text)}
+
+    .kicker{font-weight:700; background:linear-gradient(135deg,var(--brand),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="logo"><span class="dot"></span> claw-daw</div>
+      <div class="nav">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#prompting">Prompting</a>
+        <a href="#get">Get started</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="badge"><strong>Offline</strong> • deterministic • terminal-first</div>
+          <h1>Music making that feels like coding.</h1>
+          <p class="sub">
+            <span class="kicker">claw-daw</span> is a minimal MIDI DAW you can drive from a TUI or from scripts.
+            It’s built for fast iteration, reproducible renders, and agent automation.
+          </p>
+          <div class="tagrow">
+            <div class="tag">TUI-first workflow</div>
+            <div class="tag">Headless scripts</div>
+            <div class="tag">Human-readable projects</div>
+            <div class="tag">MP3/WAV/MIDI export</div>
+          </div>
+          <div class="cta" id="get">
+            <a class="btn primary" href="#install">Install in 10 seconds</a>
+            <a class="btn" href="#prompting">Use the prompt template</a>
+            <a class="btn" href="#how">See how it works</a>
+          </div>
+          <p class="small" style="margin-top:14px">
+            No cloud. No accounts. Just <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and a SoundFont.
+          </p>
+        </div>
+
+        <div class="card terminal">
+          <div class="term-top">
+            <span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span>
+            <span>demo — generate, arrange, export</span>
+          </div>
+          <pre><code>$ pipx install claw-daw
+$ claw-daw --headless \
+    --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
+    --script templates/hiphop_1min.txt
+
+# outputs
+out/demo.mp3
+out/demo.mid
+out/demo.json
+
+# iterate
+a) tweak patterns in the script
+b) rerender
+c) compare spectrograms
+</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="grid3">
+        <div class="card feature">
+          <h3>Deterministic by design</h3>
+          <p>Same script + same seed → same beat. Perfect for iteration, A/B tests, and agent pipelines.</p>
+          <div class="pill"><span class="tick"></span> reproducible exports</div>
+        </div>
+        <div class="card feature">
+          <h3>Two interfaces</h3>
+          <p>Use the TUI when you want to play. Use headless scripts when you want to scale.</p>
+          <div class="pill"><span class="tick"></span> TUI + CLI automation</div>
+        </div>
+        <div class="card feature">
+          <h3>Readable projects</h3>
+          <p>Projects are JSON. Diff them. Review them. Version them. Share them.</p>
+          <div class="pill"><span class="tick"></span> Git-friendly</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="how" class="section">
+      <div class="two">
+        <div class="card pad">
+          <h3 style="margin:0 0 10px">How it works</h3>
+          <p class="small" style="margin:0">
+            claw-daw is built around a simple loop:
+            <br><br>
+            <strong>1) Define patterns</strong> (1–4 bars)
+            <br>
+            <strong>2) Place clips</strong> across sections
+            <br>
+            <strong>3) Export</strong> MIDI/WAV/MP3
+            <br><br>
+            Under the hood, MIDI is rendered through a GM SoundFont (via <code class="inline">fluidsynth</code>), then mastered/encoded via <code class="inline">ffmpeg</code>.
+          </p>
+        </div>
+        <div class="card terminal">
+          <div class="term-top">
+            <span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span>
+            <span>script-first arrangement</span>
+          </div>
+          <pre><code># 4/4 timing (PPQ=480)
+# 1 bar = 1920 ticks
+
+new_project views_style_v1 74
+add_track Drums 0
+set_sampler 0 drums
+
+new_pattern 0 d2 3840
+add_note_pat 0 d2 36 0 180 112  # kick
+add_note_pat 0 d2 38 1920 180 108 # snare
+
+place_pattern 0 d2 15360 4  # hook
+export_mp3 out/views_style_v1.mp3 preset=clean
+</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="prompting" class="section">
+      <div class="card pad">
+        <h3 style="margin:0 0 10px">Best practice: prompting a song</h3>
+        <p class="small" style="margin:0 0 14px">
+          The fastest way to get a good result is to prompt like a producer brief:
+          references + constraints + arrangement + palette + deliverables.
+        </p>
+        <div class="callout">
+          <div style="font-weight:700; margin-bottom:8px">Copy/paste prompt template</div>
+          <pre><code>Make a 2:45 instrumental with a late-night, introspective vibe
+(think Drake “Views” era, but original—no melodies from the reference).
+
+BPM: 74. Key: A minor-ish (dark/ambiguous). Time sig: 4/4.
+
+Sections (bars):
+- Intro: 8 bars (pad + soft keys only, lots of space)
+- Hook: 8 bars (add drums + 808/sub + simple top motif)
+- Verse: 16 bars (strip the top motif, keep drums sparse)
+- Final hook/outro: 8 bars (bring motif back, then fade)
+
+Sound palette: drums sampler + 808/sub + warm pad + EP/keys + light bell/pluck.
+Drums: snare on 3, hats quiet, occasional ghost snare, simple kick pattern.
+Mix targets: mono low end, gentle reverb, smooth highs.
+
+Deliverables:
+- tools/views_style_v1.txt
+- out/views_style_v1.mp3 (preset=clean)
+- plus project JSON + MIDI</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="section">
+      <div class="two">
+        <div class="card pad">
+          <h3 style="margin:0 0 10px">Get started</h3>
+          <p class="small" style="margin:0 0 12px">
+            You’ll need a SoundFont (<code class="inline">.sf2</code>), plus <code class="inline">fluidsynth</code> and <code class="inline">ffmpeg</code>.
+          </p>
+          <div class="callout" style="margin-bottom:12px">
+            <div style="font-weight:700; margin-bottom:8px">Install (one-go)</div>
+            <pre><code>curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash</code></pre>
+            <div class="small" style="margin-top:8px">Debian/Ubuntu • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont, and <code class="inline">claw-daw</code>.</div>
+          </div>
+          <div class="callout">
+            <div style="font-weight:700; margin-bottom:8px">Manual install (Linux)</div>
+            <pre><code>sudo apt-get install fluidsynth ffmpeg
+sudo apt-get install fluid-soundfont-gm</code></pre>
+          </div>
+          <p class="small" style="margin:12px 0 0">
+            Prefer automation? Run headless scripts from <code class="inline">templates/</code> and export to <code class="inline">out/</code>.
+          </p>
+        </div>
+        <div class="card pad">
+          <h3 style="margin:0 0 10px">What to expect (v1)</h3>
+          <p class="small" style="margin:0">
+            claw-daw v1 is intentionally minimal.
+            <br><br>
+            <strong>Great for:</strong> quick ideas, MIDI sketches, drum patterns, deterministic agent runs.
+            <br>
+            <strong>Not trying to be:</strong> a full replacement for Ableton/FL Studio.
+            <br><br>
+            If you want more realism, use a higher-quality SoundFont and sampler one-shots for drums.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">
+      <div>© claw-daw • offline, deterministic, terminal-first</div>
+      <div>
+        <a href="#get">Get started</a> ·
+        <a href="#prompting">Prompting</a> ·
+        <a href="#features">Features</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
