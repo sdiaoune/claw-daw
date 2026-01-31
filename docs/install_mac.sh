@@ -23,15 +23,35 @@ brew install fluidsynth ffmpeg python pipx
 pipx ensurepath >/dev/null 2>&1 || true
 export PATH="$HOME/.local/bin:$PATH"
 
+# Some macOS setups end up with ~/.local/bin owned by root (or otherwise unwritable),
+# which breaks pipx symlinking. We try to self-heal.
+mkdir -p "$HOME/.local/bin" "$HOME/.local"
+if [[ ! -w "$HOME/.local/bin" ]]; then
+  echo "[claw-daw] '$HOME/.local/bin' is not writable. Attempting to fix permissions…" >&2
+  # Best-effort: use sudo if available; if not, we'll fall back to a different bin dir.
+  if command -v sudo >/dev/null 2>&1; then
+    sudo chown -R "$USER" "$HOME/.local" || true
+  fi
+fi
+
+# If still not writable, fall back to a user-owned bin dir.
+if [[ ! -w "$HOME/.local/bin" ]]; then
+  echo "[claw-daw] Still cannot write to '$HOME/.local/bin'. Falling back to '$HOME/bin'." >&2
+  mkdir -p "$HOME/bin"
+  export PIPX_BIN_DIR="$HOME/bin"
+  export PATH="$HOME/bin:$PATH"
+fi
+
 echo "[claw-daw] Installing claw-daw from GitHub via pipx…"
 # --force makes reruns idempotent across failures/partial installs.
-pipx install --force "git+${REPO_URL}" || pipx upgrade "git+${REPO_URL}" || true
+pipx install --force "git+${REPO_URL}"
 
 # Verify binary is reachable.
 if ! command -v claw-daw >/dev/null 2>&1; then
-  echo "[claw-daw] NOTE: 'claw-daw' is not on PATH yet." >&2
-  echo "Run: pipx ensurepath  (then restart your terminal)" >&2
-  echo "Or try: export PATH=\"$HOME/.local/bin:\$PATH\"" >&2
+  echo "[claw-daw] ERROR: install completed but 'claw-daw' is not on PATH." >&2
+  echo "Try: pipx list" >&2
+  echo "Then run: pipx ensurepath  (and restart your terminal)" >&2
+  echo "Current PATH: $PATH" >&2
   exit 2
 fi
 
