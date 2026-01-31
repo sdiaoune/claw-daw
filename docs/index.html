@@ -151,7 +151,15 @@
             <span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span>
             <span>demo — generate, arrange, export</span>
           </div>
-          <pre><code>$ pipx install claw-daw
+          <pre><code># One-go install
+
+# Linux
+$ curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
+
+# macOS
+$ curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
+
+# then
 $ claw-daw --headless \
     --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
     --script templates/hiphop_1min.txt
@@ -160,11 +168,6 @@ $ claw-daw --headless \
 out/demo.mp3
 out/demo.mid
 out/demo.json
-
-# iterate
-a) tweak patterns in the script
-b) rerender
-c) compare spectrograms
 </code></pre>
         </div>
       </div>
@@ -276,7 +279,7 @@ Deliverables:
           <div class="callout" style="margin-bottom:12px">
             <div style="font-weight:700; margin-bottom:8px">Install (one-go) — macOS</div>
             <pre><code>curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash</code></pre>
-            <div class="small" style="margin-top:8px">Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, <code class="inline">pipx</code>, and <code class="inline">claw-daw</code>.</div>
+            <div class="small" style="margin-top:8px">Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and <code class="inline">claw-daw</code> (via an internal pipx install).</div>
           </div>
           <div class="callout">
             <div style="font-weight:700; margin-bottom:8px">Manual install (Linux)</div>
