@@ -174,7 +174,8 @@ class HeadlessRunner:
 
         proj = self.require_project()
 
-        if cmd == "save_project":
+        if cmd in {"save_project", "export_project"}:
+            # export_project is kept as a compatibility alias.
             save_project(proj, args[0] if args else None)
             return
 

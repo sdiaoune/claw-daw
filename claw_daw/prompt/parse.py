@@ -38,7 +38,7 @@ def _guess_bpm(p: str) -> int | None:
 
 def _guess_key(p: str) -> str | None:
     # Very lightweight; keep as string.
-    m = re.search(r"\bkey\s*[:=]?\s*([A-Ga-g])\s*(#|b)?\s*(major|minor|maj|min)?\b", p)
+    m = re.search(r"\bkey\s*[:=]?\s*([A-Ga-g])\s*(#|b)?\s*(major|minor|maj|min)?\b", p, flags=re.I)
     if not m:
         return None
     note = m.group(1).upper()

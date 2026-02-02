@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from random import Random
+import re
 
 from claw_daw.prompt.palette import select_track_sound
 from claw_daw.prompt.style import preset_for
@@ -43,7 +44,9 @@ def brief_to_script(
 
     lines: list[str] = []
     proj_name = out_prefix or brief.title
-    safe_name = proj_name.replace("\n", " ").strip() or "untitled"
+    safe_name = (proj_name or "untitled").replace("\n", " ").strip()
+    # Must be a single token in headless scripts.
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", safe_name).strip("_") or "untitled"
 
     lines.append(f"new_project {safe_name} {bpm}")
     if swing:
@@ -145,7 +148,7 @@ def brief_to_script(
 
     # Exports
     if out_prefix:
-        lines.append(f"export_project out/{out_prefix}.json")
+        lines.append(f"save_project out/{out_prefix}.json")
         lines.append(f"export_midi out/{out_prefix}.mid")
         # Caller can decide whether to render full mp3. Script always includes a "preview" hook.
         lines.append(f"export_preview_mp3 out/{out_prefix}.preview.mp3 bars=8 start=0:0 preset={mpreset}")
