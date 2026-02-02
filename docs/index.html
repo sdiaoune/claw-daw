@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>claw-daw — offline, terminal-first MIDI DAW</title>
-  <meta name="description" content="Offline, deterministic, terminal-first MIDI DAW. Drive it from a TUI or headless scripts and export WAV/MP3/MIDI." />
+  <meta name="description" content="Offline, deterministic, terminal-first MIDI DAW for agents. Drive it from a TUI or headless scripts; export WAV/MP3/MIDI + JSON artifacts." />
 
   <!-- Social / sharing -->
   <meta property="og:type" content="website" />
   <meta property="og:title" content="claw-daw — offline, terminal-first MIDI DAW" />
-  <meta property="og:description" content="Drive it from a TUI or headless scripts. Reproducible renders. WAV/MP3/MIDI export." />
+  <meta property="og:description" content="Deterministic, agent-friendly MIDI DAW. Headless scripts + diffable JSON. Export WAV/MP3/MIDI." />
   <meta property="og:url" content="https://sdiaoune.github.io/claw-daw/" />
   <meta name="twitter:card" content="summary" />
 
@@ -42,8 +42,6 @@
       font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
       color:var(--text);
       background-color: var(--bg);
-      /* Softer, less "bandy" gradient (especially on mobile).
-         Important: prevent background tiling (which can cause a hard seam while scrolling). */
       background-image:
         radial-gradient(900px 600px at 12% 8%, rgba(124,92,255,.18), transparent 60%),
         radial-gradient(900px 650px at 88% 18%, rgba(50,214,255,.12), transparent 62%),
@@ -195,6 +193,7 @@
     }
 
     .kicker{font-weight:700; background:linear-gradient(135deg,var(--brand),var(--brand2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
   </style>
 </head>
 <body>
@@ -206,11 +205,12 @@
         <a class="small" style="margin-left:10px; text-decoration:none; opacity:.9" href="https://github.com/sdiaoune/claw-daw" target="_blank" rel="noopener noreferrer">GitHub</a>
       </div>
       <div class="nav">
+        <a href="#agents">For agents</a>
         <a href="#features">Features</a>
-        <a href="#how">How it works</a>
-        <a href="#prompting">Prompting</a>
+        <a href="#first-render">First render</a>
         <a href="#install">Install</a>
         <a href="#faq">FAQ</a>
+        <a href="#docs">Docs</a>
       </div>
     </div>
 
@@ -218,55 +218,110 @@
     <section class="hero">
       <div class="hero-grid">
         <div>
-          <div class="badge"><strong>Offline</strong> • deterministic • terminal-first</div>
-          <h1>Make beats from the terminal—offline and reproducible.</h1>
+          <div class="badge"><strong>Offline</strong> • deterministic • agent-friendly</div>
+          <h1>Make beats from the terminal—then diff, validate, and rerun them.</h1>
           <p class="sub">
-            <span class="kicker">claw-daw</span> is a minimal MIDI DAW you drive from a TUI or headless scripts.
-            Same script + same seed → same render. Export WAV/MP3/MIDI and keep everything Git-friendly.
+            <span class="kicker">claw-daw</span> is a terminal-first MIDI DAW designed for automation.
+            Drive it with a TUI or headless scripts, export <strong>audio + MIDI + JSON</strong>, and keep everything Git-friendly.
           </p>
           <div class="tagrow">
-            <div class="tag">TUI-first workflow</div>
             <div class="tag">Headless scripts</div>
-            <div class="tag">Human-readable projects</div>
-            <div class="tag">MP3/WAV/MIDI export</div>
+            <div class="tag">Diffable JSON</div>
+            <div class="tag">Groove/humanize</div>
+            <div class="tag">Transforms + bar:beat time</div>
           </div>
           <div class="cta" id="get">
             <a class="btn primary" href="#install">Install in 10 seconds</a>
+            <a class="btn" href="#first-render">Run your first headless render</a>
             <a class="btn" href="https://github.com/sdiaoune/claw-daw" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-            <a class="btn" href="#prompting">Use the prompt template</a>
-            <a class="btn" href="#how">See how it works</a>
+            <a class="btn" href="#prompting">Prompt template</a>
           </div>
           <p class="small" style="margin-top:14px">
             No cloud. No accounts. Just <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and a SoundFont.
           </p>
+
+          <div class="callout" style="margin-top:14px">
+            <div style="font-weight:700; margin-bottom:8px">What you get (agent-friendly artifacts)</div>
+            <div class="small" style="margin:0">
+              <span class="mono">out/*.json</span> (project) · <span class="mono">out/*.mid</span> (MIDI) · <span class="mono">out/*.mp3/.wav</span> (audio)
+              <br>
+              Easy to archive, diff, review, and re-render in CI.
+            </div>
+          </div>
         </div>
 
         <div class="card terminal">
           <div class="term-top">
             <span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span>
-            <span>demo — generate, arrange, export</span>
+            <span>from-scratch — script, validate, export</span>
           </div>
-          <pre><code># One-go install
-
-# Linux
+          <pre><code># install (Linux)
 $ curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
-
-# macOS
-$ curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
 
 # sanity check
 $ claw-daw doctor
 
-# then (pick a SoundFont path from `claw-daw paths --soundfont`)
-$ claw-daw --headless \
-    --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
-    --script templates/hiphop_1min.txt
+# pick a SoundFont
+$ claw-daw paths --soundfont
 
-# outputs
-out/demo.mp3
-out/demo.mid
-out/demo.json
+# write a new script (no template)
+$ cat &gt; tools/my_first_beat.txt &lt;&lt 'EOF'
+new_project my_first_beat 140
+add_track Drums 0
+set_sampler 0 drums
+new_pattern 0 d1 2:0
+add_note_pat 0 d1 36 0:0 0:0:120 110
+add_note_pat 0 d1 38 0:2 0:0:120 108
+place_pattern 0 d1 0:0 8
+export_project out/my_first_beat.json
+export_midi out/my_first_beat.mid
+export_mp3 out/my_first_beat.mp3 preset=clean
+EOF
+
+# validate + render
+$ claw-daw --headless --soundfont /usr/share/sounds/sf2/default-GM.sf2 --script tools/my_first_beat.txt
 </code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="agents" class="section">
+      <div class="two">
+        <div class="card pad">
+          <h3 style="margin:0 0 10px">Built for agent pipelines</h3>
+          <p class="small" style="margin:0 0 12px">
+            If you’re wiring music generation into an agent workflow, claw-daw is optimized for:
+          </p>
+          <div class="small">
+            <p style="margin:0 0 10px"><strong>Deterministic reruns</strong><br>
+              Same script + same seed + same version + same SoundFont → same outputs.
+            </p>
+            <p style="margin:0 0 10px"><strong>Reviewable changes</strong><br>
+              Projects are JSON so agents (and humans) can diff/PR changes.
+            </p>
+            <p style="margin:0 0 10px"><strong>Higher-level edits</strong><br>
+              Humanize/groove + transforms (transpose/shift/stretch/velocity) reduce “rewrite 200 lines” scripts.
+            </p>
+            <p style="margin:0"><strong>Safety rails</strong><br>
+              Validate/lint/diff/analyze tooling to prevent broken renders in automation.
+            </p>
+          </div>
+        </div>
+        <div class="card pad">
+          <h3 style="margin:0 0 10px">Open source, automation-friendly</h3>
+          <p class="small" style="margin:0 0 12px">
+            claw-daw is intentionally lightweight and predictable.
+          </p>
+          <div class="callout">
+            <div style="font-weight:700; margin-bottom:8px">Suggested CI flow</div>
+            <pre><code>claw-daw doctor
+claw-daw validate_project out/project.json
+claw-daw diff_projects out/prev.json out/project.json
+claw-daw --headless --soundfont &lt;SF2&gt; --script tools/run.txt</code></pre>
+            <div class="small" style="margin-top:8px">
+              Tip: pin the version + SoundFont path for truly repeatable renders.
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -275,57 +330,67 @@ out/demo.json
       <div class="grid3">
         <div class="card feature">
           <h3>Deterministic by design</h3>
-          <p>Same script + same seed → same beat. Perfect for iteration, A/B tests, and agent pipelines.</p>
+          <p>Same script + same seed → same beat. Great for iteration, A/B tests, and agent pipelines.</p>
           <div class="pill"><span class="tick"></span> reproducible exports</div>
         </div>
         <div class="card feature">
-          <h3>Two interfaces</h3>
-          <p>Use the TUI when you want to play. Use headless scripts when you want to scale.</p>
-          <div class="pill"><span class="tick"></span> TUI + CLI automation</div>
+          <h3>Agent-native tooling</h3>
+          <p>Validate projects, diff JSON, analyze references, and keep pipelines from silently breaking.</p>
+          <div class="pill"><span class="tick"></span> validate / diff / analyze</div>
         </div>
         <div class="card feature">
-          <h3>Readable projects</h3>
-          <p>Projects are JSON. Diff them. Review them. Version them. Share them.</p>
-          <div class="pill"><span class="tick"></span> Git-friendly</div>
+          <h3>Groove + transforms</h3>
+          <p>Humanize timing/velocity and apply transforms (transpose/shift/stretch/reverse) to iterate faster.</p>
+          <div class="pill"><span class="tick"></span> fewer scripts, more music</div>
         </div>
       </div>
     </section>
 
-    <section id="how" class="section">
+    <section id="first-render" class="section">
       <div class="two">
         <div class="card pad">
-          <h3 style="margin:0 0 10px">How it works</h3>
-          <p class="small" style="margin:0">
-            claw-daw is built around a simple loop:
-            <br><br>
-            <strong>1) Define patterns</strong> (1–4 bars)
-            <br>
-            <strong>2) Place clips</strong> across sections
-            <br>
-            <strong>3) Export</strong> MIDI/WAV/MP3
-            <br><br>
-            Under the hood, MIDI is rendered through a GM SoundFont (via <code class="inline">fluidsynth</code>), then mastered/encoded via <code class="inline">ffmpeg</code>.
+          <h3 style="margin:0 0 10px">Run your first headless render</h3>
+          <p class="small" style="margin:0 0 12px">
+            Copy/paste these commands to generate a minimal project and export audio + MIDI + JSON.
           </p>
-        </div>
-        <div class="card terminal">
-          <div class="term-top">
-            <span class="bubble b1"></span><span class="bubble b2"></span><span class="bubble b3"></span>
-            <span>script-first arrangement</span>
-          </div>
-          <pre><code># 4/4 timing (PPQ=480)
-# 1 bar = 1920 ticks
-
-new_project views_style_v1 74
+          <div class="callout" style="margin-bottom:12px">
+            <div class="row" style="margin-bottom:8px">
+              <div style="font-weight:700">Commands</div>
+              <button class="copybtn" type="button" data-copy="first-render">Copy</button>
+            </div>
+            <pre><code id="first-render-commands">claw-daw doctor
+SF2=$(claw-daw paths --soundfont | head -n 1)
+mkdir -p tools out
+cat &gt; tools/first_render.txt &lt;&lt 'EOF'
+new_project first_render 140
+set_swing 14
 add_track Drums 0
 set_sampler 0 drums
-
-new_pattern 0 d2 3840
-add_note_pat 0 d2 36 0 180 112  # kick
-add_note_pat 0 d2 38 1920 180 108 # snare
-
-place_pattern 0 d2 15360 4  # hook
-export_mp3 out/views_style_v1.mp3 preset=clean
-</code></pre>
+new_pattern 0 d1 2:0
+add_note_pat 0 d1 36 0:0 0:0:120 112
+add_note_pat 0 d1 38 0:2 0:0:120 108
+place_pattern 0 d1 0:0 8
+export_project out/first_render.json
+export_midi out/first_render.mid
+export_mp3 out/first_render.mp3 preset=clean
+EOF
+claw-daw --headless --soundfont "$SF2" --script tools/first_render.txt</code></pre>
+            <div class="small" style="margin-top:8px">
+              Outputs: <code class="inline">out/first_render.json</code> · <code class="inline">out/first_render.mid</code> · <code class="inline">out/first_render.mp3</code>
+            </div>
+          </div>
+        </div>
+        <div class="card pad">
+          <h3 style="margin:0 0 10px">Determinism scope (important)</h3>
+          <p class="small" style="margin:0">
+            Reproducibility depends on pinning your inputs.
+            <br><br>
+            <strong>Deterministic</strong> when the script/seed, claw-daw version, SoundFont, and render settings are the same.
+            <br>
+            <strong>May differ</strong> across versions/SoundFonts/OS audio tooling.
+            <br><br>
+            If you care about perfect reproducibility, record the chosen SoundFont path and claw-daw version in your run logs.
+          </p>
         </div>
       </div>
     </section>
@@ -394,6 +459,15 @@ Deliverables:
           </p>
 
           <div class="callout" style="margin-bottom:12px">
+            <div style="font-weight:700; margin-bottom:8px">Quick checklist</div>
+            <div class="small" style="margin:0">
+              1) <code class="inline">claw-daw doctor</code> passes<br>
+              2) You can see a SoundFont: <code class="inline">claw-daw paths --soundfont</code><br>
+              3) If CLI not found, fix PATH (see below) and restart terminal
+            </div>
+          </div>
+
+          <div class="callout" style="margin-bottom:12px">
             <div class="row" style="margin-bottom:8px">
               <div style="font-weight:700">Install (recommended)</div>
               <button class="copybtn" type="button" data-copy="install-active">Copy</button>
@@ -456,20 +530,36 @@ claw-daw --help</code></pre>
             </div>
           </div>
           <p class="small" style="margin:12px 0 0">
-            Prefer automation? Run headless scripts from <code class="inline">templates/</code> and export to <code class="inline">out/</code>.
+            Prefer automation? Run headless scripts and export to <code class="inline">out/</code>.
           </p>
         </div>
         <div class="card pad">
           <h3 style="margin:0 0 10px">What to expect (v1)</h3>
           <p class="small" style="margin:0">
-            claw-daw v1 is intentionally minimal.
+            claw-daw is intentionally focused.
             <br><br>
-            <strong>Great for:</strong> quick ideas, MIDI sketches, drum patterns, deterministic agent runs.
+            <strong>Great for:</strong> quick ideas, deterministic renders, agent automation, Git-friendly iteration.
             <br>
             <strong>Not trying to be:</strong> a full replacement for Ableton/FL Studio.
             <br><br>
-            If you want more realism, use a higher-quality SoundFont and sampler one-shots for drums.
+            For realism: use a higher-quality SoundFont and tune your render preset.
           </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="docs" class="section">
+      <div class="card pad">
+        <h3 style="margin:0 0 10px">Docs</h3>
+        <p class="small" style="margin:0 0 12px">
+          If you want deeper details (commands, scripting reference, agent workflows):
+        </p>
+        <div class="callout">
+          <div class="small" style="margin:0">
+            <a href="/USER_GUIDE.md">USER_GUIDE.md</a> ·
+            <a href="/AGENT_COOKBOOK.md">AGENT_COOKBOOK.md</a> ·
+            <a href="/TROUBLESHOOTING.md">TROUBLESHOOTING.md</a>
+          </div>
         </div>
       </div>
     </section>
@@ -480,9 +570,9 @@ claw-daw --help</code></pre>
       <div>© claw-daw • offline, deterministic, terminal-first</div>
       <div>
         <a href="#install">Install</a> ·
-        <a href="#faq">FAQ</a> ·
-        <a href="#prompting">Prompting</a> ·
-        <a href="#features">Features</a>
+        <a href="#first-render">First render</a> ·
+        <a href="#agents">For agents</a> ·
+        <a href="#docs">Docs</a>
       </div>
     </div>
 
@@ -529,6 +619,17 @@ claw-daw --help</code></pre>
             var callout = btn.closest('.callout');
             var active = callout ? callout.querySelector('.tabpanel.active code') : null;
             var text = active ? active.textContent.trim() : '';
+            if(!text) return;
+            var ok = await copyText(text);
+            btn.textContent = ok ? 'Copied' : 'Copy failed';
+            setTimeout(function(){ btn.textContent = 'Copy'; }, 1200);
+          });
+        });
+
+        document.querySelectorAll('[data-copy="first-render"]').forEach(function(btn){
+          btn.addEventListener('click', async function(){
+            var code = document.getElementById('first-render-commands');
+            var text = code ? code.textContent.trim() : '';
             if(!text) return;
             var ok = await copyText(text);
             btn.textContent = ok ? 'Copied' : 'Copy failed';
