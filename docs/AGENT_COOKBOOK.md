@@ -12,6 +12,9 @@ claw-daw --headless \
 
 ## How agents should use claw-daw (recommended)
 
+For the full “agent-as-producer” workflow and checklists, see:
+- `docs/AGENT_PLAYBOOK.md`
+
 Treat **claw-daw as the workstation**, not the “thing you prompt.”
 
 - The **user prompts the agent** (you) with a producer brief (style, BPM, key, sections, palette, deliverables).

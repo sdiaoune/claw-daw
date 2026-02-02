@@ -128,6 +128,9 @@ Scripts are plain text files containing one command per line.
 For best results, treat **claw-daw as the workstation**.
 You prompt an agent with a producer brief, and the agent uses claw-daw (headless scripts + iteration) to build the track.
 
+Agent Playbook (recommended reading):
+- `docs/AGENT_PLAYBOOK.md`
+
 ### Optional: `claw-daw prompt` → script (offline)
 
 claw-daw also includes an **offline, deterministic prompt→script helper** that turns a natural-language prompt into a headless script.

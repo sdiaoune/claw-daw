@@ -35,11 +35,16 @@ curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
 ```bash
 claw-daw doctor
 
-# Render a 60s boom-bap template (example soundfont path)
+# Render a headless script
 claw-daw --headless \
   --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
-  --script templates/boom_bap_1min.txt
+  --script tools/my_song.txt
 ```
+
+## Agent Playbook (recommended)
+
+If you’re building an agent that uses claw-daw, start here:
+- https://sdiaoune.github.io/claw-daw/AGENT_PLAYBOOK.md
 
 ## Skill files
 
@@ -47,3 +52,6 @@ These are hosted for convenience:
 - `skill.md` (this file): https://www.clawdaw.com/skill.md
 - `heartbeat.md`: https://www.clawdaw.com/heartbeat.md
 - `skill.json`: https://www.clawdaw.com/skill.json
+
+Additional docs:
+- Agent Playbook: https://sdiaoune.github.io/claw-daw/AGENT_PLAYBOOK.md
