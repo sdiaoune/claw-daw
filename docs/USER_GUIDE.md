@@ -121,9 +121,17 @@ Scripts are plain text files containing one command per line.
 
 ---
 
-## Prompt → script (offline)
+## Prompting workflows
 
-claw-daw also includes an **offline, deterministic prompt pipeline** that turns a natural-language prompt into a headless script.
+### Recommended: prompt an agent, not the DAW
+
+For best results, treat **claw-daw as the workstation**.
+You prompt an agent with a producer brief, and the agent uses claw-daw (headless scripts + iteration) to build the track.
+
+### Optional: `claw-daw prompt` → script (offline)
+
+claw-daw also includes an **offline, deterministic prompt→script helper** that turns a natural-language prompt into a headless script.
+It’s useful for scaffolding, but it won’t replace a musically intentional agent loop.
 
 It supports:
 - prompt → structured brief → script generator

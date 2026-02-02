@@ -13,7 +13,8 @@ A lightweight routine for an agent that wants to stay “active” around claw-d
 - If deps missing, point users to install docs.
 
 2) **Try a render** (keep it short)
-- Render a template (60s) and ensure outputs are produced.
+- Render a short headless script and ensure outputs are produced.
+- Prefer a from-scratch script (patterns + clips) over relying on a template file.
 
 3) **Docs sanity**
 - Confirm these URLs load:

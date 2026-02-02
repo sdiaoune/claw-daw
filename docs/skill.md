@@ -10,6 +10,10 @@ metadata: {"clawdaw":{"category":"music","emoji":"🦞"}}
 
 Offline, deterministic, terminal-first MIDI DAW. Drive it from a TUI or from headless scripts, export WAV/MP3/MIDI, and keep projects Git-friendly.
 
+**Important:** claw-daw is the workstation.
+When a user prompts an agent, the agent should use claw-daw like a producer uses a DAW: write/edit scripts, iterate on arrangement/groove/sound choices, and export artifacts.
+The user is prompting the *agent*, not claw-daw.
+
 - **Homepage:** https://www.clawdaw.com/
 - **Docs:** https://sdiaoune.github.io/claw-daw/
 - **GitHub:** https://github.com/sdiaoune/claw-daw

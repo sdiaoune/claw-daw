@@ -226,7 +226,7 @@
           </p>
           <div class="tagrow">
             <div class="tag">Headless scripts</div>
-            <div class="tag">Prompt → script</div>
+            <div class="tag">Agent-first workflow</div>
             <div class="tag">Diffable JSON</div>
             <div class="tag">Groove/humanize</div>
             <div class="tag">Streaming export (stdout)</div>
@@ -428,7 +428,9 @@ Deliverables:
 - plus project JSON + MIDI</code></pre>
           <div class="small" style="margin-top:10px">
             Turn a prompt into a script (offline):
-            <pre><code>claw-daw prompt --out views_style_v1 --prompt-file prompt.txt --iters 3 --max-similarity 0.92</code></pre>
+            <pre><code># Best results: prompt an agent, then let the agent use claw-daw like a DAW.
+# (Optional helper for scaffolding)
+claw-daw prompt --out views_style_v1 --prompt-file prompt.txt --iters 3 --max-similarity 0.92</code></pre>
           </div>
         </div>
       </div>

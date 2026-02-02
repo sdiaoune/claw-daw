@@ -10,9 +10,25 @@ claw-daw --headless \
   --script templates/hiphop_1min.txt
 ```
 
-### Prompt → script (offline)
+## How agents should use claw-daw (recommended)
 
-You can also generate a headless script from a natural-language prompt (offline):
+Treat **claw-daw as the workstation**, not the “thing you prompt.”
+
+- The **user prompts the agent** (you) with a producer brief (style, BPM, key, sections, palette, deliverables).
+- The **agent writes/edits a headless script** (patterns + clips), renders, listens, tweaks, and re-renders.
+- Output artifacts stay deterministic and reviewable: JSON + MIDI + audio.
+
+This mirrors how a good producer works: intent → arrangement → sound choices → iteration.
+
+### Minimal agent loop
+
+1) Write `tools/<name>.txt`
+2) Render: `claw-daw --headless --soundfont <SF2> --script tools/<name>.txt`
+3) Iterate: change the script (or use `select_notes` + `apply_selected`) and rerender.
+
+## Optional: claw-daw prompt (helper, not a replacement)
+
+claw-daw includes an **offline prompt→script helper** for quick scaffolding. It’s best treated as a starting point, not the final result.
 
 ```bash
 claw-daw prompt --out prompt_v1 \
@@ -20,16 +36,6 @@ claw-daw prompt --out prompt_v1 \
   --iters 3 --max-similarity 0.92
 # tools/prompt_v1.txt
 ```
-
-Optional: closed-loop preview + analysis + auto-tune (requires --soundfont):
-
-```bash
-SF2=$(claw-daw paths --soundfont | head -n 1)
-claw-daw prompt --out prompt_v1 --prompt "lofi 82bpm" --render --soundfont "$SF2"
-# out/prompt_v1.preview.mp3 + out/prompt_v1.mp3
-```
-
-This produces an MP3 and a JSON project (see template script).
 
 ## Time model (ticks / PPQ)
 
