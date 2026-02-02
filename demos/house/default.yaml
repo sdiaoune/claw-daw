@@ -1,0 +1,13 @@
+name: house_default
+stylepack: house
+seed: 7
+max_attempts: 6
+length_bars: 32
+score_threshold: 0.60
+max_similarity: 0.92
+knobs:
+  drum_density: 0.82
+  drum_kit: house_clean
+  humanize_timing: 2
+  humanize_velocity: 6
+  lead_density: 0.35

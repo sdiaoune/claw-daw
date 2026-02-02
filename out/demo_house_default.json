@@ -1,0 +1,449 @@
+{
+  "arrangement": {
+    "sections": [],
+    "variations": []
+  },
+  "loop_end": null,
+  "loop_start": null,
+  "name": "demo_house_default",
+  "ppq": 480,
+  "render_end": null,
+  "render_start": null,
+  "schema_version": 7,
+  "swing_percent": 0,
+  "tempo_bpm": 124,
+  "tracks": [
+    {
+      "channel": 0,
+      "chorus": 0,
+      "clips": [
+        {
+          "pattern": "d",
+          "repeats": 16,
+          "start": 0
+        }
+      ],
+      "drum_kit": "house_clean",
+      "glide_ticks": 0,
+      "humanize": {
+        "seed": 7,
+        "timing": 2,
+        "velocity": 6
+      },
+      "mute": false,
+      "name": "Drums",
+      "notes": [],
+      "pan": 64,
+      "patterns": {
+        "d": {
+          "length": 3840,
+          "name": "d",
+          "notes": [
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 0,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 0,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 120,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 240,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 360,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 480,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 480,
+              "velocity": 110
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 480,
+              "velocity": 105
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 600,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 720,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 840,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 960,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 960,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1080,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1200,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1320,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1440,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 1440,
+              "velocity": 110
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 1440,
+              "velocity": 105
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1680,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1800,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1920,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 1920,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2160,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2280,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 2400,
+              "velocity": 110
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 2400,
+              "velocity": 105
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2520,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2760,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2880,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 2880,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3000,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3120,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3240,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3360,
+              "velocity": 65
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 3360,
+              "velocity": 110
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 3360,
+              "velocity": 105
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3480,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3600,
+              "velocity": 65
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3720,
+              "velocity": 65
+            }
+          ]
+        }
+      },
+      "program": 0,
+      "reverb": 0,
+      "sampler": null,
+      "sampler_preset": "default",
+      "solo": false,
+      "volume": 112
+    },
+    {
+      "channel": 1,
+      "chorus": 0,
+      "clips": [
+        {
+          "pattern": "b",
+          "repeats": 16,
+          "start": 0
+        }
+      ],
+      "drum_kit": "trap_hard",
+      "glide_ticks": 0,
+      "humanize": {
+        "seed": 8,
+        "timing": 0,
+        "velocity": 6
+      },
+      "mute": false,
+      "name": "Bass",
+      "notes": [],
+      "pan": 64,
+      "patterns": {
+        "b": {
+          "length": 3840,
+          "name": "b",
+          "notes": [
+            {
+              "duration": 240,
+              "pitch": 45,
+              "start": 960,
+              "velocity": 96
+            },
+            {
+              "duration": 240,
+              "pitch": 45,
+              "start": 2880,
+              "velocity": 90
+            }
+          ]
+        }
+      },
+      "program": 33,
+      "reverb": 0,
+      "sampler": null,
+      "sampler_preset": "default",
+      "solo": false,
+      "volume": 105
+    },
+    {
+      "channel": 2,
+      "chorus": 0,
+      "clips": [
+        {
+          "pattern": "k",
+          "repeats": 16,
+          "start": 0
+        }
+      ],
+      "drum_kit": "trap_hard",
+      "glide_ticks": 0,
+      "humanize": {
+        "seed": 0,
+        "timing": 0,
+        "velocity": 0
+      },
+      "mute": false,
+      "name": "Keys",
+      "notes": [],
+      "pan": 64,
+      "patterns": {
+        "k": {
+          "length": 3840,
+          "name": "k",
+          "notes": [
+            {
+              "duration": 180,
+              "pitch": 69,
+              "start": 480,
+              "velocity": 74
+            },
+            {
+              "duration": 180,
+              "pitch": 72,
+              "start": 480,
+              "velocity": 63
+            },
+            {
+              "duration": 180,
+              "pitch": 76,
+              "start": 480,
+              "velocity": 64
+            },
+            {
+              "duration": 180,
+              "pitch": 69,
+              "start": 960,
+              "velocity": 65
+            },
+            {
+              "duration": 180,
+              "pitch": 72,
+              "start": 960,
+              "velocity": 73
+            },
+            {
+              "duration": 180,
+              "pitch": 76,
+              "start": 960,
+              "velocity": 63
+            },
+            {
+              "duration": 180,
+              "pitch": 69,
+              "start": 2400,
+              "velocity": 78
+            },
+            {
+              "duration": 180,
+              "pitch": 72,
+              "start": 2400,
+              "velocity": 68
+            },
+            {
+              "duration": 180,
+              "pitch": 76,
+              "start": 2400,
+              "velocity": 63
+            },
+            {
+              "duration": 180,
+              "pitch": 69,
+              "start": 2880,
+              "velocity": 64
+            },
+            {
+              "duration": 180,
+              "pitch": 72,
+              "start": 2880,
+              "velocity": 75
+            },
+            {
+              "duration": 180,
+              "pitch": 76,
+              "start": 2880,
+              "velocity": 75
+            }
+          ]
+        }
+      },
+      "program": 4,
+      "reverb": 0,
+      "sampler": null,
+      "sampler_preset": "default",
+      "solo": false,
+      "volume": 100
+    }
+  ]
+}

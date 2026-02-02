@@ -4,10 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from random import Random
 
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:  # pragma: no cover
-    import mido
+from typing import Any
 
 from claw_daw.arrange.variations import resolve_pattern_name
 from claw_daw.model.types import Note, Project, Track

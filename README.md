@@ -19,10 +19,12 @@ Offline, deterministic, terminal-first MIDI DAW.
   - select/apply edits (`select_notes`, `apply_selected`)
   - validate/diff/analyze helpers
 - **Sampler** (offline): built-in `drums` + `808`
-  - **Drum Kits**: `set_kit <track> <preset>` (agent-friendly kit selection)
+  - **Drum Kits v1 (role-based)**: `list_drum_kits`, `set_drum_kit <track> <kit>`, and `add_note_pat ... <pitch|role> ...`
   - **808 presets**: `set_808 <track> <preset>` + `set_glide` for portamento
+- **Genre Packs v1** (from-scratch, deterministic): `claw-daw pack <trap|house|boom_bap> ...`
+- **Stylepacks v1** (scored iteration + reports): `claw-daw stylepack <trap_2020s|boom_bap|house> ...`
 - **Prompt → script helper** (offline): style-aware scaffolding with **novelty control** (`--max-similarity`)
-  - Supported styles behave like **Genre Packs**: `hiphop | lofi | house | techno | ambient`
+  - Supported styles: `hiphop | lofi | house | techno | ambient | trap | boom_bap`
 - **MIDI out**: play to hardware/virtual MIDI ports (`claw-daw play`)
 
 ## Install
@@ -85,15 +87,15 @@ new_project minimal_demo 140
 set_swing 16
 
 add_track Drums 0
-set_kit 0 tight
+set_drum_kit 0 trap_hard
 
 add_track 808 0
 set_808 1 dist
 set_glide 1 0:0:90
 
 new_pattern 0 d1 2:0
-add_note_pat 0 d1 36 0:0 0:0:180 112
-add_note_pat 0 d1 38 0:2 0:0:180 108
+add_note_pat 0 d1 kick 0:0 0:0:180 112
+add_note_pat 0 d1 snare 0:2 0:0:180 108
 place_pattern 0 d1 0:0 16
 
 # (optional) a single bar bass pickup
@@ -116,13 +118,14 @@ claw-daw play out/minimal_demo.json --midi-out "YOUR PORT NAME"
 
 - `docs/USER_GUIDE.md`
 - `docs/AGENT_COOKBOOK.md`
-- `docs/TROUBLESHOOTING.md`
+- `docs/AGENT_PLAYBOOK.md`
+- `docs/ARCH_STYLEPACK_PIPELINE.md` (prompt → BeatSpec → compile → render → score → iterate)
 
 ## Notes / guarantees
 
 - 100% offline core (no network APIs).
 - Reproducibility depends on pinning: claw-daw version + SoundFont + seed/script.
-- Project format is JSON (current schema v6; migrations included).
+- Project format is JSON (current schema v7; migrations included).
 
 ## License
 

@@ -1,0 +1,13 @@
+name: trap_2020s_default
+stylepack: trap_2020s
+seed: 2026
+max_attempts: 6
+length_bars: 36
+score_threshold: 0.62
+max_similarity: 0.92
+knobs:
+  drum_density: 0.82
+  drum_kit: trap_hard
+  humanize_timing: 6
+  humanize_velocity: 8
+  lead_density: 0.55

@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
+from random import Random
 from typing import Callable, Literal
 
+from claw_daw.genre_packs.variation import VariationEngine
 from claw_daw.model.types import Project
+from claw_daw.prompt.palette import select_track_sound
 from claw_daw.genre_packs.acceptance import (
     AcceptanceFailure,
     pattern_has_pitch_near_step,
@@ -93,12 +97,6 @@ class GenrePackV1:
 
 
 # ---------------------- pack generators ----------------------
-
-import re
-from random import Random
-
-from claw_daw.genre_packs.variation import VariationEngine
-from claw_daw.prompt.palette import select_track_sound
 
 
 def _safe_name(name: str) -> str:

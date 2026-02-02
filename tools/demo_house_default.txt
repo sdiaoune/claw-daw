@@ -1,0 +1,34 @@
+new_project demo_house_default 124
+add_track Drums 0
+set_drum_kit 0 house_clean
+set_volume 0 112
+add_track Bass 33
+set_volume 1 105
+add_track Keys 4
+set_humanize 0 timing=2 velocity=6 seed=7
+set_humanize 1 timing=0 velocity=6 seed=8
+new_pattern 0 d 2:0
+gen_drums 0 d 2:0 house seed=7 density=0.82
+place_pattern 0 d 0:0 16
+new_pattern 1 b 2:0
+add_note_pat 1 b 45 0:2 0:0:240 96
+add_note_pat 1 b 45 1:2 0:0:240 90
+place_pattern 1 b 0:0 16
+new_pattern 2 k 2:0
+add_note_pat 2 k 69 0:1 0:0:180 74
+add_note_pat 2 k 72 0:1 0:0:180 63
+add_note_pat 2 k 76 0:1 0:0:180 64
+add_note_pat 2 k 69 0:2 0:0:180 65
+add_note_pat 2 k 72 0:2 0:0:180 73
+add_note_pat 2 k 76 0:2 0:0:180 63
+add_note_pat 2 k 69 1:1 0:0:180 78
+add_note_pat 2 k 72 1:1 0:0:180 68
+add_note_pat 2 k 76 1:1 0:0:180 63
+add_note_pat 2 k 69 1:2 0:0:180 64
+add_note_pat 2 k 72 1:2 0:0:180 75
+add_note_pat 2 k 76 1:2 0:0:180 75
+place_pattern 2 k 0:0 16
+save_project out/demo_house_default.json
+export_midi out/demo_house_default.mid
+export_preview_mp3 out/demo_house_default.preview.mp3 bars=8 start=0:0 preset=demo
+export_mp3 out/demo_house_default.mp3 trim=60 preset=demo fade=0.15

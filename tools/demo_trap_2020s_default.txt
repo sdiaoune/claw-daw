@@ -1,0 +1,32 @@
+new_project demo_trap_2020s_default 150
+add_track Drums 0
+set_drum_kit 0 trap_hard
+set_volume 0 112
+add_track Bass 0
+set_808 1 round
+set_volume 1 105
+add_track Keys 4
+add_track Lead 80
+set_humanize 0 timing=6 velocity=8 seed=2026
+set_humanize 1 timing=4 velocity=8 seed=2027
+new_pattern 0 d 2:0
+gen_drums 0 d 2:0 trap seed=2026 density=0.82
+place_pattern 0 d 0:0 12
+set_glide 1 0:0:90
+new_pattern 1 b 2:0
+add_note_pat 1 b 45 0:0 0:1 95
+add_note_pat 1 b 57 0:2:120 0:1 102
+add_note_pat 1 b 45 1:0 0:1 108
+add_note_pat 1 b 52 1:2 0:1 108
+place_pattern 1 b 0:0 12
+new_pattern 2 k 4:0
+add_note_pat 2 k 62 0:0 4:0 65 chance=0.9
+add_note_pat 2 k 65 0:0 4:0 56 chance=0.9
+add_note_pat 2 k 69 0:0 4:0 58 chance=0.9
+place_pattern 2 k 0:0 6
+new_pattern 3 l 2:0
+place_pattern 3 l 0:0 12
+save_project out/demo_trap_2020s_default.json
+export_midi out/demo_trap_2020s_default.mid
+export_preview_mp3 out/demo_trap_2020s_default.preview.mp3 bars=8 start=0:0 preset=clean
+export_mp3 out/demo_trap_2020s_default.mp3 trim=60 preset=clean fade=0.15

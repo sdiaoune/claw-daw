@@ -1,0 +1,326 @@
+{
+  "attempts": [
+    {
+      "acceptance_errors": [
+        "swing_percent mismatch"
+      ],
+      "acceptance_ok": false,
+      "attempt": 0,
+      "chosen": false,
+      "knobs": {
+        "drum_density": 0.6,
+        "drum_kit": "boombap_dusty",
+        "humanize_timing": 12,
+        "humanize_velocity": 12,
+        "lead_density": 0.25
+      },
+      "score": 0.9958333333333332,
+      "seed": 44,
+      "similarity_to_prev": null,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -9.3,
+            "mean_volume": -27.1
+          },
+          "high_ge4k": {
+            "max_volume": -28.8,
+            "mean_volume": -57.9
+          },
+          "low_90_200": {
+            "max_volume": -13.7,
+            "mean_volume": -29.2
+          },
+          "mid_200_4k": {
+            "max_volume": -14.5,
+            "mean_volume": -33.6
+          },
+          "rest_ge90": {
+            "max_volume": -9.8,
+            "mean_volume": -28.0
+          },
+          "sub_lt90": {
+            "max_volume": -19.3,
+            "mean_volume": -34.1
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.1dB)"
+        ],
+        "score": 0.9958333333333332
+      }
+    },
+    {
+      "acceptance_errors": [
+        "swing_percent mismatch"
+      ],
+      "acceptance_ok": false,
+      "attempt": 1,
+      "chosen": false,
+      "knobs": {
+        "drum_density": 0.6,
+        "drum_kit": "boombap_dusty",
+        "humanize_timing": 14,
+        "humanize_velocity": 14,
+        "lead_density": 0.15
+      },
+      "score": 0.9958333333333332,
+      "seed": 45,
+      "similarity_to_prev": 0.9999999999999999,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -9.3,
+            "mean_volume": -27.1
+          },
+          "high_ge4k": {
+            "max_volume": -28.8,
+            "mean_volume": -57.9
+          },
+          "low_90_200": {
+            "max_volume": -13.7,
+            "mean_volume": -29.2
+          },
+          "mid_200_4k": {
+            "max_volume": -14.5,
+            "mean_volume": -33.6
+          },
+          "rest_ge90": {
+            "max_volume": -9.8,
+            "mean_volume": -28.0
+          },
+          "sub_lt90": {
+            "max_volume": -19.3,
+            "mean_volume": -34.1
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.1dB)"
+        ],
+        "score": 0.9958333333333332
+      }
+    },
+    {
+      "acceptance_errors": [
+        "swing_percent mismatch"
+      ],
+      "acceptance_ok": false,
+      "attempt": 2,
+      "chosen": false,
+      "knobs": {
+        "drum_density": 0.5499999999999999,
+        "drum_kit": "boombap_dusty",
+        "humanize_timing": 16,
+        "humanize_velocity": 16,
+        "lead_density": 0.1
+      },
+      "score": 0.9958333333333332,
+      "seed": 46,
+      "similarity_to_prev": 0.9999999999999999,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -9.3,
+            "mean_volume": -27.1
+          },
+          "high_ge4k": {
+            "max_volume": -28.8,
+            "mean_volume": -57.9
+          },
+          "low_90_200": {
+            "max_volume": -13.7,
+            "mean_volume": -29.2
+          },
+          "mid_200_4k": {
+            "max_volume": -14.5,
+            "mean_volume": -33.6
+          },
+          "rest_ge90": {
+            "max_volume": -9.8,
+            "mean_volume": -28.0
+          },
+          "sub_lt90": {
+            "max_volume": -19.3,
+            "mean_volume": -34.1
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.1dB)"
+        ],
+        "score": 0.9958333333333332
+      }
+    },
+    {
+      "acceptance_errors": [
+        "swing_percent mismatch"
+      ],
+      "acceptance_ok": false,
+      "attempt": 3,
+      "chosen": false,
+      "knobs": {
+        "drum_density": 0.49999999999999994,
+        "drum_kit": "gm_basic",
+        "humanize_timing": 18,
+        "humanize_velocity": 18,
+        "lead_density": 0.1
+      },
+      "score": 0.9958333333333332,
+      "seed": 47,
+      "similarity_to_prev": 0.9887202217251883,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -9.3,
+            "mean_volume": -27.1
+          },
+          "high_ge4k": {
+            "max_volume": -28.8,
+            "mean_volume": -58.0
+          },
+          "low_90_200": {
+            "max_volume": -13.7,
+            "mean_volume": -29.2
+          },
+          "mid_200_4k": {
+            "max_volume": -14.5,
+            "mean_volume": -33.6
+          },
+          "rest_ge90": {
+            "max_volume": -9.8,
+            "mean_volume": -28.0
+          },
+          "sub_lt90": {
+            "max_volume": -19.3,
+            "mean_volume": -34.1
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.1dB)"
+        ],
+        "score": 0.9958333333333332
+      }
+    },
+    {
+      "acceptance_errors": [
+        "swing_percent mismatch"
+      ],
+      "acceptance_ok": false,
+      "attempt": 4,
+      "chosen": false,
+      "knobs": {
+        "drum_density": 0.44999999999999996,
+        "drum_kit": "trap_hard",
+        "humanize_timing": 20,
+        "humanize_velocity": 20,
+        "lead_density": 0.1
+      },
+      "score": 0.9958333333333332,
+      "seed": 48,
+      "similarity_to_prev": 1.0,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -9.3,
+            "mean_volume": -27.1
+          },
+          "high_ge4k": {
+            "max_volume": -28.8,
+            "mean_volume": -58.0
+          },
+          "low_90_200": {
+            "max_volume": -13.7,
+            "mean_volume": -29.2
+          },
+          "mid_200_4k": {
+            "max_volume": -14.5,
+            "mean_volume": -33.6
+          },
+          "rest_ge90": {
+            "max_volume": -9.8,
+            "mean_volume": -28.0
+          },
+          "sub_lt90": {
+            "max_volume": -19.3,
+            "mean_volume": -34.1
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.1dB)"
+        ],
+        "score": 0.9958333333333332
+      }
+    },
+    {
+      "acceptance_errors": [
+        "swing_percent mismatch"
+      ],
+      "acceptance_ok": false,
+      "attempt": 5,
+      "chosen": false,
+      "knobs": {
+        "drum_density": 0.4,
+        "drum_kit": "house_clean",
+        "humanize_timing": 22,
+        "humanize_velocity": 22,
+        "lead_density": 0.1
+      },
+      "score": 0.9958333333333332,
+      "seed": 49,
+      "similarity_to_prev": 0.98593996330725,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -9.2,
+            "mean_volume": -27.1
+          },
+          "high_ge4k": {
+            "max_volume": -28.8,
+            "mean_volume": -58.1
+          },
+          "low_90_200": {
+            "max_volume": -13.7,
+            "mean_volume": -29.2
+          },
+          "mid_200_4k": {
+            "max_volume": -14.6,
+            "mean_volume": -33.6
+          },
+          "rest_ge90": {
+            "max_volume": -9.8,
+            "mean_volume": -28.0
+          },
+          "sub_lt90": {
+            "max_volume": -19.3,
+            "mean_volume": -34.1
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.1dB)"
+        ],
+        "score": 0.9958333333333332
+      }
+    }
+  ],
+  "beatspec": {
+    "bpm": 92,
+    "knobs": {
+      "drum_density": 0.6,
+      "drum_kit": "boombap_dusty",
+      "humanize_timing": 12,
+      "humanize_velocity": 12,
+      "lead_density": 0.25
+    },
+    "length_bars": 32,
+    "max_attempts": 6,
+    "max_similarity": 0.92,
+    "name": "boom_bap_default",
+    "score_threshold": 0.6,
+    "seed": 44,
+    "stylepack": "boom_bap",
+    "swing_percent": 25
+  },
+  "best_attempt": null,
+  "name": "demo_boom_bap_default",
+  "pack": "boom_bap",
+  "stylepack": "boom_bap"
+}

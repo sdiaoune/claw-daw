@@ -115,6 +115,21 @@ def build_parser() -> argparse.ArgumentParser:
     gp.add_argument("--attempts", default=6, type=int, help="Max attempts (tries to satisfy novelty constraint).")
     gp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt.")
 
+    sp = sub.add_parser("stylepack", help="Generate/render a beat using a Stylepack (v1) with scoring + iteration.")
+    sp.add_argument("stylepack", help="Stylepack name (trap_2020s|boom_bap|house).")
+    sp.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.* + report).")
+    sp.add_argument("--soundfont", required=True, help="Path to GM SoundFont (.sf2) for renders")
+    sp.add_argument("--seed", default=0, type=int, help="Deterministic seed")
+    sp.add_argument("--attempts", default=6, type=int, help="Max attempts (score loop)")
+    sp.add_argument("--bars", default=32, type=int, help="Target length in bars")
+    sp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt")
+    sp.add_argument("--score-threshold", default=0.60, type=float, help="Stop early if score >= threshold")
+    sp.add_argument("--knob", action="append", default=[], help="Knob override as key=value (repeatable)")
+
+    dm = sub.add_parser("demos", help="Compile and render golden demos from demos/<style>/*.yaml")
+    dm.add_argument("action", choices=["compile", "render"], help="compile scripts or render outputs")
+    dm.add_argument("--soundfont", default=None, help="Required for render")
+
     return p
 
 
@@ -282,6 +297,50 @@ def main(argv: list[str] | None = None) -> None:
             for i, s in enumerate(res.similarities, start=1):
                 print(f"- attempt{i}: {s:.3f}")
         return
+
+    if args.cmd == "stylepack":
+        from claw_daw.stylepacks.run import run_stylepack
+        from claw_daw.stylepacks.types import BeatSpec
+
+        knobs = {}
+        for kv in list(getattr(args, "knob", []) or []):
+            if "=" not in kv:
+                continue
+            k, v = kv.split("=", 1)
+            k = k.strip()
+            v = v.strip()
+            # best-effort numeric parsing
+            if v.replace(".", "", 1).isdigit():
+                v = float(v) if "." in v else int(v)
+            knobs[k] = v
+
+        spec = BeatSpec(
+            name=str(args.out_prefix),
+            stylepack=str(args.stylepack),  # type: ignore[arg-type]
+            seed=int(args.seed),
+            max_attempts=int(args.attempts),
+            length_bars=int(args.bars),
+            knobs=knobs,
+            score_threshold=float(args.score_threshold),
+            max_similarity=float(args.max_similarity),
+        )
+
+        rep = run_stylepack(spec, out_prefix=str(args.out_prefix), soundfont=str(args.soundfont))
+        print(f"report: {rep}")
+        return
+
+    if args.cmd == "demos":
+        from claw_daw.stylepacks.tools import compile_demos, render_demos
+
+        action = str(args.action)
+        if action == "compile":
+            compile_demos()
+            return
+        if action == "render":
+            if not args.soundfont:
+                raise SystemExit("ERROR: demos render requires --soundfont")
+            render_demos(soundfont=str(args.soundfont))
+            return
 
     parser.print_help()
 

@@ -44,7 +44,9 @@ def render_spectrogram_png(in_audio: str, out_png: str, *, sample_rate: int = 44
 def band_energy_report(in_audio: str) -> dict[str, dict[str, float]]:
     """Very small 'reference analysis' helper.
 
-    Uses ffmpeg volumedetect across full-band and two crude band splits.
+    Uses ffmpeg volumedetect across full-band and crude band splits.
+
+    Keys are stable and additive (new bands may be added over time).
     """
 
     def _vol(filtergraph: str) -> dict[str, float]:
@@ -75,4 +77,8 @@ def band_energy_report(in_audio: str) -> dict[str, dict[str, float]]:
         "full": _vol("anull"),
         "sub_lt90": _vol("lowpass=f=90"),
         "rest_ge90": _vol("highpass=f=90"),
+        # Extra splits for simple spectral balance heuristics
+        "low_90_200": _vol("highpass=f=90,lowpass=f=200"),
+        "mid_200_4k": _vol("highpass=f=200,lowpass=f=4000"),
+        "high_ge4k": _vol("highpass=f=4000"),
     }

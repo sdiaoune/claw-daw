@@ -1,0 +1,293 @@
+{
+  "arrangement": {
+    "sections": [],
+    "variations": []
+  },
+  "loop_end": null,
+  "loop_start": null,
+  "name": "demo_boom_bap_default",
+  "ppq": 480,
+  "render_end": null,
+  "render_start": null,
+  "schema_version": 7,
+  "swing_percent": 25,
+  "tempo_bpm": 92,
+  "tracks": [
+    {
+      "channel": 0,
+      "chorus": 0,
+      "clips": [
+        {
+          "pattern": "d",
+          "repeats": 12,
+          "start": 0
+        }
+      ],
+      "drum_kit": "house_clean",
+      "glide_ticks": 0,
+      "humanize": {
+        "seed": 44,
+        "timing": 12,
+        "velocity": 8
+      },
+      "mute": false,
+      "name": "Drums",
+      "notes": [],
+      "pan": 64,
+      "patterns": {
+        "d": {
+          "length": 3840,
+          "name": "d",
+          "notes": [
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 480,
+              "velocity": 62
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 480,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 720,
+              "velocity": 62
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 720,
+              "velocity": 112
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 960,
+              "velocity": 62
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1200,
+              "velocity": 62
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 1200,
+              "velocity": 112
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 1440,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 1920,
+              "velocity": 62
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2400,
+              "velocity": 62
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 2400,
+              "velocity": 110
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 2640,
+              "velocity": 62
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3120,
+              "velocity": 62
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 3120,
+              "velocity": 112
+            },
+            {
+              "duration": 60,
+              "pitch": 42,
+              "start": 3360,
+              "velocity": 62
+            },
+            {
+              "duration": 120,
+              "pitch": 38,
+              "start": 3360,
+              "velocity": 110
+            },
+            {
+              "duration": 120,
+              "pitch": 36,
+              "start": 3600,
+              "velocity": 112
+            }
+          ]
+        }
+      },
+      "program": 0,
+      "reverb": 0,
+      "sampler": null,
+      "sampler_preset": "default",
+      "solo": false,
+      "volume": 112
+    },
+    {
+      "channel": 1,
+      "chorus": 0,
+      "clips": [
+        {
+          "pattern": "b",
+          "repeats": 12,
+          "start": 0
+        }
+      ],
+      "drum_kit": "trap_hard",
+      "glide_ticks": 0,
+      "humanize": {
+        "seed": 45,
+        "timing": 20,
+        "velocity": 22
+      },
+      "mute": false,
+      "name": "Bass",
+      "notes": [],
+      "pan": 64,
+      "patterns": {
+        "b": {
+          "length": 3840,
+          "name": "b",
+          "notes": [
+            {
+              "duration": 240,
+              "pitch": 45,
+              "start": 0,
+              "velocity": 91
+            },
+            {
+              "duration": 240,
+              "pitch": 45,
+              "start": 960,
+              "velocity": 94
+            },
+            {
+              "duration": 240,
+              "pitch": 52,
+              "start": 1920,
+              "velocity": 95
+            },
+            {
+              "duration": 240,
+              "pitch": 48,
+              "start": 2880,
+              "velocity": 81
+            }
+          ]
+        }
+      },
+      "program": 0,
+      "reverb": 0,
+      "sampler": "808",
+      "sampler_preset": "round",
+      "solo": false,
+      "volume": 105
+    },
+    {
+      "channel": 2,
+      "chorus": 0,
+      "clips": [
+        {
+          "pattern": "k",
+          "repeats": 12,
+          "start": 0
+        }
+      ],
+      "drum_kit": "trap_hard",
+      "glide_ticks": 0,
+      "humanize": {
+        "seed": 0,
+        "timing": 0,
+        "velocity": 0
+      },
+      "mute": false,
+      "name": "Keys",
+      "notes": [],
+      "pan": 64,
+      "patterns": {
+        "k": {
+          "length": 3840,
+          "name": "k",
+          "notes": [
+            {
+              "chance": 0.95,
+              "duration": 480,
+              "pitch": 57,
+              "start": 0,
+              "velocity": 63
+            },
+            {
+              "chance": 0.95,
+              "duration": 480,
+              "pitch": 62,
+              "start": 0,
+              "velocity": 70
+            },
+            {
+              "chance": 0.95,
+              "duration": 480,
+              "pitch": 65,
+              "start": 0,
+              "velocity": 65
+            },
+            {
+              "chance": 0.95,
+              "duration": 480,
+              "pitch": 57,
+              "start": 1920,
+              "velocity": 67
+            },
+            {
+              "chance": 0.95,
+              "duration": 480,
+              "pitch": 62,
+              "start": 1920,
+              "velocity": 58
+            },
+            {
+              "chance": 0.95,
+              "duration": 480,
+              "pitch": 65,
+              "start": 1920,
+              "velocity": 65
+            }
+          ]
+        }
+      },
+      "program": 4,
+      "reverb": 0,
+      "sampler": null,
+      "sampler_preset": "default",
+      "solo": false,
+      "volume": 100
+    }
+  ]
+}

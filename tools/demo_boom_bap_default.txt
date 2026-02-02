@@ -1,0 +1,33 @@
+new_project demo_boom_bap_default 92
+set_swing 25
+add_track Drums 0
+set_drum_kit 0 house_clean
+set_volume 0 112
+add_track Bass 0
+set_808 1 round
+set_volume 1 105
+add_track Keys 4
+set_humanize 0 timing=22 velocity=22 seed=44
+set_humanize 1 timing=20 velocity=22 seed=45
+new_pattern 0 d 2:0
+gen_drums 0 d 2:0 boom_bap seed=44 density=0.40
+set_humanize 0 timing=12 velocity=8 seed=44
+place_pattern 0 d 0:0 12
+new_pattern 1 b 2:0
+add_note_pat 1 b 45 0:0 0:0:240 91
+add_note_pat 1 b 45 0:2 0:0:240 94
+add_note_pat 1 b 52 1:0 0:0:240 95
+add_note_pat 1 b 48 1:2 0:0:240 81
+place_pattern 1 b 0:0 12
+new_pattern 2 k 2:0
+add_note_pat 2 k 57 0:0 0:1 63 chance=0.95
+add_note_pat 2 k 62 0:0 0:1 70 chance=0.95
+add_note_pat 2 k 65 0:0 0:1 65 chance=0.95
+add_note_pat 2 k 57 1:0 0:1 67 chance=0.95
+add_note_pat 2 k 62 1:0 0:1 58 chance=0.95
+add_note_pat 2 k 65 1:0 0:1 65 chance=0.95
+place_pattern 2 k 0:0 12
+save_project out/demo_boom_bap_default.json
+export_midi out/demo_boom_bap_default.mid
+export_preview_mp3 out/demo_boom_bap_default.preview.mp3 bars=8 start=0:0 preset=lofi
+export_mp3 out/demo_boom_bap_default.mp3 trim=60 preset=lofi fade=0.15

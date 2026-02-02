@@ -1,0 +1,74 @@
+{
+  "attempts": [
+    {
+      "acceptance_errors": [],
+      "acceptance_ok": true,
+      "attempt": 0,
+      "chosen": true,
+      "knobs": {
+        "drum_density": 0.82,
+        "drum_kit": "trap_hard",
+        "humanize_timing": 6,
+        "humanize_velocity": 8,
+        "lead_density": 0.55
+      },
+      "score": 0.9708333333333333,
+      "seed": 2026,
+      "similarity_to_prev": null,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -8.4,
+            "mean_volume": -18.4
+          },
+          "high_ge4k": {
+            "max_volume": -21.1,
+            "mean_volume": -56.3
+          },
+          "low_90_200": {
+            "max_volume": -10.7,
+            "mean_volume": -20.9
+          },
+          "mid_200_4k": {
+            "max_volume": -9.4,
+            "mean_volume": -23.8
+          },
+          "rest_ge90": {
+            "max_volume": -7.0,
+            "mean_volume": -19.2
+          },
+          "sub_lt90": {
+            "max_volume": -14.0,
+            "mean_volume": -25.9
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.7dB)"
+        ],
+        "score": 0.9708333333333333
+      }
+    }
+  ],
+  "beatspec": {
+    "bpm": 150,
+    "knobs": {
+      "drum_density": 0.82,
+      "drum_kit": "trap_hard",
+      "humanize_timing": 6,
+      "humanize_velocity": 8,
+      "lead_density": 0.55
+    },
+    "length_bars": 36,
+    "max_attempts": 6,
+    "max_similarity": 0.92,
+    "name": "trap_2020s_default",
+    "score_threshold": 0.62,
+    "seed": 2026,
+    "stylepack": "trap_2020s",
+    "swing_percent": 18
+  },
+  "best_attempt": 0,
+  "name": "demo_trap_2020s_default",
+  "pack": "trap",
+  "stylepack": "trap_2020s"
+}

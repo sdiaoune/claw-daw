@@ -1,0 +1,75 @@
+{
+  "attempts": [
+    {
+      "acceptance_errors": [],
+      "acceptance_ok": true,
+      "attempt": 0,
+      "chosen": true,
+      "knobs": {
+        "drum_density": 0.82,
+        "drum_kit": "house_clean",
+        "humanize_timing": 2,
+        "humanize_velocity": 6,
+        "lead_density": 0.35
+      },
+      "score": 0.833333333333333,
+      "seed": 7,
+      "similarity_to_prev": null,
+      "spectral": {
+        "bands": {
+          "full": {
+            "max_volume": -15.7,
+            "mean_volume": -34.9
+          },
+          "high_ge4k": {
+            "max_volume": -34.9,
+            "mean_volume": -54.8
+          },
+          "low_90_200": {
+            "max_volume": -26.6,
+            "mean_volume": -42.4
+          },
+          "mid_200_4k": {
+            "max_volume": -17.4,
+            "mean_volume": -36.8
+          },
+          "rest_ge90": {
+            "max_volume": -17.3,
+            "mean_volume": -35.8
+          },
+          "sub_lt90": {
+            "max_volume": -26.9,
+            "mean_volume": -42.2
+          }
+        },
+        "reasons": [
+          "too little low end (sub-rest=-6.4dB)",
+          "overall too quiet (mean=-34.9dB)"
+        ],
+        "score": 0.833333333333333
+      }
+    }
+  ],
+  "beatspec": {
+    "bpm": 124,
+    "knobs": {
+      "drum_density": 0.82,
+      "drum_kit": "house_clean",
+      "humanize_timing": 2,
+      "humanize_velocity": 6,
+      "lead_density": 0.35
+    },
+    "length_bars": 32,
+    "max_attempts": 6,
+    "max_similarity": 0.92,
+    "name": "house_default",
+    "score_threshold": 0.6,
+    "seed": 7,
+    "stylepack": "house",
+    "swing_percent": 0
+  },
+  "best_attempt": 0,
+  "name": "demo_house_default",
+  "pack": "house",
+  "stylepack": "house"
+}
