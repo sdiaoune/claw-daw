@@ -6,7 +6,9 @@ from claw_daw.prompt.types import Brief, StyleName
 
 
 _STYLE_WORDS: list[tuple[StyleName, list[str]]] = [
-    ("hiphop", ["hiphop", "hip-hop", "trap", "boom bap", "boom-bap"]),
+    ("trap", ["trap"]),
+    ("boom_bap", ["boom bap", "boom-bap"]),
+    ("hiphop", ["hiphop", "hip-hop"]),
     ("lofi", ["lofi", "lo-fi", "lo fi", "chillhop", "chill-hop"]),
     ("house", ["house", "deep house", "garage"]),
     ("techno", ["techno", "industrial", "rave"]),

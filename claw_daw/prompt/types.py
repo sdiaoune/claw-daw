@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Literal
 
 
-StyleName = Literal["hiphop", "lofi", "house", "techno", "ambient", "unknown"]
+StyleName = Literal["hiphop", "lofi", "house", "techno", "ambient", "trap", "boom_bap", "unknown"]
 
 
 @dataclass(frozen=True)

@@ -105,6 +105,23 @@ Helpful tools:
 - `select_notes` + `apply_selected` for quick edits
 - `export_preview_mp3` for faster checks
 
+### One-shot workflow (agent-first)
+When the user wants a “one-shot” (fast, good-enough v1), treat it as:
+- **Genre Pack (style preset) →** default BPM/swing/density/mastering
+- **Drum Kit + 808 preset →** sound palette
+- **Acceptance tests →** quality gate
+
+Practical recipe:
+1) Pick (or infer) the style: `hiphop | lofi | house | techno | ambient`
+2) In the script, commit to a kit and bass early:
+   - `set_kit <drum_track> <preset>`
+   - `set_808 <bass_track> <preset>` (+ `set_glide` for turnarounds)
+3) Render a short preview and run the acceptance tests below.
+4) Only then build the full arrangement.
+
+If you use `claw-daw prompt` for scaffolding, use **novelty control**:
+- `--iters N --max-similarity 0.85–0.92` to avoid near-duplicates across attempts.
+
 ---
 
 ## 5) Fast reference snippets (NOT templates)
@@ -167,22 +184,37 @@ Write this into your changelog or post:
 
 ## 8) Acceptance tests (per-genre mini-gates)
 
-These aren’t “art”—they’re guardrails.
+These aren’t “art”—they’re guardrails. Use them as a final checklist before you export.
 
-### Trap (general)
-- half-time backbeat is present
+### Universal (all styles)
+- **No broken renders**: `claw-daw --headless ...` completes cleanly and outputs JSON+MIDI+MP3.
+- **Variation**: something changes every 4–8 bars (dropouts, fills, hat language, bass turnaround, motif swap).
+- **Low end discipline**: kick and bass don’t fight (intentional gaps or alternating hits).
+
+### Trap / modern hiphop (general)
+- half-time backbeat is present (snare/clap on 3)
 - hats have controlled rolls + at least one open-hat lift per hook
-- 808 glides appear at turnarounds
+- 808 glides appear at turnarounds (or clear pitch movement)
 - hook has higher energy than verse
 
-### House
-- consistent 4-on-the-floor kick
-- bass locks to kick; no random syncopation chaos
-- hats/percs add groove without fighting the kick
+### Boom bap / lofi-ish hiphop
+- snare on 2 and 4, swing feels intentional (not random)
+- hats are quieter than snare; ghost notes don’t clutter
+- bass supports the groove without constant sustain
+
+### House / techno
+- kick is consistent and anchors the bar
+- bass locks to kick (tight call/response, no chaotic syncopation)
+- hats/percs add groove without masking the kick
 
 ### Ambient
 - slow harmonic motion, few drum transients
 - dynamics and space (reverb/bed) dominate
+
+### Prompt helper (when using `claw-daw prompt`)
+- If you ran multiple iterations, the novelty constraint is met:
+  - similarity between attempts is **≤ `--max-similarity`**
+  - if similarity stays high, lower `--max-similarity` or change constraints (style/BPM/palette).
 
 ---
 

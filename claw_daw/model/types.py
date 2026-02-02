@@ -23,6 +23,11 @@ class Note:
     pitch: int
     velocity: int = 100
 
+    # Optional: role-based drum note (expanded via track.drum_kit at render/export).
+    # When role is set, pitch is still kept as an int for backwards compatibility,
+    # but is treated as a fallback.
+    role: str | None = None
+
     # Optional note-level expressions (all deterministic):
     # - chance: probability [0..1] the note plays
     # - mute: if true, the note never plays
@@ -36,6 +41,10 @@ class Note:
     def __post_init__(self) -> None:
         if not (0 <= self.pitch <= 127):
             raise ValueError(f"pitch out of range: {self.pitch}")
+        if self.role is not None:
+            # Keep role as a normalized-ish string. Full validation happens elsewhere.
+            r = str(self.role).strip()
+            self.role = r if r else None
         if not (1 <= self.velocity <= 127):
             raise ValueError(f"velocity out of range: {self.velocity}")
         if self.start < 0:
@@ -76,6 +85,8 @@ class Note:
             "pitch": self.pitch,
             "velocity": self.velocity,
         }
+        if self.role:
+            d["role"] = str(self.role)
         if self.mute:
             d["mute"] = True
         if self.chance != 1.0:
@@ -91,8 +102,9 @@ class Note:
         return Note(
             start=int(d["start"]),
             duration=int(d["duration"]),
-            pitch=int(d["pitch"]),
+            pitch=int(d.get("pitch", 0)),
             velocity=int(d.get("velocity", 100)),
+            role=(str(d.get("role")).strip() if d.get("role", None) is not None else None),
             chance=float(d.get("chance", 1.0) or 1.0),
             mute=bool(d.get("mute", False)),
             accent=float(d.get("accent", 1.0) or 1.0),
@@ -113,6 +125,10 @@ class Track:
     # Optional sampler mode (rendered with claw_daw.audio.sampler, bypassing FluidSynth)
     # Supported: None, "drums", "808".
     sampler: str | None = None
+
+    # Drum kit name for role-based drum notes (sampler and MIDI export).
+    # Built-ins include: trap_hard, house_clean, boombap_dusty.
+    drum_kit: str = "trap_hard"
 
     # Sampler preset (built-in, deterministic). Examples: "tight", "hard", "air", "clean", "dist".
     sampler_preset: str = "default"
@@ -160,6 +176,7 @@ class Track:
             "chorus": self.chorus,
             "sampler": self.sampler,
             "sampler_preset": self.sampler_preset,
+            "drum_kit": getattr(self, "drum_kit", "trap_hard"),
             "glide_ticks": self.glide_ticks,
             "humanize": {
                 "timing": self.humanize_timing,
@@ -186,6 +203,7 @@ class Track:
             chorus=int(d.get("chorus", 0)),
             sampler=(str(d.get("sampler")).lower() if d.get("sampler", None) is not None else None),
             sampler_preset=str(d.get("sampler_preset", d.get("preset", "default")) or "default"),
+            drum_kit=str(d.get("drum_kit", "trap_hard") or "trap_hard"),
             glide_ticks=int(d.get("glide_ticks", 0) or 0),
             humanize_timing=int(human.get("timing", d.get("humanize_timing", 0) or 0)),
             humanize_velocity=int(human.get("velocity", d.get("humanize_velocity", 0) or 0)),
@@ -227,7 +245,7 @@ class Project:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 6,
+            "schema_version": 7,
             "name": self.name,
             "tempo_bpm": self.tempo_bpm,
             "ppq": self.ppq,

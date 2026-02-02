@@ -23,6 +23,7 @@ from claw_daw.io.project_json import load_project, save_project
 from claw_daw.model.types import Note, Project, Track
 from claw_daw.util.derived import bars_estimate, project_song_end_tick, song_length_seconds
 from claw_daw.util.gm import parse_program
+from claw_daw.util.drumkit import get_drum_kit, list_drum_kits
 from claw_daw.util.limits import (
     MAX_CLIPS_PER_TRACK,
     MAX_NOTES_PER_PATTERN,
@@ -246,10 +247,26 @@ class HeadlessRunner:
 
         if cmd == "set_kit":
             # set_kit <track_index> <preset>
+            # Convenience: sampler drums preset (synth timbre), not the role->MIDI kit.
             idx = int(args[0])
             proj.tracks[idx].sampler = "drums"
             proj.tracks[idx].sampler_preset = str(args[1]).strip()
             proj.dirty = True
+            return
+
+        if cmd == "set_drum_kit":
+            # set_drum_kit <track_index> <trap_hard|house_clean|boombap_dusty>
+            idx = int(args[0])
+            kit = str(args[1]).strip()
+            proj.tracks[idx].drum_kit = get_drum_kit(kit).name
+            proj.dirty = True
+            return
+
+        if cmd == "list_drum_kits":
+            # list_drum_kits
+            # Writes a deterministic, human-readable list to stdout.
+            # (Useful in headless/agent flows.)
+            print("\n".join(list_drum_kits(include_internal=False)))
             return
 
         if cmd == "set_808":
@@ -371,7 +388,20 @@ class HeadlessRunner:
                 raise RuntimeError(f"max patterns reached ({MAX_PATTERNS_PER_TRACK})")
             psrc = t.patterns[src]
             pdst = Pattern(name=dst, length=psrc.length)
-            pdst.notes = [Note(start=n.start, duration=n.duration, pitch=n.pitch, velocity=n.velocity) for n in psrc.notes]
+            pdst.notes = [
+                Note(
+                    start=n.start,
+                    duration=n.duration,
+                    pitch=n.pitch,
+                    velocity=n.velocity,
+                    role=getattr(n, "role", None),
+                    chance=getattr(n, "chance", 1.0),
+                    mute=getattr(n, "mute", False),
+                    accent=getattr(n, "accent", 1.0),
+                    glide_ticks=getattr(n, "glide_ticks", 0),
+                )
+                for n in psrc.notes
+            ]
             t.patterns[dst] = pdst
             proj.dirty = True
             return
@@ -431,7 +461,14 @@ class HeadlessRunner:
             pat = proj.tracks[ti].patterns[args[1]]
             if len(pat.notes) >= MAX_NOTES_PER_PATTERN:
                 raise RuntimeError(f"max notes/pattern reached ({MAX_NOTES_PER_PATTERN})")
-            pitch = int(args[2])
+            role: str | None = None
+            pitch = 0
+            try:
+                pitch = int(args[2])
+            except Exception:
+                role = str(args[2]).strip()
+                pitch = 0
+
             start = _tick(proj, args[3])
             dur = _tick(proj, args[4])
 
@@ -459,6 +496,7 @@ class HeadlessRunner:
                     duration=dur,
                     pitch=pitch,
                     velocity=vel,
+                    role=role,
                     chance=chance,
                     mute=mute,
                     accent=accent,
@@ -575,25 +613,59 @@ class HeadlessRunner:
 
             for s in range(steps):
                 tick = s * step
-                # hats: steady with dropouts
-                if style in {"house", "lofi", "hiphop"}:
-                    if rnd.random() < max(0.2, min(1.0, density)):
-                        pat.notes.append(Note(start=tick, duration=step // 2, pitch=hat, velocity=65))
+
+                # hats
+                if style in {"house", "lofi", "hiphop", "boom_bap"}:
+                    # 8ths for boom-bap, 16ths otherwise
+                    if style == "boom_bap":
+                        if s % 2 == 0 and rnd.random() < max(0.25, min(1.0, density)):
+                            pat.notes.append(Note(start=tick, duration=step // 2, pitch=hat, velocity=62))
+                    else:
+                        if rnd.random() < max(0.2, min(1.0, density)):
+                            pat.notes.append(Note(start=tick, duration=step // 2, pitch=hat, velocity=65))
+
+                if style == "trap":
+                    # Trap hats: dense 16ths + occasional 32nd rolls.
+                    if rnd.random() < max(0.4, min(1.0, density + 0.1)):
+                        pat.notes.append(Note(start=tick, duration=step // 2, pitch=hat, velocity=62))
+                        # roll (32nd)
+                        if rnd.random() < 0.12 * max(0.4, density):
+                            pat.notes.append(Note(start=tick + step // 2, duration=step // 4, pitch=hat, velocity=55))
 
                 # kick patterns
                 if style == "house":
+                    # four-on-the-floor
                     if s % 4 == 0:
                         pat.notes.append(Note(start=tick, duration=step, pitch=kick, velocity=110))
-                elif style == "hiphop":
-                    if s in {0, 6, 8, 14} and rnd.random() < density:
-                        pat.notes.append(Note(start=tick, duration=step, pitch=kick, velocity=115))
+                elif style in {"hiphop", "boom_bap"}:
+                    # boom-bap uses a slightly more stable downbeat kick.
+                    if style == "boom_bap":
+                        if s in {0, 6, 10, 14, 16, 22, 26, 30} and rnd.random() < density:
+                            pat.notes.append(Note(start=tick, duration=step, pitch=kick, velocity=112))
+                    else:
+                        if s in {0, 6, 8, 14} and rnd.random() < density:
+                            pat.notes.append(Note(start=tick, duration=step, pitch=kick, velocity=115))
+                elif style == "trap":
+                    # sparse + syncopated
+                    if s in {0, 3, 7, 10, 13, 16, 19, 23, 27, 31} and rnd.random() < (0.35 + 0.55 * density):
+                        pat.notes.append(Note(start=tick, duration=step, pitch=kick, velocity=118))
                 else:  # lofi
                     if s in {0, 7, 10, 14} and rnd.random() < density:
                         pat.notes.append(Note(start=tick, duration=step, pitch=kick, velocity=100))
 
-                # snare on 2 and 4
-                if s % 8 == 4:
-                    pat.notes.append(Note(start=tick, duration=step, pitch=snare, velocity=105))
+                # snares
+                if style == "trap":
+                    # halftime: beat 3 of each bar in a 2-bar pattern (steps 8, 24)
+                    if s in {8, 24}:
+                        pat.notes.append(Note(start=tick, duration=step, pitch=snare, velocity=108))
+                elif style == "boom_bap":
+                    # 2 and 4 each bar (steps 4, 12, 20, 28)
+                    if s in {4, 12, 20, 28}:
+                        pat.notes.append(Note(start=tick, duration=step, pitch=snare, velocity=110))
+                else:
+                    # snare on 2 and 4
+                    if s % 8 == 4:
+                        pat.notes.append(Note(start=tick, duration=step, pitch=snare, velocity=105))
 
             proj.dirty = True
             return

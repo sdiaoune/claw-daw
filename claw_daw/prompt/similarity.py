@@ -18,6 +18,9 @@ class ProjectFingerprint:
     velocity_hist: tuple[float, ...]
     # 64-dim hashed event bigrams (order-sensitive, coarse).
     event_hash_hist: tuple[float, ...]
+    # 64-dim hashed (track,step,pitchclass) events to reduce false positives
+    # when different role structure yields similar global histograms.
+    track_event_hash_hist: tuple[float, ...]
 
 
 def _normalize(v: list[float]) -> tuple[float, ...]:
@@ -33,12 +36,13 @@ def fingerprint_project(proj: Project) -> ProjectFingerprint:
     intervals = [0.0] * 25  # -12..+12
     vel_hist = [0.0] * 8
     ev_hash = [0.0] * 64
+    track_ev_hash = [0.0] * 64
 
     all_notes: list[tuple[int, int]] = []  # (start, pitch)
     ppq = int(proj.ppq)
     sixteenth = max(1, ppq // 4)
 
-    for t in proj.tracks:
+    for ti, t in enumerate(proj.tracks):
         # Use arranged patterns if present, else linear notes.
         if t.patterns and t.clips:
             # Expand clips quickly (best-effort): only use pattern starts.
@@ -60,6 +64,8 @@ def fingerprint_project(proj: Project) -> ProjectFingerprint:
                         v = int(getattr(n, "velocity", 100) or 100)
                         v = max(1, min(127, v))
                         vel_hist[min(7, (v - 1) // 16)] += 1.0
+                        te = (ti * 1315423911 + ((start // sixteenth) % 16) * 12 + (pitch % 12)) & 63
+                        track_ev_hash[te] += 1.0
                         all_notes.append((start, pitch))
         else:
             for n in t.notes:
@@ -74,6 +80,8 @@ def fingerprint_project(proj: Project) -> ProjectFingerprint:
                 v = int(getattr(n, "velocity", 100) or 100)
                 v = max(1, min(127, v))
                 vel_hist[min(7, (v - 1) // 16)] += 1.0
+                te = (ti * 1315423911 + ((start // sixteenth) % 16) * 12 + (pitch % 12)) & 63
+                track_ev_hash[te] += 1.0
                 all_notes.append((start, pitch))
 
     all_notes.sort(key=lambda x: x[0])
@@ -94,6 +102,7 @@ def fingerprint_project(proj: Project) -> ProjectFingerprint:
         interval_hist=_normalize(intervals),
         velocity_hist=_normalize(vel_hist),
         event_hash_hist=_normalize(ev_hash),
+        track_event_hash_hist=_normalize(track_ev_hash),
     )
 
 
@@ -114,6 +123,7 @@ def project_similarity(a: Project, b: Project) -> float:
         _cos(fa.interval_hist, fb.interval_hist),
         _cos(fa.velocity_hist, fb.velocity_hist),
         _cos(fa.event_hash_hist, fb.event_hash_hist),
+        _cos(fa.track_event_hash_hist, fb.track_event_hash_hist),
     ]
     # clamp numeric noise
     s = sum(sims) / len(sims)

@@ -57,3 +57,37 @@ def test_mute_solo_affects_export() -> None:
     # tempo + only soloed t1
     assert len(mf2.tracks) == 2
     assert any(m.type == "track_name" and m.name == "T1" for m in mf2.tracks[1])
+
+
+def test_drum_role_notes_expand_to_pitches_in_midi_export() -> None:
+    p = Project(name="Test", tempo_bpm=120)
+    d = Track(name="Drums", channel=9, program=0)
+    d.drum_kit = "trap_hard"
+
+    # Role-based snare (trap_hard maps to multiple layers).
+    d.notes.append(Note(start=0, duration=120, pitch=0, velocity=100, role="snare"))
+    p.tracks.append(d)
+
+    mf = project_to_midifile(p)
+    msgs = list(mf.tracks[1])
+    ons = [m for m in msgs if getattr(m, "type", None) == "note_on"]
+    notes = {m.note for m in ons}
+
+    # trap_hard snare layers: 38 + 40
+    assert 38 in notes
+    assert 40 in notes
+
+
+def test_project_json_round_trip_preserves_drum_role_and_kit(tmp_path: Path) -> None:
+    p = Project(name="Test", tempo_bpm=120)
+    t = Track(name="Drums", channel=9, program=0)
+    t.drum_kit = "boombap_dusty"
+    t.notes.append(Note(start=0, duration=120, pitch=0, velocity=90, role="kick"))
+    p.tracks.append(t)
+
+    out = tmp_path / "proj.json"
+    save_project(p, out)
+    loaded = load_project(out)
+
+    assert loaded.tracks[0].drum_kit == "boombap_dusty"
+    assert loaded.tracks[0].notes[0].role == "kick"

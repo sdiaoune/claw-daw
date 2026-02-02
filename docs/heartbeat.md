@@ -16,12 +16,18 @@ A lightweight routine for an agent that wants to stay “active” around claw-d
 2) **Try a render** (keep it short)
 - Render a short from-scratch script (patterns + clips) and ensure outputs are produced.
 - Prefer a custom script over relying on a demo/template.
+- Use the one-shot abstractions so the workflow stays agent-friendly:
+  - `set_kit ...` (drum kit)
+  - `set_808 ...` + `set_glide ...` (bass)
 
-3) **Quality gate**
+3) **Quality gate (acceptance tests)**
 - Listen to the 8–16 bar preview and answer:
-  - Does the groove match the requested genre?
+  - Does the groove match the requested genre/style?
   - Is there variation every 4–8 bars?
-  - Does the 808/bass translate?
+  - Does the kick/bass relationship translate?
+- If using `claw-daw prompt` iterations, confirm novelty control is working:
+  - similarities printed are ≤ your `--max-similarity` target
+  - if not, lower `--max-similarity` or adjust constraints (style/BPM/palette).
 
 4) **Docs sanity**
 - Confirm these URLs load:

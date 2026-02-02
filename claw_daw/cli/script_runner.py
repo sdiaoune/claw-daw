@@ -9,6 +9,7 @@ from pathlib import Path
 from claw_daw.arrange.types import Clip, Pattern
 from claw_daw.io.midi import export_midi
 from claw_daw.model.types import Note, Project, Track
+from claw_daw.util.drumkit import get_drum_kit
 
 
 PPQ_DEFAULT = 480
@@ -119,6 +120,13 @@ def run_script(
             p.tracks[tidx].sampler = sampler
             continue
 
+        if cmd == "set_drum_kit":
+            p = st.require_project()
+            tidx = _parse_int(args[0])
+            kit = args[1]
+            p.tracks[tidx].drum_kit = get_drum_kit(kit).name
+            continue
+
         if cmd == "set_volume":
             p = st.require_project()
             tidx = _parse_int(args[0])
@@ -149,12 +157,19 @@ def run_script(
             p = st.require_project()
             tidx = _parse_int(args[0])
             pat_name = args[1]
-            pitch = _parse_int(args[2])
+
+            role: str | None = None
+            pitch = 0
+            try:
+                pitch = _parse_int(args[2])
+            except Exception:
+                role = str(args[2]).strip()
+
             start = _parse_int(args[3])
             dur = _parse_int(args[4])
             vel = _parse_int(args[5])
             pat = p.tracks[tidx].patterns[pat_name]
-            pat.notes.append(Note(start=start, duration=dur, pitch=pitch, velocity=vel))
+            pat.notes.append(Note(start=start, duration=dur, pitch=pitch, velocity=vel, role=role))
             continue
 
         if cmd == "place_pattern":

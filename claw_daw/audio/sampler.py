@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from random import Random
 
 from claw_daw.model.types import Note, Project, Track
+from claw_daw.util.drumkit import expand_role_notes
 
 
 def _midi_to_hz(pitch: int) -> float:
@@ -61,6 +62,9 @@ def _render_drums(track: Track, *, project: Project, sample_rate: int) -> Sample
                             glide_ticks=getattr(n, "glide_ticks", 0),
                         )
                     )
+
+    # Expand role-based drum notes via the selected kit.
+    notes = expand_role_notes(notes, track=track)
 
     for n in notes:
         length_ticks = max(length_ticks, n.end)

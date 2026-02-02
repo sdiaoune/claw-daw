@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from claw_daw.model.types import Project
+from claw_daw.util.drumkit import get_drum_kit, normalize_role
 from claw_daw.util.limits import (
     MAX_CLIPS_PER_TRACK,
     MAX_NOTES_PER_PATTERN,
@@ -17,7 +18,7 @@ def clamp(v: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, int(v)))
 
 
-CURRENT_SCHEMA_VERSION = 6
+CURRENT_SCHEMA_VERSION = 7
 
 
 def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
@@ -56,6 +57,12 @@ def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
         for t in d.get("tracks", []) or []:
             t.setdefault("sampler_preset", "default")
         schema = 6
+
+    # v6 -> v7: drum kit (for role-based drum notes)
+    if schema < 7:
+        for t in d.get("tracks", []) or []:
+            t.setdefault("drum_kit", "trap_hard")
+        schema = 7
 
     d["schema_version"] = CURRENT_SCHEMA_VERSION
     return d
@@ -130,6 +137,12 @@ def validate_and_migrate_project(project: Project) -> Project:
         # sampler preset (optional; validated at render time)
         t.sampler_preset = str(getattr(t, "sampler_preset", "default") or "default")
 
+        # drum kit (role-based drums)
+        try:
+            t.drum_kit = get_drum_kit(getattr(t, "drum_kit", "trap_hard")).name
+        except Exception:
+            t.drum_kit = "trap_hard"
+
         t.glide_ticks = clamp(int(getattr(t, "glide_ticks", 0) or 0), 0, project.ppq * 2)
         t.humanize_timing = clamp(int(getattr(t, "humanize_timing", 0) or 0), 0, project.ppq // 8)
         t.humanize_velocity = clamp(int(getattr(t, "humanize_velocity", 0) or 0), 0, 30)
@@ -153,6 +166,7 @@ def validate_and_migrate_project(project: Project) -> Project:
         for n in t.notes:
             n.pitch = clamp(n.pitch, 0, 127)
             n.velocity = clamp(n.velocity, 1, 127)
+            n.role = normalize_role(getattr(n, "role", None))
             if n.start < 0:
                 n.start = 0
             if n.start > MAX_TICK:
@@ -172,6 +186,7 @@ def validate_and_migrate_project(project: Project) -> Project:
             for n in pat.notes:
                 n.pitch = clamp(n.pitch, 0, 127)
                 n.velocity = clamp(n.velocity, 1, 127)
+                n.role = normalize_role(getattr(n, "role", None))
                 if n.start < 0:
                     n.start = 0
                 if n.start > MAX_TICK:

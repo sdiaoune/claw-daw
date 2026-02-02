@@ -4,11 +4,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from random import Random
 
-import mido
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:  # pragma: no cover
+    import mido
 
 from claw_daw.arrange.variations import resolve_pattern_name
 from claw_daw.model.types import Note, Project, Track
 from claw_daw.util.groove import HumanizeSettings, humanize_notes
+from claw_daw.util.drumkit import expand_role_notes
 
 
 @dataclass
@@ -36,8 +40,10 @@ def _apply_swing_tick(tick: int, ppq: int, swing_percent: int) -> int:
 
 def _iter_track_events(
     project: Project, track_index: int, track: Track, *, ppq: int, swing_percent: int
-) -> list[tuple[int, mido.Message]]:
-    events: list[tuple[int, mido.Message]] = []
+) -> list[tuple[int, Any]]:
+    import mido  # type: ignore
+
+    events: list[tuple[int, Any]] = []
 
     # at time 0: program + basic mixer
     events.append((0, mido.Message("program_change", program=track.program, channel=track.channel)))
@@ -71,6 +77,7 @@ def _iter_track_events(
                             duration=n.duration,
                             pitch=n.pitch,
                             velocity=n.velocity,
+                            role=getattr(n, "role", None),
                             chance=getattr(n, "chance", 1.0),
                             mute=getattr(n, "mute", False),
                             accent=getattr(n, "accent", 1.0),
@@ -86,12 +93,16 @@ def _iter_track_events(
                     duration=n.duration,
                     pitch=n.pitch,
                     velocity=n.velocity,
+                    role=getattr(n, "role", None),
                     chance=getattr(n, "chance", 1.0),
                     mute=getattr(n, "mute", False),
                     accent=getattr(n, "accent", 1.0),
                     glide_ticks=getattr(n, "glide_ticks", 0),
                 )
             )
+
+    # Expand role-based drum notes via the selected kit.
+    abs_notes = expand_role_notes(abs_notes, track=track)
 
     hs = HumanizeSettings(
         timing_ticks=int(getattr(track, "humanize_timing", 0) or 0),
@@ -135,7 +146,9 @@ def _apply_mute_solo(project: Project) -> set[int]:
     return {i for i, t in enumerate(project.tracks) if not t.mute}
 
 
-def project_to_midifile(project: Project, *, allowed_tracks: set[int] | None = None) -> mido.MidiFile:
+def project_to_midifile(project: Project, *, allowed_tracks: set[int] | None = None) -> Any:
+    import mido  # type: ignore
+
     mf = mido.MidiFile(ticks_per_beat=project.ppq)
 
     tempo_track = mido.MidiTrack()

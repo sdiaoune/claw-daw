@@ -108,6 +108,13 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--render", action="store_true", help="Also render preview/mp3 using --soundfont.")
     pr.add_argument("--preview-bars", default=8, type=int, help="Preview length in bars (only if --render).")
 
+    gp = sub.add_parser("pack", help="Generate a headless script using a Genre Pack (v1).")
+    gp.add_argument("pack", help="Pack name (trap|house|boom_bap).")
+    gp.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.*).")
+    gp.add_argument("--seed", default=0, type=int, help="Deterministic seed.")
+    gp.add_argument("--attempts", default=6, type=int, help="Max attempts (tries to satisfy novelty constraint).")
+    gp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt.")
+
     return p
 
 
@@ -249,6 +256,31 @@ def main(argv: list[str] | None = None) -> None:
             print("similarities:")
             for i, s in enumerate(res.similarities, start=1):
                 print(f"- iter{i}: {s:.3f}")
+        return
+
+    if args.cmd == "pack":
+        from claw_daw.genre_packs.pipeline import generate_from_genre_pack
+        from claw_daw.genre_packs.v1 import list_packs_v1
+
+        try:
+            res = generate_from_genre_pack(
+                str(args.pack),
+                out_prefix=str(args.out_prefix),
+                max_attempts=int(args.attempts),
+                seed=int(args.seed),
+                max_similarity=float(args.max_similarity),
+            )
+        except KeyError as e:
+            raise SystemExit(f"ERROR: {e}")
+        except Exception as e:
+            # surface available packs for UX
+            raise SystemExit(f"ERROR: {e}\nAvailable packs: {', '.join(list_packs_v1())}")
+
+        print(f"wrote: {res.script_path}")
+        if res.similarities:
+            print("similarities:")
+            for i, s in enumerate(res.similarities, start=1):
+                print(f"- attempt{i}: {s:.3f}")
         return
 
     parser.print_help()

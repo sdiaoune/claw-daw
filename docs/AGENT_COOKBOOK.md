@@ -33,12 +33,22 @@ This mirrors how a good producer works: intent → arrangement → sound choices
 
 claw-daw includes an **offline prompt→script helper** for quick scaffolding. It’s best treated as a starting point, not the final result.
 
+Key features for one-shot agent workflows:
+- **Genre Packs (style presets):** the prompt parser infers a `style` and applies defaults (BPM, swing, drum density, mastering preset).
+  - Supported styles: `hiphop | lofi | house | techno | ambient` (fallback: `unknown`)
+- **Novelty control:** the generator can iterate and enforce that each attempt is **different enough** from the previous one via similarity scoring.
+
 ```bash
 claw-daw prompt --out prompt_v1 \
-  --prompt "late-night hiphop at 74bpm, dark, A minor" \
-  --iters 3 --max-similarity 0.92
+  --prompt "lofi, dusty, 82bpm, Rhodes chords, soft hats" \
+  --seed 7 --iters 6 --max-similarity 0.88
 # tools/prompt_v1.txt
+# out/prompt_v1.preview.mp3 (if --render)
 ```
+
+Notes:
+- Lower `--max-similarity` ⇒ stronger novelty requirement (more change between attempts).
+- For deterministic A/B tests, keep `--seed` fixed and only change one constraint at a time.
 
 ## Time model (ticks / PPQ)
 
@@ -121,7 +131,32 @@ save_project demo.json
 dump_state demo_state.json
 ```
 
-## Drum generation utility
+## Drum Kits + drum generation
+
+### Drum Kits (sampler)
+For agent-friendly scripts, prefer the kit/bass abstractions:
+- `set_kit <track_index> <preset>` — selects the built-in drum sampler and labels the kit preset
+- `set_808 <track_index> <preset>` — selects the built-in 808 sampler preset
+- `set_glide <track_index> <ticks|bar:beat>` — portamento for the 808 sampler
+
+This keeps “sound choice” separate from “notes,” which is useful for one-shot generation + revisions.
+
+### Drum kits (role → MIDI mapping)
+Separately from sampler presets, you can choose a deterministic **drum kit mapping** for role-based drum notes:
+- `set_drum_kit <track_index> <trap_hard|house_clean|boombap_dusty>`
+- `add_note_pat <track> <pattern> <pitch|role> ...`
+
+Example:
+```txt
+add_track Drums 0
+set_sampler 0 drums
+set_drum_kit 0 trap_hard
+new_pattern 0 d 2:0
+add_note_pat 0 d kick 0:0 0:0:180 115
+add_note_pat 0 d snare 0:2 0:0:150 98
+```
+
+### Drum generation utility
 
 `gen_drums <track> <pattern> <length_ticks> <style> seed=0 density=0.8`
 

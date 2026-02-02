@@ -186,6 +186,15 @@ If a track is in sampler mode, you can choose a preset:
 - `set_sampler_preset <track_index> <preset>`
 - convenience: `set_kit <track_index> <preset>` and `set_808 <track_index> <preset>`
 
+### Drum kits (role → MIDI mapping)
+For drum tracks, you can select a deterministic drum kit that maps canonical *roles* to one or more MIDI notes (layers):
+- `set_drum_kit <track_index> <trap_hard|house_clean|boombap_dusty>`
+- `list_drum_kits`
+
+When adding pattern notes, you may pass a role instead of a numeric pitch:
+- `add_note_pat 0 d kick 0:0 0:0:180 110`
+- `add_note_pat 0 d snare 0:2 0:0:150 95`
+
 Examples:
 - 808 presets: `clean` (default), `dist`, `growl`
 
@@ -199,7 +208,7 @@ You can also use `bar:beat:tick` (e.g. `1:2:120`).
 
 ### Patterns / arrangement
 - `new_pattern <track> <name> <length>`
-- `add_note_pat <track> <pattern> <pitch> <start> <dur> [vel] [chance=..] [mute=0|1] [accent=..] [glide_ticks=..]`
+- `add_note_pat <track> <pattern> <pitch|role> <start> <dur> [vel] [chance=..] [mute=0|1] [accent=..] [glide_ticks=..]`
 - `place_pattern <track> <pattern> <start> [repeats]`
 
 `<length>`/`<start>`/`<dur>` support ticks or bar:beat syntax.

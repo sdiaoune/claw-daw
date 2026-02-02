@@ -18,7 +18,11 @@ Offline, deterministic, terminal-first MIDI DAW.
   - note expressions (`chance`, `accent`, `mute`, `glide_ticks`)
   - select/apply edits (`select_notes`, `apply_selected`)
   - validate/diff/analyze helpers
-- **Sampler** (offline): built-in `drums` + `808` (with glide + tone presets)
+- **Sampler** (offline): built-in `drums` + `808`
+  - **Drum Kits**: `set_kit <track> <preset>` (agent-friendly kit selection)
+  - **808 presets**: `set_808 <track> <preset>` + `set_glide` for portamento
+- **Prompt → script helper** (offline): style-aware scaffolding with **novelty control** (`--max-similarity`)
+  - Supported styles behave like **Genre Packs**: `hiphop | lofi | house | techno | ambient`
 - **MIDI out**: play to hardware/virtual MIDI ports (`claw-daw play`)
 
 ## Install
@@ -81,12 +85,21 @@ new_project minimal_demo 140
 set_swing 16
 
 add_track Drums 0
-set_sampler 0 drums
+set_kit 0 tight
+
+add_track 808 0
+set_808 1 dist
+set_glide 1 0:0:90
 
 new_pattern 0 d1 2:0
 add_note_pat 0 d1 36 0:0 0:0:180 112
 add_note_pat 0 d1 38 0:2 0:0:180 108
 place_pattern 0 d1 0:0 16
+
+# (optional) a single bar bass pickup
+new_pattern 1 b1 1:0
+add_note_pat 1 b1 33 0:2 0:1:0 112
+place_pattern 1 b1 0:0 16
 
 save_project out/minimal_demo.json
 export_midi out/minimal_demo.mid
