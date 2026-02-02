@@ -1,0 +1,16 @@
+{
+  "name": "claw-daw",
+  "version": "0.0.0",
+  "description": "Offline, deterministic, terminal-first MIDI DAW (TUI + headless scripts)",
+  "homepage": "https://www.clawdaw.com/",
+  "repository": "https://github.com/sdiaoune/claw-daw",
+  "files": {
+    "skill_md": "https://www.clawdaw.com/skill.md",
+    "heartbeat_md": "https://www.clawdaw.com/heartbeat.md",
+    "skill_json": "https://www.clawdaw.com/skill.json"
+  },
+  "install": {
+    "linux": "curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash",
+    "macos": "curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash"
+  }
+}
