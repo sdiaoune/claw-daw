@@ -23,7 +23,8 @@ MASTER_PRESETS: dict[str, MasterPreset] = {
     # "demo" is intentionally a bit louder/brighter.
     "demo": MasterPreset(
         name="demo",
-        afilter="highpass=f=30,acompressor=threshold=-20dB:ratio=3:attack=3:release=40,eq=f=9000:t=h:w=2:g=2,alimiter=limit=0.98",
+        # Use equalizer (3-band style) for broad high-shelf-ish lift (more compatible than eq=t=h).
+        afilter="highpass=f=30,acompressor=threshold=-20dB:ratio=3:attack=3:release=40,equalizer=f=9000:t=h:width_type=o:width=2:g=2,alimiter=limit=0.98",
     ),
     # Lofi macro: bandlimit + saturation-ish + noise gate.
     "lofi": MasterPreset(
