@@ -115,12 +115,16 @@ def main(argv: list[str] | None = None) -> None:
             raise SystemExit("ERROR: --headless requires --script <path>")
         if not args.soundfont:
             raise SystemExit("ERROR: --headless requires --soundfont <path-to.sf2>")
-        from claw_daw.cli.script_runner import run_script
+
+        # Use the agent-friendly headless runner (supports bar:beat, transforms, select/apply, streaming exports).
+        from claw_daw.cli.headless import HeadlessRunner
 
         script = Path(args.script).expanduser().resolve()
         base = script.parent
         lines = script.read_text(encoding="utf-8").splitlines()
-        _ = run_script(lines, base_dir=base, default_soundfont=Path(args.soundfont).expanduser().resolve())
+
+        r = HeadlessRunner(soundfont=str(Path(args.soundfont).expanduser().resolve()), strict=True)
+        r.run_lines(lines, base_dir=base)
         return
 
     if args.cmd == "doctor":
