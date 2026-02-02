@@ -24,6 +24,10 @@ Always produce:
 - `out/<name>.mid` (MIDI)
 - `out/<name>.mp3` (audio)
 
+**Do not overwrite prior work:**
+- Use a unique `<name>` per beat/song (date + genre + bpm + version).
+- If files already exist for that prefix, bump the version (`_v2`, `_v3`, …).
+
 Also include a short **change log** if it’s a revision.
 
 ---

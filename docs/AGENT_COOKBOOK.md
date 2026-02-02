@@ -25,9 +25,10 @@ This mirrors how a good producer works: intent → arrangement → sound choices
 
 ### Minimal agent loop
 
-1) Write `tools/<name>.txt`
-2) Render: `claw-daw --headless --soundfont <SF2> --script tools/<name>.txt`
-3) Iterate: change the script (or use `select_notes` + `apply_selected`) and rerender.
+1) Pick a **unique output prefix** (to avoid overwriting): `YYYY-MM-DD_<genre>_<bpm>_v1`
+2) Write `tools/<name>.txt`
+3) Render: `claw-daw --headless --soundfont <SF2> --script tools/<name>.txt`
+4) Iterate: change the script and rerender to a **new version** (`_v2`, `_v3`, …) so old renders remain available.
 
 ## Optional: claw-daw prompt (helper, not a replacement)
 

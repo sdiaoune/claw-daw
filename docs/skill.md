@@ -38,8 +38,25 @@ claw-daw doctor
 # Render a headless script
 claw-daw --headless \
   --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
-  --script tools/my_song.txt
+  --script tools/<unique_name>.txt
 ```
+
+## Output naming / overwrite prevention (MANDATORY)
+
+claw-daw exports are file-based. If you reuse the same `<name>` / `--out` prefix, you will overwrite:
+- `out/<name>.mp3`
+- `out/<name>.mid`
+- `out/<name>.json`
+- `out/<name>.report.json` (stylepacks)
+
+**Rule:** every new beat/song must use a **unique output prefix**.
+
+**Recommended naming convention:**
+- `<yyyy-mm-dd>_<genre>_<bpm>_v<nn>` (example: `2026-02-02_trap_150_v1`)
+
+**When revising the same song:** increment the version (`_v2`, `_v3`) and keep prior files.
+
+**Agent requirement:** before rendering, the agent must check whether any of these files already exist for the chosen prefix and, if so, pick a new prefix (or ask the user).
 
 ## One-shot features (agent-first)
 
