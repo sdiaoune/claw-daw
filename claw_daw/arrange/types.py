@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-# NOTE: avoid importing Note here to prevent circular imports. Import lazily inside methods.
+if TYPE_CHECKING:
+    from claw_daw.model.types import Note
+
+# NOTE: avoid importing Note at runtime here to prevent circular imports.
 
 
 @dataclass
 class Pattern:
     name: str
     length: int  # ticks
-    notes: list["Note"] = field(default_factory=list)
+    notes: list[Note] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.length <= 0:

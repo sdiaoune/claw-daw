@@ -6,6 +6,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from random import Random
 
+from claw_daw.arrange.sections import Section, Variation
+from claw_daw.arrange.transform import reverse as pat_reverse
+from claw_daw.arrange.transform import shift as pat_shift
+from claw_daw.arrange.transform import stretch as pat_stretch
+from claw_daw.arrange.transform import transpose as pat_transpose
+from claw_daw.arrange.transform import velocity_scale as pat_vel
 from claw_daw.arrange.types import Clip, Pattern
 from claw_daw.audio.encode import encode_audio
 from claw_daw.audio.mastering import MASTER_PRESETS, master_wav
@@ -26,6 +32,9 @@ from claw_daw.util.limits import (
 )
 from claw_daw.util.quantize import parse_grid, quantize_project_track
 from claw_daw.util.region import slice_project_range
+from claw_daw.util.timecode import parse_timecode_ticks
+from claw_daw.util.reference import analyze_references
+from claw_daw.util.validate import validate_and_migrate_project
 
 
 @dataclass
@@ -49,6 +58,10 @@ def _default_export_path(project: Project, ext: str, *, out_dir: str = "out") ->
 
 def _ticks_per_bar(project: Project) -> int:
     return int(project.ppq) * 4
+
+
+def _tick(proj: Project, s: str) -> int:
+    return parse_timecode_ticks(proj, s)
 
 
 class HeadlessRunner:
@@ -136,7 +149,7 @@ class HeadlessRunner:
             cover.write_text(
                 "\n".join(
                     [
-                        f"claw-daw demo",
+                        "claw-daw demo",
                         f"style: {style}",
                         f"project: {proj.name}",
                         f"tempo_bpm: {proj.tempo_bpm}",
@@ -220,14 +233,35 @@ class HeadlessRunner:
             proj.dirty = True
             return
 
+        if cmd == "set_glide":
+            # set_glide <track_index> <ticks|bar:beat>
+            idx = int(args[0])
+            proj.tracks[idx].glide_ticks = max(0, _tick(proj, args[1]))
+            proj.dirty = True
+            return
+
+        if cmd == "set_humanize":
+            # set_humanize <track_index> timing=<ticks> velocity=<0-30> seed=<int>
+            idx = int(args[0])
+            t = proj.tracks[idx]
+            for a in args[1:]:
+                if a.startswith("timing="):
+                    t.humanize_timing = max(0, int(a.split("=", 1)[1]))
+                if a.startswith("velocity="):
+                    t.humanize_velocity = max(0, int(a.split("=", 1)[1]))
+                if a.startswith("seed="):
+                    t.humanize_seed = int(a.split("=", 1)[1])
+            proj.dirty = True
+            return
+
         if cmd == "set_swing":
             proj.swing_percent = max(0, min(75, int(args[0])))
             proj.dirty = True
             return
 
         if cmd == "set_loop":
-            proj.loop_start = int(args[0])
-            proj.loop_end = int(args[1])
+            proj.loop_start = _tick(proj, args[0])
+            proj.loop_end = _tick(proj, args[1])
             proj.dirty = True
             return
         if cmd == "clear_loop":
@@ -237,8 +271,8 @@ class HeadlessRunner:
             return
 
         if cmd == "set_render_region":
-            proj.render_start = int(args[0])
-            proj.render_end = int(args[1])
+            proj.render_start = _tick(proj, args[0])
+            proj.render_end = _tick(proj, args[1])
             proj.dirty = True
             return
         if cmd == "clear_render_region":
@@ -253,8 +287,8 @@ class HeadlessRunner:
             if len(proj.tracks[ti].notes) >= MAX_NOTES_PER_TRACK:
                 raise RuntimeError(f"max notes reached ({MAX_NOTES_PER_TRACK})")
             pitch = int(args[1])
-            start = int(args[2])
-            dur = int(args[3])
+            start = _tick(proj, args[2])
+            dur = _tick(proj, args[3])
             vel = int(args[4]) if len(args) > 4 else 100
             proj.tracks[ti].notes.append(Note(start=start, duration=dur, pitch=pitch, velocity=vel))
             proj.dirty = True
@@ -267,7 +301,7 @@ class HeadlessRunner:
             if len(proj.tracks[ti].patterns) >= MAX_PATTERNS_PER_TRACK:
                 raise RuntimeError(f"max patterns reached ({MAX_PATTERNS_PER_TRACK})")
             name = args[1]
-            length = int(args[2])
+            length = _tick(proj, args[2])
             proj.tracks[ti].patterns[name] = Pattern(name=name, length=length)
             proj.dirty = True
             return
@@ -315,14 +349,63 @@ class HeadlessRunner:
             proj.dirty = True
             return
 
+        if cmd == "pattern_transpose":
+            # pattern_transpose <track> <pattern> <semitones>
+            ti = int(args[0])
+            name = args[1]
+            semi = int(args[2])
+            t = proj.tracks[ti]
+            t.patterns[name] = pat_transpose(t.patterns[name], semi)
+            proj.dirty = True
+            return
+
+        if cmd == "pattern_shift":
+            # pattern_shift <track> <pattern> <ticks>
+            ti = int(args[0])
+            name = args[1]
+            ticks = _tick(proj, args[2])
+            t = proj.tracks[ti]
+            t.patterns[name] = pat_shift(t.patterns[name], ticks)
+            proj.dirty = True
+            return
+
+        if cmd == "pattern_stretch":
+            # pattern_stretch <track> <pattern> <factor>
+            ti = int(args[0])
+            name = args[1]
+            factor = float(args[2])
+            t = proj.tracks[ti]
+            t.patterns[name] = pat_stretch(t.patterns[name], factor)
+            proj.dirty = True
+            return
+
+        if cmd == "pattern_reverse":
+            # pattern_reverse <track> <pattern>
+            ti = int(args[0])
+            name = args[1]
+            t = proj.tracks[ti]
+            t.patterns[name] = pat_reverse(t.patterns[name])
+            proj.dirty = True
+            return
+
+        if cmd == "pattern_vel":
+            # pattern_vel <track> <pattern> <scale>
+            ti = int(args[0])
+            name = args[1]
+            scale = float(args[2])
+            t = proj.tracks[ti]
+            t.patterns[name] = pat_vel(t.patterns[name], scale)
+            proj.dirty = True
+            return
+
         if cmd == "add_note_pat":
             ti = int(args[0])
             pat = proj.tracks[ti].patterns[args[1]]
             if len(pat.notes) >= MAX_NOTES_PER_PATTERN:
                 raise RuntimeError(f"max notes/pattern reached ({MAX_NOTES_PER_PATTERN})")
             pitch = int(args[2])
-            start = int(args[3])
-            dur = int(args[4])
+            start = _tick(proj, args[3])
+            dur = _tick(proj, args[4])
             vel = int(args[5]) if len(args) > 5 else 100
             pat.notes.append(Note(start=start, duration=dur, pitch=pitch, velocity=vel))
             proj.dirty = True
@@ -334,7 +417,7 @@ class HeadlessRunner:
             if len(t.clips) >= MAX_CLIPS_PER_TRACK:
                 raise RuntimeError(f"max clips reached ({MAX_CLIPS_PER_TRACK})")
             name = args[1]
-            start = int(args[2])
+            start = _tick(proj, args[2])
             reps = int(args[3]) if len(args) > 3 else 1
             t.clips.append(Clip(pattern=name, start=start, repeats=reps))
             proj.dirty = True
@@ -344,7 +427,7 @@ class HeadlessRunner:
             # move_clip <track> <clip_index> <new_start>
             ti = int(args[0])
             ci = int(args[1])
-            proj.tracks[ti].clips[ci].start = int(args[2])
+            proj.tracks[ti].clips[ci].start = _tick(proj, args[2])
             proj.dirty = True
             return
 
@@ -383,13 +466,30 @@ class HeadlessRunner:
             proj.dirty = True
             return
 
+        if cmd == "add_section":
+            # add_section <name> <start> <length>
+            name = args[0]
+            start = _tick(proj, args[1])
+            length = _tick(proj, args[2])
+            proj.sections.append(Section(name=name, start=start, length=length))
+            proj.dirty = True
+            return
+
+        if cmd == "add_variation":
+            # add_variation <section_name> <track_index> <src_pattern> <dst_pattern>
+            sec = args[0]
+            ti = int(args[1])
+            proj.variations.append(Variation(section=sec, track_index=ti, src_pattern=args[2], dst_pattern=args[3]))
+            proj.dirty = True
+            return
+
         # -------- generators --------
 
         if cmd == "gen_drums":
             # gen_drums <track> <pattern> <length_ticks> <style> [seed=0] [density=0.8]
             ti = int(args[0])
             name = args[1]
-            length = int(args[2])
+            length = _tick(proj, args[2])
             style = args[3].lower()
             seed = 0
             density = 0.8
@@ -680,6 +780,29 @@ class HeadlessRunner:
             )
 
             tmp_wav.unlink(missing_ok=True)
+            return
+
+        if cmd == "analyze_refs":
+            # analyze_refs <out.json>
+            out = Path(args[0])
+            issues = [i.__dict__ for i in analyze_references(proj)]
+            out.write_text(__import__("json").dumps({"issues": issues}, indent=2, sort_keys=True) + "\n")
+            return
+
+        if cmd == "validate_project":
+            # validate_project (in-place, best-effort)
+            self.ctx.project = validate_and_migrate_project(proj)
+            self.ctx.project.dirty = True
+            return
+
+        if cmd == "diff_projects":
+            # diff_projects <a.json> <b.json> <out.diff>
+            import difflib
+
+            a = Path(args[0]).read_text(encoding="utf-8").splitlines(keepends=True)
+            b = Path(args[1]).read_text(encoding="utf-8").splitlines(keepends=True)
+            diff = difflib.unified_diff(a, b, fromfile=args[0], tofile=args[1])
+            Path(args[2]).write_text("".join(diff), encoding="utf-8")
             return
 
         if cmd == "dump_state":

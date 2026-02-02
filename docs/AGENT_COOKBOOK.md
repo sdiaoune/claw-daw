@@ -108,7 +108,7 @@ Audio export uses:
 - `ffmpeg` for mastering + encoding
 
 Commands:
-- `export_wav [path] preset=demo|clean|loud fade=0.15 trim=60`
+- `export_wav [path] preset=demo|clean|lofi fade=0.15 trim=60`
 - `export_mp3 [path] preset=...`
 - `export_m4a [path] preset=...`
 - `export_stems <dir>`

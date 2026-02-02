@@ -11,7 +11,7 @@ venv/
 out/
 out_v2/
 tmp_export/
-audio/
+/audio/
 spectrograms/
 *.wav
 *.mp3
@@ -37,6 +37,9 @@ IDENTITY.md
 SOUL.md
 TOOLS.md
 USER.md
+
+# OpenClaw local state
+.clawdhub/
 
 # Misc
 .DS_Store

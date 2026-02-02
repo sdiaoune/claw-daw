@@ -13,4 +13,12 @@ claw-daw
 
 ## Notes
 - 100% offline core (no network APIs).
-- Projects will be stored as human-readable JSON and exported to .mid/.wav.
+- Projects are stored as human-readable JSON (schema v5) and exported to .mid/.wav/.mp3/.m4a.
+- Rendering pipeline:
+  - SoundFont tracks via FluidSynth
+  - Built-in sampler tracks: `drums` + `808` (with glide)
+  - Deterministic mastering presets via ffmpeg (`demo|clean|lofi`)
+- Agent-friendly ergonomics:
+  - bar:beat syntax for time args (e.g. `2:0`)
+  - pattern transform primitives
+  - reference analysis + diff/validation commands

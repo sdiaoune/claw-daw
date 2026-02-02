@@ -17,7 +17,7 @@ def clamp(v: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, int(v)))
 
 
-CURRENT_SCHEMA_VERSION = 4
+CURRENT_SCHEMA_VERSION = 5
 
 
 def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
@@ -42,6 +42,15 @@ def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
         d.setdefault("render_end", None)
         schema = 3
 
+    # v3/v4 -> v5: arrangement + track humanize/glide fields
+    if schema < 5:
+        d.setdefault("arrangement", {"sections": [], "variations": []})
+        for t in d.get("tracks", []) or []:
+            t.setdefault("glide_ticks", 0)
+            # new preferred shape
+            t.setdefault("humanize", {"timing": 0, "velocity": 0, "seed": 0})
+        schema = 5
+
     d["schema_version"] = CURRENT_SCHEMA_VERSION
     return d
 
@@ -55,6 +64,10 @@ def validate_and_migrate_project(project: Project) -> Project:
     project.tempo_bpm = clamp(project.tempo_bpm, 20, 400)
     project.ppq = clamp(project.ppq, 24, 1920)
     project.swing_percent = clamp(getattr(project, "swing_percent", 0), 0, 75)
+
+    # arrangement metadata (safe defaults)
+    project.sections = list(getattr(project, "sections", []) or [])
+    project.variations = list(getattr(project, "variations", []) or [])
 
     # hard limits
     if len(project.tracks) > MAX_TRACKS:
@@ -107,6 +120,11 @@ def validate_and_migrate_project(project: Project) -> Project:
         else:
             s = str(sm).strip().lower()
             t.sampler = s if s in {"drums", "808"} else None
+
+        t.glide_ticks = clamp(int(getattr(t, "glide_ticks", 0) or 0), 0, project.ppq * 2)
+        t.humanize_timing = clamp(int(getattr(t, "humanize_timing", 0) or 0), 0, project.ppq // 8)
+        t.humanize_velocity = clamp(int(getattr(t, "humanize_velocity", 0) or 0), 0, 30)
+        t.humanize_seed = int(getattr(t, "humanize_seed", 0) or 0)
 
         # ensure patterns dictionary is sane
         t.patterns = dict(getattr(t, "patterns", {}) or {})

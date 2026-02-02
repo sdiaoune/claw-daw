@@ -144,13 +144,18 @@ You can also use common GM names like `piano`, `bass`, etc.
 
 ### Timing
 - `set_swing <0-75>`
-- `set_loop <start_ticks> <end_ticks>` / `clear_loop`
-- `set_render_region <start_ticks> <end_ticks>` / `clear_render_region`
+- `set_loop <start> <end>` / `clear_loop`
+- `set_render_region <start> <end>` / `clear_render_region`
+
+`<start>`/`<end>` can be raw ticks (`960`) **or** bar:beat timecodes (`2:0` == bar 2 beat 0 in 4/4).
+You can also use `bar:beat:tick` (e.g. `1:2:120`).
 
 ### Patterns / arrangement
-- `new_pattern <track> <name> <length_ticks>`
+- `new_pattern <track> <name> <length>`
 - `add_note_pat <track> <pattern> <pitch> <start> <dur> [vel]`
-- `place_pattern <track> <pattern> <start_tick> [repeats]`
+- `place_pattern <track> <pattern> <start> [repeats]`
+
+`<length>`/`<start>`/`<dur>` support ticks or bar:beat syntax.
 
 Editing clips/patterns:
 - `move_clip <track> <clip_index> <new_start>`
@@ -161,6 +166,13 @@ Editing clips/patterns:
 - `delete_pattern <track> <name>`
 - `clear_clips <track>`
 
+Pattern transform primitives:
+- `pattern_transpose <track> <pattern> <semitones>`
+- `pattern_shift <track> <pattern> <ticks|bar:beat>`
+- `pattern_stretch <track> <pattern> <factor>`
+- `pattern_reverse <track> <pattern>`
+- `pattern_vel <track> <pattern> <scale>`
+
 ### Drum generator
 - `gen_drums <track> <pattern> <length_ticks> <style> seed=0 density=0.8`
 
@@ -168,9 +180,9 @@ Styles: `hiphop|lofi|house`
 
 ### Export
 - `export_midi <path>`
-- `export_wav [path] preset=demo|clean|loud fade=0.15 trim=60 sr=44100`
-- `export_mp3 [path] preset=demo|clean|loud fade=0.15 trim=60 sr=44100 br=192k`
-- `export_m4a [path] preset=demo|clean|loud fade=0.15 trim=60 sr=44100 br=192k`
+- `export_wav [path] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100`
+- `export_mp3 [path] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k`
+- `export_m4a [path] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k`
 - `export_stems <dir>`
 
 Notes:
@@ -187,6 +199,8 @@ Sampler mode is currently **restricted** to built-in sampler types.
 Command:
 
 - `set_sampler <track_index> <drums|808|none>`
+- `set_glide <track_index> <ticks|bar:beat>` (808 only)
+- `set_humanize <track_index> timing=<ticks> velocity=<ticks> seed=<int>`
 
 This is meant for:
 - drum hits: kick/snare/hat/percs
@@ -195,6 +209,26 @@ This is meant for:
 **Not yet supported**:
 - browsing/loading a `.zip` sample pack directly from the TUI
 - multi-sampled “real instruments” sample libraries (unless packaged as a SoundFont)
+
+---
+
+## Arrangement helpers: sections + variations
+
+These are optional metadata you can use to label parts and swap patterns per section.
+
+- `add_section <name> <start> <length>`
+- `add_variation <section_name> <track_index> <src_pattern> <dst_pattern>`
+
+At export time, if a clip starts inside a section with a matching variation rule,
+`src_pattern` is replaced with `dst_pattern` for that track.
+
+## Agent-native utilities (lint/diff/validation)
+
+These commands are designed for automated workflows:
+
+- `analyze_refs <out.json>` — detect missing pattern references / unused patterns
+- `validate_project` — best-effort clamp/migrate in-memory project
+- `diff_projects <a.json> <b.json> <out.diff>` — produce a unified diff
 
 ---
 

@@ -5,7 +5,9 @@ from pathlib import Path
 
 import mido
 
-from claw_daw.model.types import Project, Track
+from claw_daw.arrange.variations import resolve_pattern_name
+from claw_daw.model.types import Note, Project, Track
+from claw_daw.util.groove import HumanizeSettings, humanize_notes
 
 
 @dataclass
@@ -31,7 +33,9 @@ def _apply_swing_tick(tick: int, ppq: int, swing_percent: int) -> int:
     return tick
 
 
-def _iter_track_events(track: Track, *, ppq: int, swing_percent: int) -> list[tuple[int, mido.Message]]:
+def _iter_track_events(
+    project: Project, track_index: int, track: Track, *, ppq: int, swing_percent: int
+) -> list[tuple[int, mido.Message]]:
     events: list[tuple[int, mido.Message]] = []
 
     # at time 0: program + basic mixer
@@ -41,49 +45,46 @@ def _iter_track_events(track: Track, *, ppq: int, swing_percent: int) -> list[tu
     events.append((0, mido.Message("control_change", control=91, value=track.reverb, channel=track.channel)))
     events.append((0, mido.Message("control_change", control=93, value=track.chorus, channel=track.channel)))
 
-    # Render arrangement if present, else fall back to legacy linear notes
+    # Flatten arrangement to absolute notes, apply swing, then (optionally) humanize.
+    abs_notes: list[Note] = []
+
     if track.clips and track.patterns:
         for clip in track.clips:
-            pat = track.patterns.get(clip.pattern)
+            pat_name = resolve_pattern_name(
+                base_pattern=clip.pattern,
+                track_index=track_index,
+                tick=clip.start,
+                sections=list(getattr(project, "sections", []) or []),
+                variations=list(getattr(project, "variations", []) or []),
+            )
+            pat = track.patterns.get(pat_name)
             if not pat:
                 continue
             for rep in range(clip.repeats):
                 base = clip.start + rep * pat.length
-                for note in pat.notes:
-                    start = _apply_swing_tick(base + note.start, ppq, swing_percent)
-                    end = start + note.duration
-                    events.append(
-                        (
-                            start,
-                            mido.Message(
-                                "note_on",
-                                note=note.pitch,
-                                velocity=note.velocity,
-                                channel=track.channel,
-                            ),
-                        )
-                    )
-                    events.append(
-                        (
-                            end,
-                            mido.Message(
-                                "note_off",
-                                note=note.pitch,
-                                velocity=0,
-                                channel=track.channel,
-                            ),
-                        )
-                    )
+                for n in pat.notes:
+                    start = _apply_swing_tick(base + n.start, ppq, swing_percent)
+                    abs_notes.append(Note(start=start, duration=n.duration, pitch=n.pitch, velocity=n.velocity))
     else:
-        for note in track.notes:
-            start = _apply_swing_tick(note.start, ppq, swing_percent)
-            end = start + note.duration
-            events.append(
-                (start, mido.Message("note_on", note=note.pitch, velocity=note.velocity, channel=track.channel))
+        for n in track.notes:
+            start = _apply_swing_tick(n.start, ppq, swing_percent)
+            abs_notes.append(Note(start=start, duration=n.duration, pitch=n.pitch, velocity=n.velocity))
+
+    hs = HumanizeSettings(
+        timing_ticks=int(getattr(track, "humanize_timing", 0) or 0),
+        velocity=int(getattr(track, "humanize_velocity", 0) or 0),
+        seed=int(getattr(track, "humanize_seed", 0) or 0),
+    )
+    abs_notes = humanize_notes(abs_notes, settings=hs)
+
+    for n in abs_notes:
+        events.append(
+            (
+                n.start,
+                mido.Message("note_on", note=n.pitch, velocity=n.velocity, channel=track.channel),
             )
-            events.append(
-                (end, mido.Message("note_off", note=note.pitch, velocity=0, channel=track.channel))
-            )
+        )
+        events.append((n.end, mido.Message("note_off", note=n.pitch, velocity=0, channel=track.channel)))
 
     # stable ordering: by time then note_off after note_on.
     events.sort(key=lambda x: (x[0], 1 if x[1].type == "note_off" else 0))
@@ -113,7 +114,7 @@ def project_to_midifile(project: Project, *, allowed_tracks: set[int] | None = N
         mt = mido.MidiTrack()
         mt.append(mido.MetaMessage("track_name", name=track.name, time=0))
 
-        events = _iter_track_events(track, ppq=project.ppq, swing_percent=project.swing_percent)
+        events = _iter_track_events(project, idx, track, ppq=project.ppq, swing_percent=project.swing_percent)
         last_t = 0
         for t, msg in events:
             delta = t - last_t

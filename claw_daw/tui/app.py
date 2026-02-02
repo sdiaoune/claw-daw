@@ -15,11 +15,11 @@ from claw_daw.io.project_json import load_project, save_project
 from claw_daw.model.types import Note, Project, Track
 from claw_daw.tui.helptext import HELP_TEXT
 from claw_daw.util.gm import parse_program
-from claw_daw.util.loop import slice_project_loop
+# (unused) slice_project_loop was removed from imports
 from claw_daw.util.region import slice_project_range
 from claw_daw.util.derived import project_song_end_tick
 from claw_daw.util.quantize import parse_grid, quantize_project_track
-from claw_daw.util.limits import MAX_TRACKS, MAX_PATTERNS_PER_TRACK, MAX_CLIPS_PER_TRACK, MAX_NOTES_PER_TRACK, MAX_NOTES_PER_PATTERN
+from claw_daw.util.limits import MAX_TRACKS, MAX_PATTERNS_PER_TRACK, MAX_CLIPS_PER_TRACK, MAX_NOTES_PER_PATTERN
 
 
 @dataclass

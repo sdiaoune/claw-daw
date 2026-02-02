@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from claw_daw.arrange.sections import Section, Variation
 from claw_daw.arrange.types import Clip, Pattern
 
 
@@ -64,6 +65,14 @@ class Track:
     # Supported: None, "drums", "808".
     sampler: str | None = None
 
+    # Sampler-only: 808 glide/portamento time expressed in ticks.
+    glide_ticks: int = 0
+
+    # Optional deterministic humanize (applied on export/render).
+    humanize_timing: int = 0
+    humanize_velocity: int = 0
+    humanize_seed: int = 0
+
     # legacy linear notes (still supported)
     notes: list[Note] = field(default_factory=list)
 
@@ -98,6 +107,12 @@ class Track:
             "reverb": self.reverb,
             "chorus": self.chorus,
             "sampler": self.sampler,
+            "glide_ticks": self.glide_ticks,
+            "humanize": {
+                "timing": self.humanize_timing,
+                "velocity": self.humanize_velocity,
+                "seed": self.humanize_seed,
+            },
             "mute": self.mute,
             "solo": self.solo,
             "notes": [n.to_dict() for n in sorted(self.notes)],
@@ -107,6 +122,7 @@ class Track:
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Track":
+        human = d.get("humanize", {}) or {}
         t = Track(
             name=str(d["name"]),
             channel=int(d["channel"]),
@@ -116,6 +132,10 @@ class Track:
             reverb=int(d.get("reverb", 0)),
             chorus=int(d.get("chorus", 0)),
             sampler=(str(d.get("sampler")).lower() if d.get("sampler", None) is not None else None),
+            glide_ticks=int(d.get("glide_ticks", 0) or 0),
+            humanize_timing=int(human.get("timing", d.get("humanize_timing", 0) or 0)),
+            humanize_velocity=int(human.get("velocity", d.get("humanize_velocity", 0) or 0)),
+            humanize_seed=int(human.get("seed", d.get("humanize_seed", 0) or 0)),
             mute=bool(d.get("mute", False)),
             solo=bool(d.get("solo", False)),
         )
@@ -134,6 +154,10 @@ class Project:
     ppq: int = 480
     tracks: list[Track] = field(default_factory=list)
 
+    # High-level arrangement helpers (labels + pattern substitutions).
+    sections: list[Section] = field(default_factory=list)
+    variations: list[Variation] = field(default_factory=list)
+
     # recommended "bang for buck" extras
     swing_percent: int = 0  # 0-75; applied to offbeat 16ths on export/play
     loop_start: int | None = None  # ticks
@@ -149,7 +173,7 @@ class Project:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 4,
+            "schema_version": 5,
             "name": self.name,
             "tempo_bpm": self.tempo_bpm,
             "ppq": self.ppq,
@@ -158,6 +182,10 @@ class Project:
             "loop_end": self.loop_end,
             "render_start": self.render_start,
             "render_end": self.render_end,
+            "arrangement": {
+                "sections": [s.to_dict() for s in getattr(self, "sections", [])],
+                "variations": [v.to_dict() for v in getattr(self, "variations", [])],
+            },
             "tracks": [t.to_dict() for t in self.tracks],
         }
 
@@ -173,6 +201,9 @@ class Project:
             render_start=d.get("render_start", None),
             render_end=d.get("render_end", None),
         )
+        arr = d.get("arrangement", {}) or {}
+        p.sections = [Section.from_dict(x) for x in (arr.get("sections", []) or [])]
+        p.variations = [Variation.from_dict(x) for x in (arr.get("variations", []) or [])]
         p.tracks = [Track.from_dict(x) for x in d.get("tracks", [])]
         return p
 
