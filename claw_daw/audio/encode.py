@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -19,10 +20,12 @@ def encode_audio(
     """
 
     inp = str(Path(in_wav))
-    outp = str(Path(out_path))
-
     if codec not in {"mp3", "m4a"}:
         raise ValueError("codec must be mp3 or m4a")
+
+    # Support streaming to stdout for agent pipelines.
+    stream_to_stdout = out_path.strip() == "-"
+    outp = "pipe:1" if stream_to_stdout else str(Path(out_path))
 
     cmd: list[str] = [
         "ffmpeg",
@@ -40,10 +43,19 @@ def encode_audio(
         cmd += ["-t", str(float(trim_seconds))]
 
     if codec == "mp3":
+        # When writing to a pipe, force the container/format.
+        if stream_to_stdout:
+            cmd += ["-f", "mp3"]
         cmd += ["-codec:a", "libmp3lame", "-b:a", bitrate, outp]
     else:
         # m4a container w/ AAC
+        if stream_to_stdout:
+            cmd += ["-f", "ipod"]
         cmd += ["-codec:a", "aac", "-b:a", bitrate, outp]
+
+    if stream_to_stdout:
+        subprocess.run(cmd, check=True, stdout=sys.stdout.buffer)
+        return "-"
 
     subprocess.run(cmd, check=True)
     return outp

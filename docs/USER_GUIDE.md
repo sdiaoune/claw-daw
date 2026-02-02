@@ -152,7 +152,7 @@ You can also use `bar:beat:tick` (e.g. `1:2:120`).
 
 ### Patterns / arrangement
 - `new_pattern <track> <name> <length>`
-- `add_note_pat <track> <pattern> <pitch> <start> <dur> [vel]`
+- `add_note_pat <track> <pattern> <pitch> <start> <dur> [vel] [chance=..] [mute=0|1] [accent=..] [glide_ticks=..]`
 - `place_pattern <track> <pattern> <start> [repeats]`
 
 `<length>`/`<start>`/`<dur>` support ticks or bar:beat syntax.
@@ -165,6 +165,13 @@ Editing clips/patterns:
 - `duplicate_pattern <track> <src> <dst>`
 - `delete_pattern <track> <name>`
 - `clear_clips <track>`
+
+Agent-friendly note selection + transforms:
+- `select_notes <track> <pattern> [filters...]` (filters: pitch/start/dur/vel with =,!=,>=,<=,>,<)
+- `apply_selected <track> <pattern> op=shift ticks=<time>`
+- `apply_selected <track> <pattern> op=transpose semis=<int>`
+- `apply_selected <track> <pattern> op=vel_scale factor=<float>`
+- `apply_selected <track> <pattern> op=set mute=<0|1> chance=<0..1> accent=<float> glide_ticks=<ticks>`
 
 Pattern transform primitives:
 - `pattern_transpose <track> <pattern> <semitones>`
@@ -180,9 +187,9 @@ Styles: `hiphop|lofi|house`
 
 ### Export
 - `export_midi <path>`
-- `export_wav [path] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100`
-- `export_mp3 [path] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k`
-- `export_m4a [path] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k`
+- `export_wav [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100` (use `-` to stream WAV to stdout)
+- `export_mp3 [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k` (use `-` to stream MP3 to stdout)
+- `export_m4a [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k` (use `-` to stream M4A to stdout)
 - `export_stems <dir>`
 
 Notes:

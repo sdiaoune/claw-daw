@@ -18,8 +18,7 @@ def export_stems(project: Project, *, soundfont: str, out_dir: str, sample_rate:
     od.mkdir(parents=True, exist_ok=True)
 
     stems: list[str] = []
-    with tempfile.TemporaryDirectory(prefix="claw_daw_stems_") as td:
-        tdir = Path(td)
+    with tempfile.TemporaryDirectory(prefix="claw_daw_stems_"):
         for idx, t in enumerate(project.tracks):
             # render only this track by temporarily muting others
             p2 = Project.from_dict(project.to_dict())

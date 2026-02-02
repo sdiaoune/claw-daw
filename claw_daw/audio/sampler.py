@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from random import Random
 
 from claw_daw.model.types import Note, Project, Track
 
@@ -43,7 +44,18 @@ def _render_drums(track: Track, *, project: Project, sample_rate: int) -> Sample
             for rep in range(clip.repeats):
                 base = clip.start + rep * pat.length
                 for n in pat.notes:
-                    notes.append(Note(start=base + n.start, duration=n.duration, pitch=n.pitch, velocity=n.velocity))
+                    notes.append(
+                        Note(
+                            start=base + n.start,
+                            duration=n.duration,
+                            pitch=n.pitch,
+                            velocity=n.velocity,
+                            chance=getattr(n, "chance", 1.0),
+                            mute=getattr(n, "mute", False),
+                            accent=getattr(n, "accent", 1.0),
+                            glide_ticks=getattr(n, "glide_ticks", 0),
+                        )
+                    )
 
     for n in notes:
         length_ticks = max(length_ticks, n.end)
@@ -55,8 +67,16 @@ def _render_drums(track: Track, *, project: Project, sample_rate: int) -> Sample
     R: list[float] = [0.0] * total_samps
 
     for n in notes:
+        if getattr(n, "mute", False):
+            continue
+        chance = float(getattr(n, "chance", 1.0) or 1.0)
+        if chance < 1.0:
+            r = (int(n.start) * 31 + int(n.pitch) * 131) & 0x7FFFFFFF
+            if Random(r).random() > chance:
+                continue
+
         start_s = int(n.start * sec_per_tick * sample_rate)
-        vel = n.velocity / 127.0
+        vel = (n.effective_velocity() if hasattr(n, "effective_velocity") else n.velocity) / 127.0
 
         if n.pitch == 36:  # kick
             dur = int(0.20 * sample_rate)
@@ -109,7 +129,18 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
             for rep in range(clip.repeats):
                 base = clip.start + rep * pat.length
                 for n in pat.notes:
-                    notes.append(Note(start=base + n.start, duration=n.duration, pitch=n.pitch, velocity=n.velocity))
+                    notes.append(
+                        Note(
+                            start=base + n.start,
+                            duration=n.duration,
+                            pitch=n.pitch,
+                            velocity=n.velocity,
+                            chance=getattr(n, "chance", 1.0),
+                            mute=getattr(n, "mute", False),
+                            accent=getattr(n, "accent", 1.0),
+                            glide_ticks=getattr(n, "glide_ticks", 0),
+                        )
+                    )
 
     notes = sorted(notes, key=lambda n: n.start)
     length_ticks = max([0] + [n.end for n in notes])
@@ -120,18 +151,33 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
     L: list[float] = [0.0] * total_samps
     R: list[float] = [0.0] * total_samps
 
-    glide_s = max(0.0, glide_ticks * sec_per_tick)
+    glide_s_track = max(0.0, glide_ticks * sec_per_tick)
 
     # Render monophonic: later note steals pitch; glide ramps.
     for idx, n in enumerate(notes):
+        if getattr(n, "mute", False):
+            continue
+        chance = float(getattr(n, "chance", 1.0) or 1.0)
+        if chance < 1.0:
+            # stable per-note RNG key
+            r = (int(n.start) * 31 + int(n.pitch) * 131) & 0x7FFFFFFF
+            if Random(r).random() > chance:
+                continue
+
         start_s = int(n.start * sec_per_tick * sample_rate)
         end_s = int(n.end * sec_per_tick * sample_rate)
-        vel = n.velocity / 127.0
+        vel = (n.effective_velocity() if hasattr(n, "effective_velocity") else n.velocity) / 127.0
 
         f0 = _midi_to_hz(n.pitch)
         f_prev = f0
         if idx > 0:
             f_prev = _midi_to_hz(notes[idx - 1].pitch)
+
+        glide_s = glide_s_track
+        # note-level glide override (sampler-only)
+        nt = int(getattr(n, "glide_ticks", 0) or 0)
+        if nt > 0:
+            glide_s = max(0.0, nt * sec_per_tick)
 
         phase = 0.0
         for i in range(max(0, end_s - start_s)):

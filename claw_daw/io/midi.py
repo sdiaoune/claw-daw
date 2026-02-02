@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from random import Random
 
 import mido
 
@@ -64,11 +65,33 @@ def _iter_track_events(
                 base = clip.start + rep * pat.length
                 for n in pat.notes:
                     start = _apply_swing_tick(base + n.start, ppq, swing_percent)
-                    abs_notes.append(Note(start=start, duration=n.duration, pitch=n.pitch, velocity=n.velocity))
+                    abs_notes.append(
+                        Note(
+                            start=start,
+                            duration=n.duration,
+                            pitch=n.pitch,
+                            velocity=n.velocity,
+                            chance=getattr(n, "chance", 1.0),
+                            mute=getattr(n, "mute", False),
+                            accent=getattr(n, "accent", 1.0),
+                            glide_ticks=getattr(n, "glide_ticks", 0),
+                        )
+                    )
     else:
         for n in track.notes:
             start = _apply_swing_tick(n.start, ppq, swing_percent)
-            abs_notes.append(Note(start=start, duration=n.duration, pitch=n.pitch, velocity=n.velocity))
+            abs_notes.append(
+                Note(
+                    start=start,
+                    duration=n.duration,
+                    pitch=n.pitch,
+                    velocity=n.velocity,
+                    chance=getattr(n, "chance", 1.0),
+                    mute=getattr(n, "mute", False),
+                    accent=getattr(n, "accent", 1.0),
+                    glide_ticks=getattr(n, "glide_ticks", 0),
+                )
+            )
 
     hs = HumanizeSettings(
         timing_ticks=int(getattr(track, "humanize_timing", 0) or 0),
@@ -77,11 +100,25 @@ def _iter_track_events(
     )
     abs_notes = humanize_notes(abs_notes, settings=hs)
 
+    # Deterministic per-note expressions (chance/mute/accent).
+    seed_base = (int(getattr(track, "humanize_seed", 0) or 0) * 1000003) + (track_index * 9176)
+
     for n in abs_notes:
+        if getattr(n, "mute", False):
+            continue
+        chance = float(getattr(n, "chance", 1.0) or 1.0)
+        if chance < 1.0:
+            # stable per-note RNG key
+            r = (seed_base + int(n.start) * 31 + int(n.pitch) * 131) & 0x7FFFFFFF
+            if Random(r).random() > chance:
+                continue
+
+        vel = n.effective_velocity() if hasattr(n, "effective_velocity") else n.velocity
+
         events.append(
             (
                 n.start,
-                mido.Message("note_on", note=n.pitch, velocity=n.velocity, channel=track.channel),
+                mido.Message("note_on", note=n.pitch, velocity=vel, channel=track.channel),
             )
         )
         events.append((n.end, mido.Message("note_off", note=n.pitch, velocity=0, channel=track.channel)))

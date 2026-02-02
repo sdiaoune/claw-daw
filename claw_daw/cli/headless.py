@@ -71,6 +71,9 @@ class HeadlessRunner:
         self.dry_run = dry_run
         self.commands_executed = 0
         self.warnings: list[str] = []
+        # Selection state for agent-friendly edits.
+        # Map: (track_index, pattern_name) -> list[note_index]
+        self._selection: dict[tuple[int, str], list[int]] = {}
 
     def run_lines(self, lines: list[str], *, base_dir: Path | None = None) -> None:
         base = base_dir
@@ -399,6 +402,7 @@ class HeadlessRunner:
             return
 
         if cmd == "add_note_pat":
+            # add_note_pat <track> <pattern> <pitch> <start> <dur> [vel] [chance=..] [mute=0|1] [accent=..] [glide_ticks=..]
             ti = int(args[0])
             pat = proj.tracks[ti].patterns[args[1]]
             if len(pat.notes) >= MAX_NOTES_PER_PATTERN:
@@ -406,8 +410,37 @@ class HeadlessRunner:
             pitch = int(args[2])
             start = _tick(proj, args[3])
             dur = _tick(proj, args[4])
-            vel = int(args[5]) if len(args) > 5 else 100
-            pat.notes.append(Note(start=start, duration=dur, pitch=pitch, velocity=vel))
+
+            vel = 100
+            rest = args[5:]
+            if rest and (rest[0].lstrip("-").isdigit()) and ("=" not in rest[0]):
+                vel = int(rest[0])
+                rest = rest[1:]
+
+            kv: dict[str, str] = {}
+            for a in rest:
+                if "=" not in a:
+                    continue
+                k, v = a.split("=", 1)
+                kv[k.strip()] = v.strip()
+
+            chance = float(kv.get("chance", "1.0"))
+            mute = kv.get("mute", "0") not in {"0", "false", "no"}
+            accent = float(kv.get("accent", "1.0"))
+            glide_ticks = _tick(proj, kv.get("glide_ticks", "0")) if "glide_ticks" in kv else 0
+
+            pat.notes.append(
+                Note(
+                    start=start,
+                    duration=dur,
+                    pitch=pitch,
+                    velocity=vel,
+                    chance=chance,
+                    mute=mute,
+                    accent=accent,
+                    glide_ticks=int(glide_ticks),
+                )
+            )
             proj.dirty = True
             return
 
@@ -550,6 +583,142 @@ class HeadlessRunner:
             quantize_project_track(proj, ti, grid, strength)
             return
 
+        if cmd == "select_notes":
+            # select_notes <track> <pattern> [filters...]
+            # Filters support: pitch, start, dur, vel with operators (=,!=,>=,<=,>,<)
+            # Example:
+            #   select_notes 0 hats pitch=42 start>=1:0 start<2:0
+            ti = int(args[0])
+            pat_name = args[1]
+            pat = proj.tracks[ti].patterns[pat_name]
+
+            def parse_filter(tok: str):
+                ops = [">=", "<=", "!=", ">", "<", "="]
+                for op in ops:
+                    if op in tok:
+                        k, v = tok.split(op, 1)
+                        return k.strip(), op, v.strip()
+                raise ValueError(f"invalid filter: {tok}")
+
+            def parse_val(key: str, raw: str):
+                if key in {"start", "dur"}:
+                    return _tick(proj, raw)
+                return int(raw)
+
+            def match(n: Note, key: str, op: str, raw: str) -> bool:
+                if key == "pitch":
+                    cur = int(n.pitch)
+                    val = int(raw)
+                elif key == "vel":
+                    cur = int(n.velocity)
+                    val = int(raw)
+                elif key == "start":
+                    cur = int(n.start)
+                    val = _tick(proj, raw)
+                elif key == "dur":
+                    cur = int(n.duration)
+                    val = _tick(proj, raw)
+                else:
+                    raise ValueError(f"unknown filter key: {key}")
+
+                if op == "=":
+                    return cur == val
+                if op == "!=":
+                    return cur != val
+                if op == ">=":
+                    return cur >= val
+                if op == "<=":
+                    return cur <= val
+                if op == ">":
+                    return cur > val
+                if op == "<":
+                    return cur < val
+                return False
+
+            filters = [parse_filter(t) for t in args[2:]]
+            idxs: list[int] = []
+            for i, n in enumerate(pat.notes):
+                ok = True
+                for k, op, v in filters:
+                    ok = ok and match(n, k, op, v)
+                if ok:
+                    idxs.append(i)
+
+            self._selection[(ti, pat_name)] = idxs
+            return
+
+        if cmd == "apply_selected":
+            # apply_selected <track> <pattern> op=<...> [args...]
+            # ops:
+            # - shift ticks=<time>
+            # - transpose semis=<int>
+            # - vel_scale factor=<float>
+            # - set mute=<0|1>
+            # - set chance=<0..1>
+            # - set accent=<float>
+            # - set glide_ticks=<ticks>
+            ti = int(args[0])
+            pat_name = args[1]
+            pat = proj.tracks[ti].patterns[pat_name]
+            sel = self._selection.get((ti, pat_name), [])
+
+            kv = {}
+            for a in args[2:]:
+                if "=" not in a:
+                    continue
+                k, v = a.split("=", 1)
+                kv[k.strip()] = v.strip()
+
+            op = kv.get("op")
+            if not op:
+                raise ValueError("apply_selected requires op=...")
+
+            def clamp_vel(v: int) -> int:
+                return max(1, min(127, int(v)))
+
+            if op == "shift":
+                ticks = _tick(proj, kv.get("ticks", "0"))
+                for i in sel:
+                    pat.notes[i].start = max(0, int(pat.notes[i].start) + int(ticks))
+                proj.dirty = True
+                return
+
+            if op == "transpose":
+                semis = int(kv.get("semis", "0"))
+                for i in sel:
+                    pat.notes[i].pitch = max(0, min(127, int(pat.notes[i].pitch) + semis))
+                proj.dirty = True
+                return
+
+            if op == "vel_scale":
+                factor = float(kv.get("factor", "1.0"))
+                for i in sel:
+                    pat.notes[i].velocity = clamp_vel(round(int(pat.notes[i].velocity) * factor))
+                proj.dirty = True
+                return
+
+            if op == "set":
+                if "mute" in kv:
+                    m = kv.get("mute", "0") not in {"0", "false", "no"}
+                    for i in sel:
+                        pat.notes[i].mute = bool(m)
+                if "chance" in kv:
+                    ch = float(kv.get("chance", "1.0"))
+                    for i in sel:
+                        pat.notes[i].chance = max(0.0, min(1.0, ch))
+                if "accent" in kv:
+                    ac = float(kv.get("accent", "1.0"))
+                    for i in sel:
+                        pat.notes[i].accent = ac
+                if "glide_ticks" in kv:
+                    gt = int(_tick(proj, kv.get("glide_ticks", "0")))
+                    for i in sel:
+                        pat.notes[i].glide_ticks = max(0, gt)
+                proj.dirty = True
+                return
+
+            raise ValueError(f"unknown op: {op}")
+
         # -------- export --------
 
         if cmd == "export_midi":
@@ -559,7 +728,8 @@ class HeadlessRunner:
             return
 
         if cmd == "export_wav":
-            # export_wav [path] [preset=demo] [fade=0.15] [sr=44100] [trim=60]
+            # export_wav [path|"-"] [preset=demo] [fade=0.15] [sr=44100] [trim=60]
+            # Use "-" to stream WAV bytes to stdout.
             if self.dry_run:
                 return
             sf = self.ctx.soundfont
@@ -591,25 +761,37 @@ class HeadlessRunner:
                 start, end = proj.loop_start, proj.loop_end
             render_proj = slice_project_range(proj, start, end)
 
-            render_project_wav(render_proj, soundfont=sf, out_wav=out_wav, sample_rate=sr)
+            stream = out_wav.strip() == "-"
+            tmp_out = out_wav
+            if stream:
+                # Render to a temp wav, then master to stdout.
+                tmp_out = str(Path(_default_export_path(proj, "wav")).with_suffix(".tmp.wav"))
+
+            render_project_wav(render_proj, soundfont=sf, out_wav=tmp_out, sample_rate=sr)
 
             # mastering + fades
+            if stream:
+                master_wav(tmp_out, "-", sample_rate=sr, trim_seconds=trim, preset=preset, fade_in_seconds=fade, fade_out_seconds=fade)
+                Path(tmp_out).unlink(missing_ok=True)
+                return
+
             norm = Path(out_wav).with_suffix(".master.wav")
-            mastered = master_wav(out_wav, str(norm), sample_rate=sr, trim_seconds=trim, preset=preset, fade_in_seconds=fade, fade_out_seconds=fade)
+            mastered = master_wav(tmp_out, str(norm), sample_rate=sr, trim_seconds=trim, preset=preset, fade_in_seconds=fade, fade_out_seconds=fade)
             if mastered != out_wav:
                 Path(out_wav).unlink(missing_ok=True)
                 Path(mastered).rename(out_wav)
             return
 
         if cmd == "export_mp3":
-            # export_mp3 [out.mp3] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
+            # export_mp3 [out.mp3|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
+            # Use "-" to stream MP3 bytes to stdout.
             if self.dry_run:
                 return
             sf = self.ctx.soundfont
             if not sf:
                 raise RuntimeError("soundfont not set")
 
-            out_mp3 = args[0] if args and args[0].endswith(".mp3") else _default_export_path(proj, "mp3")
+            out_mp3 = args[0] if args and (args[0].endswith(".mp3") or args[0] == "-") else _default_export_path(proj, "mp3")
             sr = 44100
             trim = None
             br = "192k"
@@ -628,7 +810,7 @@ class HeadlessRunner:
                 if a.startswith("fade="):
                     fade = float(a.split("=", 1)[1])
 
-            tmp_wav = Path(out_mp3).with_suffix(".tmp.wav")
+            tmp_wav = Path(_default_export_path(proj, "wav")).with_suffix(".tmp.wav") if out_mp3 == "-" else Path(out_mp3).with_suffix(".tmp.wav")
             self.run_command(
                 f"export_wav {tmp_wav} preset={preset} fade={fade} sr={sr}" + (f" trim={trim}" if trim else "")
             )
@@ -637,14 +819,15 @@ class HeadlessRunner:
             return
 
         if cmd == "export_m4a":
-            # export_m4a [out.m4a] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
+            # export_m4a [out.m4a|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
+            # Use "-" to stream M4A bytes to stdout.
             if self.dry_run:
                 return
             sf = self.ctx.soundfont
             if not sf:
                 raise RuntimeError("soundfont not set")
 
-            out_m4a = args[0] if args and args[0].endswith(".m4a") else _default_export_path(proj, "m4a")
+            out_m4a = args[0] if args and (args[0].endswith(".m4a") or args[0] == "-") else _default_export_path(proj, "m4a")
             sr = 44100
             trim = None
             br = "192k"
@@ -663,7 +846,7 @@ class HeadlessRunner:
                 if a.startswith("fade="):
                     fade = float(a.split("=", 1)[1])
 
-            tmp_wav = Path(out_m4a).with_suffix(".tmp.wav")
+            tmp_wav = Path(_default_export_path(proj, "wav")).with_suffix(".tmp.wav") if out_m4a == "-" else Path(out_m4a).with_suffix(".tmp.wav")
             self.run_command(
                 f"export_wav {tmp_wav} preset={preset} fade={fade} sr={sr}" + (f" trim={trim}" if trim else "")
             )

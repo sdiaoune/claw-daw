@@ -12,12 +12,26 @@ class Note:
     """A single MIDI note event in a track.
 
     Times are in ticks (PPQ), relative to start of the song.
+
+    Optional expression fields are designed to be:
+    - deterministic (chance uses a seed)
+    - backwards-compatible (omitted when default)
     """
 
     start: int
     duration: int
     pitch: int
     velocity: int = 100
+
+    # Optional note-level expressions (all deterministic):
+    # - chance: probability [0..1] the note plays
+    # - mute: if true, the note never plays
+    # - accent: velocity multiplier (e.g. 1.15)
+    # - glide_ticks: per-note 808 glide override (sampler-only)
+    chance: float = 1.0
+    mute: bool = False
+    accent: float = 1.0
+    glide_ticks: int = 0
 
     def __post_init__(self) -> None:
         if not (0 <= self.pitch <= 127):
@@ -28,18 +42,49 @@ class Note:
             raise ValueError("start must be >= 0")
         if self.duration <= 0:
             raise ValueError("duration must be > 0")
+        try:
+            self.chance = float(self.chance)
+        except Exception:
+            self.chance = 1.0
+        self.chance = max(0.0, min(1.0, self.chance))
+        self.mute = bool(self.mute)
+        try:
+            self.accent = float(self.accent)
+        except Exception:
+            self.accent = 1.0
+        if self.accent <= 0:
+            self.accent = 1.0
+        try:
+            self.glide_ticks = int(self.glide_ticks)
+        except Exception:
+            self.glide_ticks = 0
+        if self.glide_ticks < 0:
+            self.glide_ticks = 0
 
     @property
     def end(self) -> int:
         return self.start + self.duration
 
+    def effective_velocity(self) -> int:
+        v = int(round(self.velocity * float(self.accent)))
+        return max(1, min(127, v))
+
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d: dict[str, Any] = {
             "start": self.start,
             "duration": self.duration,
             "pitch": self.pitch,
             "velocity": self.velocity,
         }
+        if self.mute:
+            d["mute"] = True
+        if self.chance != 1.0:
+            d["chance"] = float(self.chance)
+        if self.accent != 1.0:
+            d["accent"] = float(self.accent)
+        if self.glide_ticks:
+            d["glide_ticks"] = int(self.glide_ticks)
+        return d
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Note":
@@ -48,6 +93,10 @@ class Note:
             duration=int(d["duration"]),
             pitch=int(d["pitch"]),
             velocity=int(d.get("velocity", 100)),
+            chance=float(d.get("chance", 1.0) or 1.0),
+            mute=bool(d.get("mute", False)),
+            accent=float(d.get("accent", 1.0) or 1.0),
+            glide_ticks=int(d.get("glide_ticks", 0) or 0),
         )
 
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -61,7 +62,8 @@ def master_wav(
         raise ValueError(f"unknown preset: {preset}")
 
     inp = str(Path(in_wav))
-    outp = str(Path(out_wav))
+    stream_to_stdout = str(out_wav).strip() == "-"
+    outp = "pipe:1" if stream_to_stdout else str(Path(out_wav))
 
     # Build a deterministic filtergraph.
     filters = [MASTER_PRESETS[preset].afilter]
@@ -85,8 +87,15 @@ def master_wav(
     if trim_seconds is not None:
         cmd += ["-t", str(float(trim_seconds))]
 
-    cmd += ["-af", af, outp]
+    cmd += ["-af", af]
 
+    if stream_to_stdout:
+        # Force container when writing to pipe.
+        cmd += ["-f", "wav", outp]
+        subprocess.run(cmd, check=True, stdout=sys.stdout.buffer)
+        return "-"
+
+    cmd += [outp]
     Path(outp).parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(cmd, check=True)
     return outp
