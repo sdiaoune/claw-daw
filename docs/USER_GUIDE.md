@@ -121,6 +121,34 @@ Scripts are plain text files containing one command per line.
 
 ---
 
+## Prompt → script (offline)
+
+claw-daw also includes an **offline, deterministic prompt pipeline** that turns a natural-language prompt into a headless script.
+
+It supports:
+- prompt → structured brief → script generator
+- style presets (tempo/swing/density/mastering defaults)
+- novelty constraints via project similarity scoring
+- optional closed-loop preview → analyze → auto-tune iteration
+
+Generate a script (no audio render):
+
+```bash
+claw-daw prompt --out my_prompt_song --prompt "dark lofi beat, 78bpm, A minor" \
+  --iters 3 --max-similarity 0.92
+# writes: tools/my_prompt_song.txt
+```
+
+Generate + render preview + mp3 (requires --soundfont):
+
+```bash
+SF2=$(claw-daw paths --soundfont | head -n 1)
+claw-daw prompt --out my_prompt_song --prompt "house 124bpm" --render --soundfont "$SF2"
+# writes: tools/my_prompt_song.txt + out/my_prompt_song.preview.mp3 + out/my_prompt_song.mp3
+```
+
+---
+
 ## Command reference (practical)
 
 ### Create/open/save

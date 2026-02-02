@@ -98,6 +98,16 @@ def build_parser() -> argparse.ArgumentParser:
     play.add_argument("input", help="Path to a project JSON (.json) or headless script (.txt)")
     play.add_argument("--midi-out", required=True, dest="midi_out", help="MIDI output port name")
 
+    pr = sub.add_parser("prompt", help="Generate a headless script from a natural-language prompt.")
+    pr.add_argument("--prompt", default=None, help="Prompt text (or use --prompt-file).")
+    pr.add_argument("--prompt-file", default=None, help="Path to a text file containing the prompt.")
+    pr.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.*).")
+    pr.add_argument("--seed", default=0, type=int, help="Deterministic seed for generation.")
+    pr.add_argument("--iters", default=3, type=int, help="Max attempts/iterations (novelty + optional auto-tune loop).")
+    pr.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint against previous iter (lower = more different).")
+    pr.add_argument("--render", action="store_true", help="Also render preview/mp3 using --soundfont.")
+    pr.add_argument("--preview-bars", default=8, type=int, help="Preview length in bars (only if --render).")
+
     return p
 
 
@@ -208,6 +218,37 @@ def main(argv: list[str] | None = None) -> None:
                 continue
             outp.send(msg)
         outp.close()
+        return
+
+    if args.cmd == "prompt":
+        from claw_daw.prompt.pipeline import generate_from_prompt
+
+        if args.prompt_file:
+            prompt_text = Path(args.prompt_file).read_text(encoding="utf-8")
+        else:
+            prompt_text = args.prompt or ""
+
+        if not prompt_text.strip():
+            raise SystemExit("ERROR: provide --prompt or --prompt-file")
+
+        res = generate_from_prompt(
+            prompt_text,
+            out_prefix=str(args.out_prefix),
+            max_iters=int(args.iters),
+            seed=int(args.seed),
+            max_similarity=float(args.max_similarity),
+            soundfont=str(args.soundfont) if getattr(args, "soundfont", None) else None,
+            render=bool(args.render),
+            preview_bars=int(args.preview_bars),
+        )
+
+        print(f"wrote: {res.script_path}")
+        if res.preview_path:
+            print(f"preview: {res.preview_path}")
+        if res.similarities:
+            print("similarities:")
+            for i, s in enumerate(res.similarities, start=1):
+                print(f"- iter{i}: {s:.3f}")
         return
 
     parser.print_help()

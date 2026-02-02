@@ -10,6 +10,25 @@ claw-daw --headless \
   --script templates/hiphop_1min.txt
 ```
 
+### Prompt → script (offline)
+
+You can also generate a headless script from a natural-language prompt (offline):
+
+```bash
+claw-daw prompt --out prompt_v1 \
+  --prompt "late-night hiphop at 74bpm, dark, A minor" \
+  --iters 3 --max-similarity 0.92
+# tools/prompt_v1.txt
+```
+
+Optional: closed-loop preview + analysis + auto-tune (requires --soundfont):
+
+```bash
+SF2=$(claw-daw paths --soundfont | head -n 1)
+claw-daw prompt --out prompt_v1 --prompt "lofi 82bpm" --render --soundfont "$SF2"
+# out/prompt_v1.preview.mp3 + out/prompt_v1.mp3
+```
+
 This produces an MP3 and a JSON project (see template script).
 
 ## Time model (ticks / PPQ)
