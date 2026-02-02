@@ -114,6 +114,9 @@ class Track:
     # Supported: None, "drums", "808".
     sampler: str | None = None
 
+    # Sampler preset (built-in, deterministic). Examples: "tight", "hard", "air", "clean", "dist".
+    sampler_preset: str = "default"
+
     # Sampler-only: 808 glide/portamento time expressed in ticks.
     glide_ticks: int = 0
 
@@ -156,6 +159,7 @@ class Track:
             "reverb": self.reverb,
             "chorus": self.chorus,
             "sampler": self.sampler,
+            "sampler_preset": self.sampler_preset,
             "glide_ticks": self.glide_ticks,
             "humanize": {
                 "timing": self.humanize_timing,
@@ -181,6 +185,7 @@ class Track:
             reverb=int(d.get("reverb", 0)),
             chorus=int(d.get("chorus", 0)),
             sampler=(str(d.get("sampler")).lower() if d.get("sampler", None) is not None else None),
+            sampler_preset=str(d.get("sampler_preset", d.get("preset", "default")) or "default"),
             glide_ticks=int(d.get("glide_ticks", 0) or 0),
             humanize_timing=int(human.get("timing", d.get("humanize_timing", 0) or 0)),
             humanize_velocity=int(human.get("velocity", d.get("humanize_velocity", 0) or 0)),
@@ -222,7 +227,7 @@ class Project:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 5,
+            "schema_version": 6,
             "name": self.name,
             "tempo_bpm": self.tempo_bpm,
             "ppq": self.ppq,

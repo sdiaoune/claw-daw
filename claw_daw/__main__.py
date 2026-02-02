@@ -91,6 +91,13 @@ def build_parser() -> argparse.ArgumentParser:
     paths = sub.add_parser("paths", help="Print common paths used by claw-daw.")
     paths.add_argument("--soundfont", action="store_true", help="Print common GM SoundFont (.sf2) locations.")
 
+    mp = sub.add_parser("midi-ports", help="List available MIDI output ports (for hardware/virtual routing).")
+    _ = mp
+
+    play = sub.add_parser("play", help="Play a project to a MIDI output port (real-time).")
+    play.add_argument("input", help="Path to a project JSON (.json) or headless script (.txt)")
+    play.add_argument("--midi-out", required=True, dest="midi_out", help="MIDI output port name")
+
     return p
 
 
@@ -145,6 +152,62 @@ def main(argv: list[str] | None = None) -> None:
         else:
             print(f"cwd: {os.getcwd()}")
             print("config: (not implemented)")
+        return
+
+    if args.cmd == "midi-ports":
+        try:
+            import mido
+
+            names = mido.get_output_names()
+        except Exception as e:
+            raise SystemExit(f"ERROR: Could not list MIDI ports ({e}). Try: pip install python-rtmidi")
+
+        if not names:
+            print("(no MIDI output ports found)")
+        else:
+            for n in names:
+                print(n)
+        return
+
+    if args.cmd == "play":
+        # Real-time MIDI output for auditioning via hardware/virtual ports.
+        try:
+            import mido
+        except Exception as e:
+            raise SystemExit(f"ERROR: mido not available ({e})")
+
+        inp = str(args.input)
+        if inp.endswith(".json"):
+            from claw_daw.io.project_json import load_project
+            from claw_daw.io.midi import project_to_midifile
+
+            proj = load_project(inp)
+            mf = project_to_midifile(proj)
+        else:
+            # Treat as headless script: run it to build a project, then play the MIDI.
+            from claw_daw.cli.headless import HeadlessRunner
+            from claw_daw.io.midi import project_to_midifile
+
+            script = Path(inp).expanduser().resolve()
+            base = script.parent
+            lines = script.read_text(encoding="utf-8").splitlines()
+            r = HeadlessRunner(soundfont=None, strict=True)
+            r.run_lines(lines, base_dir=base)
+            proj = r.require_project()
+            mf = project_to_midifile(proj)
+
+        port_name = str(args.midi_out)
+        try:
+            outp = mido.open_output(port_name)
+        except Exception as e:
+            raise SystemExit(f"ERROR: Could not open MIDI output '{port_name}' ({e}). Run: claw-daw midi-ports")
+
+        print(f"playing to MIDI out: {port_name}")
+        for msg in mf.play():
+            if msg.is_meta:
+                continue
+            outp.send(msg)
+        outp.close()
         return
 
     parser.print_help()

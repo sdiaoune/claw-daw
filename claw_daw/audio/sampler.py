@@ -29,6 +29,11 @@ def _add(buf: list[float], idx: int, value: float) -> None:
         buf[idx] += value
 
 
+def _softclip(x: float, drive: float = 1.0) -> float:
+    # deterministic soft clip
+    return math.tanh(x * drive)
+
+
 def _render_drums(track: Track, *, project: Project, sample_rate: int) -> SamplerRenderResult:
     # Minimal deterministic synthesized kit.
     # GM-ish mapping used in the demo: 36 kick, 38 snare, 42 closed hat.
@@ -117,8 +122,9 @@ def _render_drums(track: Track, *, project: Project, sample_rate: int) -> Sample
     return SamplerRenderResult(left=L, right=R, sample_rate=sample_rate)
 
 
-def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks: int = 0) -> SamplerRenderResult:
+def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks: int = 0, preset: str = "default") -> SamplerRenderResult:
     # Sine-based bass with optional portamento/glide.
+    # Presets tweak harmonics/drive (still deterministic).
     notes = track.notes
     if track.clips and track.patterns:
         notes = []
@@ -152,6 +158,17 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
     R: list[float] = [0.0] * total_samps
 
     glide_s_track = max(0.0, glide_ticks * sec_per_tick)
+
+    # Preset shaping (deterministic).
+    preset = (preset or "default").strip().lower()
+    if preset in {"default", "clean"}:
+        harm2, harm3, drive = 0.10, 0.04, 1.15
+    elif preset in {"dist", "dirty"}:
+        harm2, harm3, drive = 0.22, 0.10, 1.75
+    elif preset in {"growl", "grit"}:
+        harm2, harm3, drive = 0.18, 0.18, 1.55
+    else:
+        harm2, harm3, drive = 0.10, 0.04, 1.15
 
     # Render monophonic: later note steals pitch; glide ramps.
     for idx, n in enumerate(notes):
@@ -193,7 +210,10 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
             env = min(1.0, t / 0.005) * math.exp(-t * 1.7)
 
             phase += 2 * math.pi * f / sample_rate
-            s = math.sin(phase) * env * vel * 0.9
+            base = math.sin(phase)
+            # add harmonics for translation; softclip for drive
+            x = base + harm2 * math.sin(2 * phase) + harm3 * math.sin(3 * phase)
+            s = _softclip(x, drive=drive) * env * vel * 0.9
             _add(L, start_s + i, s)
             _add(R, start_s + i, s)
 
@@ -201,9 +221,14 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
 
 
 def render_sampler_track(track: Track, *, project: Project, sample_rate: int) -> SamplerRenderResult:
+    preset = str(getattr(track, "sampler_preset", "default") or "default").strip().lower()
+
     if track.sampler == "drums":
         return _render_drums(track, project=project, sample_rate=sample_rate)
+
     if track.sampler == "808":
         glide = int(getattr(track, "glide_ticks", 0) or 0)
-        return _render_808(track, project=project, sample_rate=sample_rate, glide_ticks=glide)
+        # preset is interpreted inside the synth loop for harmonics/drive.
+        return _render_808(track, project=project, sample_rate=sample_rate, glide_ticks=glide, preset=preset)
+
     raise ValueError(f"unknown sampler mode: {track.sampler}")

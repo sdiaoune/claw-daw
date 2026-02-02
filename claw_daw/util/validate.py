@@ -17,7 +17,7 @@ def clamp(v: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, int(v)))
 
 
-CURRENT_SCHEMA_VERSION = 5
+CURRENT_SCHEMA_VERSION = 6
 
 
 def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
@@ -50,6 +50,12 @@ def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
             # new preferred shape
             t.setdefault("humanize", {"timing": 0, "velocity": 0, "seed": 0})
         schema = 5
+
+    # v5 -> v6: sampler preset
+    if schema < 6:
+        for t in d.get("tracks", []) or []:
+            t.setdefault("sampler_preset", "default")
+        schema = 6
 
     d["schema_version"] = CURRENT_SCHEMA_VERSION
     return d
@@ -120,6 +126,9 @@ def validate_and_migrate_project(project: Project) -> Project:
         else:
             s = str(sm).strip().lower()
             t.sampler = s if s in {"drums", "808"} else None
+
+        # sampler preset (optional; validated at render time)
+        t.sampler_preset = str(getattr(t, "sampler_preset", "default") or "default")
 
         t.glide_ticks = clamp(int(getattr(t, "glide_ticks", 0) or 0), 0, project.ppq * 2)
         t.humanize_timing = clamp(int(getattr(t, "humanize_timing", 0) or 0), 0, project.ppq // 8)

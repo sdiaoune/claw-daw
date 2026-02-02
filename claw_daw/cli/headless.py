@@ -236,6 +236,29 @@ class HeadlessRunner:
             proj.dirty = True
             return
 
+        if cmd == "set_sampler_preset":
+            # set_sampler_preset <track_index> <preset>
+            idx = int(args[0])
+            proj.tracks[idx].sampler_preset = str(args[1]).strip()
+            proj.dirty = True
+            return
+
+        if cmd == "set_kit":
+            # set_kit <track_index> <preset>
+            idx = int(args[0])
+            proj.tracks[idx].sampler = "drums"
+            proj.tracks[idx].sampler_preset = str(args[1]).strip()
+            proj.dirty = True
+            return
+
+        if cmd == "set_808":
+            # set_808 <track_index> <preset>
+            idx = int(args[0])
+            proj.tracks[idx].sampler = "808"
+            proj.tracks[idx].sampler_preset = str(args[1]).strip()
+            proj.dirty = True
+            return
+
         if cmd == "set_glide":
             # set_glide <track_index> <ticks|bar:beat>
             idx = int(args[0])
@@ -782,6 +805,45 @@ class HeadlessRunner:
                 Path(mastered).rename(out_wav)
             return
 
+        if cmd == "export_preview_mp3":
+            # export_preview_mp3 <out.mp3|"-"] bars=<n> start=<bar:beat> [preset=demo] [sr=44100] [br=192k]
+            # Convenience for agent loops.
+            if self.dry_run:
+                return
+            sf = self.ctx.soundfont
+            if not sf:
+                raise RuntimeError("soundfont not set")
+
+            out_mp3 = args[0]
+            bars = 8
+            start_tick = 0
+            sr = 44100
+            br = "192k"
+            preset = "demo"
+            for a in args[1:]:
+                if a.startswith("bars="):
+                    bars = int(a.split("=", 1)[1])
+                if a.startswith("start="):
+                    start_tick = _tick(proj, a.split("=", 1)[1])
+                if a.startswith("sr="):
+                    sr = int(a.split("=", 1)[1])
+                if a.startswith("br="):
+                    br = a.split("=", 1)[1]
+                if a.startswith("preset="):
+                    preset = a.split("=", 1)[1]
+
+            end_tick = start_tick + bars * _ticks_per_bar(proj)
+            render_proj = slice_project_range(proj, start_tick, end_tick)
+
+            tmp_wav = Path(_default_export_path(proj, "wav")).with_suffix(".preview.tmp.wav")
+            render_project_wav(render_proj, soundfont=sf, out_wav=str(tmp_wav), sample_rate=sr)
+            norm = tmp_wav.with_suffix(".master.wav")
+            mastered = master_wav(str(tmp_wav), str(norm), sample_rate=sr, trim_seconds=None, preset=preset, fade_in_seconds=0.0, fade_out_seconds=0.0)
+            encode_audio(str(mastered), out_mp3, trim_seconds=None, sample_rate=sr, codec="mp3", bitrate=br)
+            Path(tmp_wav).unlink(missing_ok=True)
+            Path(mastered).unlink(missing_ok=True)
+            return
+
         if cmd == "export_mp3":
             # export_mp3 [out.mp3|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
             # Use "-" to stream MP3 bytes to stdout.
@@ -902,6 +964,19 @@ class HeadlessRunner:
                 + "\n",
                 encoding="utf-8",
             )
+            return
+
+        if cmd == "analyze_audio":
+            # analyze_audio <in_audio> <out.json>
+            if self.dry_run:
+                return
+            inp = args[0]
+            out_json = args[1]
+            import json
+
+            rep = band_energy_report(inp)
+            Path(out_json).parent.mkdir(parents=True, exist_ok=True)
+            Path(out_json).write_text(json.dumps(rep, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             return
 
         if cmd == "export_spectrogram":

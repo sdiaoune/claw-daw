@@ -142,6 +142,14 @@ You can also use common GM names like `piano`, `bass`, etc.
 - `set_reverb <track_index> <0-127>`
 - `set_chorus <track_index> <0-127>`
 
+### Built-in sampler presets (deterministic)
+If a track is in sampler mode, you can choose a preset:
+- `set_sampler_preset <track_index> <preset>`
+- convenience: `set_kit <track_index> <preset>` and `set_808 <track_index> <preset>`
+
+Examples:
+- 808 presets: `clean` (default), `dist`, `growl`
+
 ### Timing
 - `set_swing <0-75>`
 - `set_loop <start> <end>` / `clear_loop`
@@ -190,6 +198,8 @@ Styles: `hiphop|lofi|house`
 - `export_wav [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100` (use `-` to stream WAV to stdout)
 - `export_mp3 [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k` (use `-` to stream MP3 to stdout)
 - `export_m4a [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k` (use `-` to stream M4A to stdout)
+- `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=demo|clean|lofi sr=44100 br=192k`
+- `analyze_audio <in_audio> <out.json>`
 - `export_stems <dir>`
 
 Notes:
