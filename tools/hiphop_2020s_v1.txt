@@ -1,0 +1,212 @@
+# Modern 2020s trap / melodic hip hop (original) — 60s-ish
+# Target: 140 BPM half-time feel (snare/clap on beat 3)
+# Key center: F minor
+
+new_project hiphop_2020s_v1 140
+set_swing 12
+
+# Tracks
+add_track Drums 0
+add_track 808 0
+add_track Keys 90
+add_track Lead 80
+
+# Samplers (best-effort metadata; render is via SoundFont)
+set_sampler 0 drums
+set_sampler 1 bass
+
+# Mix
+set_volume 0 124
+set_volume 1 110
+set_volume 2 92
+set_volume 3 88
+set_pan 2 78
+set_pan 3 52
+set_reverb 2 18
+set_reverb 3 26
+
+# Patterns (1 bar = 1920 ticks)
+# Drums
+new_pattern 0 d_intro 1920
+new_pattern 0 d_hook 1920
+new_pattern 0 d_verse 1920
+new_pattern 0 d_fill 1920
+
+# 808
+new_pattern 1 b_hook 1920
+new_pattern 1 b_verse 1920
+
+# Harmony
+new_pattern 2 k_loop 1920
+
+# Lead motif (A/B)
+new_pattern 3 l_hook_a 1920
+new_pattern 3 l_hook_b 1920
+
+# -----------------
+# DRUMS (GM kit notes)
+# Kick 36, Clap/Snare 39/38, Closed hat 42, Open hat 46
+# Half-time: clap on beat 3 (tick 960)
+
+# Intro: sparse hats + clap (no kick)
+add_note_pat 0 d_intro 42 0 120 58
+add_note_pat 0 d_intro 42 480 120 52
+add_note_pat 0 d_intro 42 960 120 58
+add_note_pat 0 d_intro 42 1440 120 52
+add_note_pat 0 d_intro 39 960 240 96
+add_note_pat 0 d_intro 46 1680 120 58
+
+# Hook: 1/8 hats + some 1/16 + triplet-ish burst, open hats, syncopated kicks
+# Hats (8ths)
+add_note_pat 0 d_hook 42 0 120 72
+add_note_pat 0 d_hook 42 240 120 56
+add_note_pat 0 d_hook 42 480 120 70
+add_note_pat 0 d_hook 42 720 120 56
+add_note_pat 0 d_hook 42 960 120 72
+add_note_pat 0 d_hook 42 1200 120 56
+add_note_pat 0 d_hook 42 1440 120 70
+add_note_pat 0 d_hook 42 1680 120 56
+# 1/16 roll near end
+add_note_pat 0 d_hook 42 1560 60 60
+add_note_pat 0 d_hook 42 1620 60 54
+add_note_pat 0 d_hook 42 1680 60 60
+add_note_pat 0 d_hook 42 1740 60 54
+# Quick triplet-ish burst (approx)
+add_note_pat 0 d_hook 42 1120 80 54
+add_note_pat 0 d_hook 42 1200 80 58
+add_note_pat 0 d_hook 42 1280 80 54
+
+# Clap
+add_note_pat 0 d_hook 39 960 240 110
+# Light ghost before clap
+add_note_pat 0 d_hook 38 900 80 40
+
+# Kicks (syncopated + doubles)
+add_note_pat 0 d_hook 36 0 180 120
+add_note_pat 0 d_hook 36 360 120 86
+add_note_pat 0 d_hook 36 600 160 112
+add_note_pat 0 d_hook 36 1320 120 96
+add_note_pat 0 d_hook 36 1680 90 118
+add_note_pat 0 d_hook 36 1770 90 96
+
+# Open hats
+add_note_pat 0 d_hook 46 480 140 66
+add_note_pat 0 d_hook 46 1440 140 66
+
+# Verse: sparser kick + fewer hats, keep clap on 3
+add_note_pat 0 d_verse 42 0 120 62
+add_note_pat 0 d_verse 42 480 120 52
+add_note_pat 0 d_verse 42 960 120 60
+add_note_pat 0 d_verse 42 1440 120 52
+add_note_pat 0 d_verse 39 960 240 108
+add_note_pat 0 d_verse 36 0 180 120
+add_note_pat 0 d_verse 36 720 120 86
+add_note_pat 0 d_verse 36 1320 120 104
+add_note_pat 0 d_verse 46 1680 120 58
+
+# Fill: snare/hat roll before hook drop
+add_note_pat 0 d_fill 39 960 240 110
+add_note_pat 0 d_fill 42 1440 60 66
+add_note_pat 0 d_fill 42 1500 60 62
+add_note_pat 0 d_fill 42 1560 60 58
+add_note_pat 0 d_fill 42 1620 60 62
+add_note_pat 0 d_fill 42 1680 60 66
+add_note_pat 0 d_fill 42 1740 60 62
+add_note_pat 0 d_fill 42 1800 60 58
+add_note_pat 0 d_fill 46 1840 120 70
+add_note_pat 0 d_fill 36 0 180 120
+add_note_pat 0 d_fill 36 720 120 92
+
+# -----------------
+# 808 / BASS (F minor center)
+# Notes: F2=41, Ab2=44, C3=48, Eb3=51, Db3=49
+# Hook: leave space + a couple jumps + quick step "slide" emulation
+add_note_pat 1 b_hook 41 0 420 112
+add_note_pat 1 b_hook 41 480 300 96
+# jump to Ab
+add_note_pat 1 b_hook 44 960 360 110
+# quick step down/up to emulate glide (Db->C)
+add_note_pat 1 b_hook 49 1320 120 84
+add_note_pat 1 b_hook 48 1440 360 106
+# little pickup
+add_note_pat 1 b_hook 41 1680 180 92
+
+# Verse: simpler, more space
+add_note_pat 1 b_verse 41 0 480 108
+add_note_pat 1 b_verse 48 960 360 104
+add_note_pat 1 b_verse 44 1440 240 98
+
+# -----------------
+# HARMONY (dark minor bounce, low-mid)
+# Keep simple 2–4 chord vibe, voiced as dyads/triads with rhythm.
+# Fm (F3 Ab3 C4) -> Db (Db3 F3 Ab3) implied
+# F3=53 Ab3=56 C4=60 Db3=49
+
+# Hit-chords (not sustained all bar)
+# Beat 1: Fm stab
+add_note_pat 2 k_loop 53 0 360 58
+add_note_pat 2 k_loop 56 0 360 58
+add_note_pat 2 k_loop 60 0 360 58
+# Beat 2&: small answer
+add_note_pat 2 k_loop 56 600 240 52
+add_note_pat 2 k_loop 60 600 240 52
+# Beat 3: Db-ish stab
+add_note_pat 2 k_loop 49 960 360 54
+add_note_pat 2 k_loop 53 960 360 54
+add_note_pat 2 k_loop 56 960 360 54
+# Late bounce back to Fm (short)
+add_note_pat 2 k_loop 53 1560 240 50
+add_note_pat 2 k_loop 56 1560 240 50
+add_note_pat 2 k_loop 60 1560 240 50
+
+# -----------------
+# TOP MELODY (sparse 2–4 note motif)
+# Use a simple motif around Fm: C5=72, Ab4=68, F4=65, Eb4=63
+
+# Hook A motif
+add_note_pat 3 l_hook_a 72 240 240 58
+add_note_pat 3 l_hook_a 68 720 240 54
+add_note_pat 3 l_hook_a 65 1200 360 56
+add_note_pat 3 l_hook_a 63 1680 240 52
+
+# Hook B variation: change 1–2 notes
+add_note_pat 3 l_hook_b 72 240 240 58
+add_note_pat 3 l_hook_b 70 720 240 54
+add_note_pat 3 l_hook_b 65 1200 360 56
+add_note_pat 3 l_hook_b 68 1680 240 52
+
+# -----------------
+# ARRANGEMENT
+# PPQ=480, bar=1920 ticks. Tempo=140 (half-time feel).
+# Intro: 4 bars (keys + sparse hats)
+place_pattern 2 k_loop 0 4
+place_pattern 0 d_intro 0 4
+
+# Hook A: 8 bars (full drums + 808 + motif A)
+place_pattern 2 k_loop 7680 8
+place_pattern 0 d_hook 7680 8
+place_pattern 1 b_hook 7680 8
+place_pattern 3 l_hook_a 7680 8
+
+# Verse: 16 bars (pull back motif, sparser drums)
+place_pattern 2 k_loop 23040 16
+place_pattern 0 d_verse 23040 16
+place_pattern 1 b_verse 23040 16
+
+# Fill before Hook B (1 bar)
+place_pattern 0 d_fill 53760 1
+
+# Hook B: 8 bars (motif variation)
+place_pattern 2 k_loop 55680 8
+place_pattern 0 d_hook 55680 8
+place_pattern 1 b_hook 55680 8
+place_pattern 3 l_hook_b 55680 8
+
+# Outro: 4 bars (strip down + ending)
+place_pattern 2 k_loop 71040 4
+place_pattern 0 d_intro 71040 4
+
+# EXPORTS
+export_project out/hiphop_2020s_v1.json
+export_midi out/hiphop_2020s_v1.mid
+export_mp3 out/hiphop_2020s_v1.mp3 preset=clean trim=60

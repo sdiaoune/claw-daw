@@ -44,7 +44,7 @@ def _doctor() -> DoctorResult:
         notes.append(f"ffmpeg: OK ({ffmpeg})")
     else:
         ok = False
-        notes.append("ffmpeg: MISSING (needed for MP3/M4A encodes)")
+        notes.append("ffmpeg: MISSING (needed for MP3 encodes)")
 
     sf2_found = None
     for p in _default_soundfont_paths():
@@ -55,9 +55,7 @@ def _doctor() -> DoctorResult:
         notes.append(f"soundfont: OK ({sf2_found})")
     else:
         ok = False
-        notes.append(
-            "soundfont: MISSING (install a GM .sf2 or pass --soundfont /path/to.sf2 when exporting)"
-        )
+        notes.append("soundfont: MISSING (install a GM .sf2)")
 
     notes.append(f"python: {sys.version.split()[0]}")
     notes.append(f"platform: {sys.platform}")
@@ -72,30 +70,26 @@ def build_parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawTextHelpFormatter,
         description=(
             "claw-daw — offline, deterministic, terminal-first MIDI DAW\n\n"
-            "This repo is under active iteration. Some features may be incomplete in early versions.\n"
-            "Docs: https://sdiaoune.github.io/claw-daw/\n"
+            "Docs: https://www.clawdaw.com/\n"
         ),
     )
 
+    p.add_argument("--version", action="store_true", help="Print version and exit.")
+
+    # Headless mode (compat with docs)
     p.add_argument(
-        "--version",
+        "--headless",
         action="store_true",
-        help="Print version and exit.",
+        help="Run a headless script (new_project/add_track/new_pattern/... + export_*).",
     )
+    p.add_argument("--soundfont", default=None, help="Path to GM SoundFont (.sf2) for renders")
+    p.add_argument("--script", default=None, help="Path to headless script (.txt)")
 
     sub = p.add_subparsers(dest="cmd")
-
-    sub.add_parser(
-        "doctor",
-        help="Check for required system dependencies (fluidsynth/ffmpeg/soundfont).",
-    )
+    sub.add_parser("doctor", help="Check for required deps (fluidsynth/ffmpeg/soundfont).")
 
     paths = sub.add_parser("paths", help="Print common paths used by claw-daw.")
-    paths.add_argument(
-        "--soundfont",
-        action="store_true",
-        help="Print common GM SoundFont (.sf2) locations.",
-    )
+    paths.add_argument("--soundfont", action="store_true", help="Print common GM SoundFont (.sf2) locations.")
 
     return p
 
@@ -106,7 +100,6 @@ def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    # Version: best-effort (don’t hard-fail if metadata isn’t available).
     if getattr(args, "version", False):
         try:
             from importlib.metadata import version
@@ -115,6 +108,19 @@ def main(argv: list[str] | None = None) -> None:
         except Exception:
             v = "0.0.0"
         print(f"claw-daw {v}")
+        return
+
+    if args.headless:
+        if not args.script:
+            raise SystemExit("ERROR: --headless requires --script <path>")
+        if not args.soundfont:
+            raise SystemExit("ERROR: --headless requires --soundfont <path-to.sf2>")
+        from claw_daw.cli.script_runner import run_script
+
+        script = Path(args.script).expanduser().resolve()
+        base = script.parent
+        lines = script.read_text(encoding="utf-8").splitlines()
+        _ = run_script(lines, base_dir=base, default_soundfont=Path(args.soundfont).expanduser().resolve())
         return
 
     if args.cmd == "doctor":
@@ -137,7 +143,6 @@ def main(argv: list[str] | None = None) -> None:
             print("config: (not implemented)")
         return
 
-    # Default: show help.
     parser.print_help()
 
 
