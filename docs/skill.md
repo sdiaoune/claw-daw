@@ -107,7 +107,25 @@ When a user prompts an agent, the agent can use claw-daw for fast “one-shot”
 - **Drum Kits v1 (role-based drums)**:
   - `list_drum_kits`
   - `set_drum_kit <track_index> <trap_hard|house_clean|boombap_dusty|gm_basic>`
-  - `add_note_pat ... <pitch|role> ...` where role can be: `kick|snare|clap|hh|oh|rim|perc_low|perc_high|crash|fx` (aliases supported)
+  - `add_note_pat ... <pitch|role> ...` where role can be:
+    - `kick|snare|clap|rim|hh|oh|ph|tom_low|tom_mid|tom_high|crash|ride|perc|shaker`
+    - (`hh/oh/ph` are aliases for `hat_closed/hat_open/hat_pedal`)
+
+### Drum rendering sanity checklist (prevents “crackling / not-drums” failures)
+
+If drums sound like crackling/noise or “not drums”, it’s almost always one of these:
+
+1) **Unsupported drum roles**
+- Only use the supported roles above. Avoid ad-hoc roles like `perc_low` / `perc_high`.
+- If you need more percussion, use `perc`, `shaker`, or `tom_*`.
+
+2) **Wrong render mode for drums (sampler vs GM drum channel)**
+- If you use role-based kits, prefer:
+  - `set_sampler <drum_track> drums` + `set_drum_kit <drum_track> <kit>`
+- If you want plain GM/FluidSynth drums, ensure the drum track is on **MIDI channel 10** (channel index `9`) and not in sampler mode.
+
+3) **Always do a 0–10s preview before exporting stems**
+- Render a short preview (`export_preview_mp3`) and listen specifically for: kick/snare clarity + hats not crackling.
 - **808 presets + glide**:
   - `set_808 <track_index> <preset>`
   - `set_glide <track_index> <ticks|bar:beat>`

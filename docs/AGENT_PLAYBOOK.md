@@ -111,6 +111,7 @@ A reliable agent workflow is boring on purpose:
 - [ ] **Draft patterns** (1–2 bars): drums → 808 → bed → top
 - [ ] **Arrange**: place patterns into sections (energy changes every 4–8 bars)
 - [ ] **Preview fast**: render 8–16 bars (`export_preview_mp3`) before full render
+  - sanity-check **0:00–0:10 drums** specifically (kick/snare/hats should sound like drums; no crackle/noise)
 - [ ] **Apply the 5 features when useful**:
   - Drum kit roles (`kick/snare/hh`)
   - 808 preset + glide
@@ -187,6 +188,8 @@ add_note_pat 0 d1 kick  0:0 0:0:120 112
 add_note_pat 0 d1 snare 0:2 0:0:120 108
 add_note_pat 0 d1 hh    0:0 0:0:60  70 chance=0.95
 ```
+
+**Avoid unsupported roles:** stick to `kick|snare|clap|rim|hh|oh|ph|tom_low|tom_mid|tom_high|crash|ride|perc|shaker`. If you need “perc low/high”, use `tom_low` / `tom_high` (or `perc`).
 
 ### 808 preset + glide (pickup)
 ```txt
