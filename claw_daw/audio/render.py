@@ -34,17 +34,61 @@ def _write_wav_stereo(path: Path, left: list[float], right: list[float], *, samp
         wf.writeframes(bytes(frames))
 
 
-def render_project_wav(project: Project, *, soundfont: str, out_wav: str, sample_rate: int = 44100) -> str:
+def render_project_wav(
+    project: Project,
+    *,
+    soundfont: str,
+    out_wav: str,
+    sample_rate: int = 44100,
+    drum_mode: str = "auto",  # auto|sampler|gm
+) -> str:
     """Render a project to a stereo WAV.
 
     - Sampler tracks (track.sampler in {drums,808}) are synthesized in-process.
     - All other tracks are rendered via FluidSynth.
 
+    drum_mode:
+      - "sampler": keep sampler drums as-is
+      - "gm": convert sampler drums to plain GM drums (MIDI channel 10) and render via FluidSynth
+      - "auto": render a short preview in both modes and pick the more reliable one
+
     The goal is correctness + determinism for an offline MVP, not real-time.
     """
 
+    from claw_daw.audio.drum_render_sanity import choose_drum_render_mode, convert_sampler_drums_to_gm
+
     outp = Path(out_wav).expanduser().resolve()
     outp.parent.mkdir(parents=True, exist_ok=True)
+
+    # Optional: auto-fallback for crackly sampler drums.
+    if drum_mode not in {"auto", "sampler", "gm"}:
+        raise ValueError("drum_mode must be: auto|sampler|gm")
+
+    # We choose mode up front so the rest of the render logic stays simple.
+    if drum_mode == "gm":
+        project = convert_sampler_drums_to_gm(project)
+    elif drum_mode == "auto":
+        # Render small previews w/o recursion/auto.
+        with tempfile.TemporaryDirectory(prefix="claw_daw_drum_preview_") as td2:
+            t2 = Path(td2)
+            n = 0
+
+            def _render_preview_wav(p: Project) -> str:
+                nonlocal n
+                out_prev = t2 / f"preview_{n}.wav"
+                n += 1
+                render_project_wav(p, soundfont=soundfont, out_wav=str(out_prev), sample_rate=sample_rate, drum_mode="sampler")
+                return str(out_prev)
+
+            mode, _dbg = choose_drum_render_mode(
+                project=project,
+                render_preview_wav=_render_preview_wav,
+                preview_bars=8,
+                threshold_db=6.0,
+            )
+
+        if mode == "gm":
+            project = convert_sampler_drums_to_gm(project)
 
     with tempfile.TemporaryDirectory(prefix="claw_daw_render_") as td:
         tdir = Path(td)
