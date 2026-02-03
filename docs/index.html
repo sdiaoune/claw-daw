@@ -477,6 +477,7 @@ claw-daw prompt --out views_style_v1 --prompt-file prompt.txt --iters 3 --max-si
           <p style="margin:0 0 10px"><strong>Why do I get “command not found” after install?</strong><br>
             The install uses a user-level bin directory. Restart your terminal, or add
             <code class="inline">$HOME/.local/bin</code> (Linux) / <code class="inline">$HOME/bin</code> (some mac installs) to your <code class="inline">PATH</code>.
+            On Windows, run <code class="inline">pipx ensurepath</code> then restart PowerShell.
           </p>
           <p style="margin:0 0 10px"><strong>Is this a full DAW?</strong><br>
             No—intentionally. It’s built for fast, reproducible sketches and automation.
@@ -558,7 +559,8 @@ claw-daw --help</code></pre>
               Still not found? Try:
               <code class="inline">export PATH="$HOME/.local/bin:$PATH"</code> (Linux)
               or <code class="inline">export PATH="$HOME/bin:$PATH"</code> (some mac installs).<br>
-              Windows: run <code class="inline">pipx ensurepath</code> then restart PowerShell.
+              Windows: run <code class="inline">pipx ensurepath</code> then restart PowerShell.<br>
+              Linux/mac: you can also run <code class="inline">pipx ensurepath</code> and restart your terminal.
             </div>
           </div>
 

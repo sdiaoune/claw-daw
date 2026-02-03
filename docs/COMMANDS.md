@@ -24,9 +24,10 @@ brew install fluidsynth ffmpeg
 
 Windows (PowerShell):
 ```powershell
-iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+iwr https://www.clawdaw.com/install_win.ps1 -useb | iex
 ```
 Run in Administrator PowerShell to install system deps (Chocolatey).
+If `claw-daw` is not found after install, run `pipx ensurepath` and restart your terminal.
 
 ## Run validation / health check
 ```bash

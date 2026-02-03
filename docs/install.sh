@@ -86,9 +86,29 @@ if ! command -v pipx >/dev/null 2>&1; then
   python3 -m pip install --user --upgrade pip pipx
 fi
 
+# Ensure pipx logs are writable (avoids PermissionError on some systems)
+PIPX_LOG_DIR="${PIPX_LOG_DIR:-$HOME/.local/pipx/logs}"
+mkdir -p "$PIPX_LOG_DIR" >/dev/null 2>&1 || true
+if [[ ! -w "$PIPX_LOG_DIR" ]]; then
+  PIPX_LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/pipx/logs"
+  mkdir -p "$PIPX_LOG_DIR" >/dev/null 2>&1 || true
+fi
+export PIPX_LOG_DIR
+
+# Ensure pipx bin dir is writable; fall back if needed.
+mkdir -p "$HOME/.local/bin" "$HOME/.local" >/dev/null 2>&1 || true
+if [[ ! -w "$HOME/.local/bin" ]]; then
+  echo "[claw-daw] '$HOME/.local/bin' is not writable. Falling back to '$HOME/bin'." >&2
+  mkdir -p "$HOME/bin"
+  export PIPX_BIN_DIR="$HOME/bin"
+  export PATH="$HOME/bin:$PATH"
+else
+  export PIPX_BIN_DIR="$HOME/.local/bin"
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 # Make sure pipx bin path is available in this shell.
 python3 -m pipx ensurepath >/dev/null 2>&1 || true
-export PATH="$HOME/.local/bin:$PATH"
 
 if ! command -v pipx >/dev/null 2>&1; then
   echo "ERROR: pipx did not install correctly." >&2
@@ -105,7 +125,8 @@ fi
 # Verify binary
 if ! command -v claw-daw >/dev/null 2>&1; then
   echo "[claw-daw] ERROR: install completed but 'claw-daw' is not on PATH." >&2
-  echo "Try: export PATH=\"$HOME/.local/bin:\$PATH\"" >&2
+  echo "Run: pipx ensurepath  (then restart your terminal)" >&2
+  echo "Or add: export PATH=\"${PIPX_BIN_DIR:-$HOME/.local/bin}:\$PATH\"" >&2
   echo "Then: claw-daw --help" >&2
   exit 2
 fi

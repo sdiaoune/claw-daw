@@ -51,6 +51,7 @@ sudo apt-get update
 sudo apt-get install -y fluidsynth ffmpeg fluid-soundfont-gm pipx
 pipx install claw-daw
 ```
+If `claw-daw` is not found after install, run `pipx ensurepath` and restart your terminal.
 
 ## Quickstart
 

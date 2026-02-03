@@ -77,6 +77,11 @@ if (-not (Test-Command "ffmpeg")) {
 }
 
 Write-Info "Installing pipx..."
+$LocalApp = $env:LOCALAPPDATA
+if (-not $LocalApp) { $LocalApp = Join-Path $env:USERPROFILE "AppData\Local" }
+$PipxLogDir = Join-Path $LocalApp "pipx\logs"
+$env:PIPX_LOG_DIR = $PipxLogDir
+New-Item -ItemType Directory -Force -Path $PipxLogDir | Out-Null
 Invoke-Python -Args @("-m", "pip", "install", "--user", "--upgrade", "pip", "pipx") | Out-Null
 Invoke-Python -Args @("-m", "pipx", "ensurepath") | Out-Null
 
@@ -88,8 +93,6 @@ if ($rc -ne 0) {
 }
 
 if (-not $SkipSoundfont) {
-  $LocalApp = $env:LOCALAPPDATA
-  if (-not $LocalApp) { $LocalApp = Join-Path $env:USERPROFILE "AppData\Local" }
   $Sf2Dir = Join-Path $LocalApp "claw-daw\soundfonts"
   $Sf2Path = Join-Path $Sf2Dir "FluidR3_GM.sf2"
 
@@ -112,6 +115,13 @@ if (-not $SkipSoundfont) {
 }
 
 Write-Host ""
-Write-Info "Done. If 'claw-daw' is not found, restart PowerShell."
+if (-not (Test-Command "claw-daw")) {
+  Write-Host "[claw-daw] ERROR: install completed but 'claw-daw' is not on PATH." -ForegroundColor Yellow
+  Write-Host "Run: pipx ensurepath  (then restart PowerShell)"
+  Write-Host "Then try: claw-daw --help"
+  exit 2
+}
+
+Write-Info "Done. If 'claw-daw' is not found in a new shell, run 'pipx ensurepath' and restart PowerShell."
 Write-Host "Try:"
 Write-Host "  claw-daw --help"

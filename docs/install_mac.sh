@@ -19,10 +19,21 @@ fi
 echo "[claw-daw] Installing system dependencies (fluidsynth, ffmpeg, python, pipx)…"
 brew update >/dev/null 2>&1 || true
 brew install fluidsynth ffmpeg python pipx
+hash -r 2>/dev/null || true
 
-# Ensure pipx is on PATH for future shells, and best-effort for *this* shell.
-pipx ensurepath >/dev/null 2>&1 || true
-export PATH="$HOME/.local/bin:$PATH"
+if ! command -v pipx >/dev/null 2>&1; then
+  echo "ERROR: pipx not found after install. Install pipx and retry." >&2
+  exit 1
+fi
+
+# Ensure pipx logs are writable (avoids PermissionError on some systems)
+PIPX_LOG_DIR="${PIPX_LOG_DIR:-$HOME/.local/pipx/logs}"
+mkdir -p "$PIPX_LOG_DIR" >/dev/null 2>&1 || true
+if [[ ! -w "$PIPX_LOG_DIR" ]]; then
+  PIPX_LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/pipx/logs"
+  mkdir -p "$PIPX_LOG_DIR" >/dev/null 2>&1 || true
+fi
+export PIPX_LOG_DIR
 
 # Some macOS setups end up with ~/.local/bin owned by root (or otherwise unwritable),
 # which breaks pipx symlinking. We try to self-heal.
@@ -41,7 +52,13 @@ if [[ ! -w "$HOME/.local/bin" ]]; then
   mkdir -p "$HOME/bin"
   export PIPX_BIN_DIR="$HOME/bin"
   export PATH="$HOME/bin:$PATH"
+else
+  export PIPX_BIN_DIR="$HOME/.local/bin"
+  export PATH="$HOME/.local/bin:$PATH"
 fi
+
+# Ensure pipx is on PATH for future shells, and best-effort for *this* shell.
+pipx ensurepath >/dev/null 2>&1 || true
 
 echo "[claw-daw] Installing claw-daw via pipx…"
 # --force makes reruns idempotent across failures/partial installs.

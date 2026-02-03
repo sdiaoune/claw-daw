@@ -35,6 +35,7 @@ curl -fsSL https://www.clawdaw.com/install_mac.sh | bash
 iwr https://www.clawdaw.com/install_win.ps1 -useb | iex
 ```
 Run in Administrator PowerShell to install system deps (Chocolatey).
+If `claw-daw` is not found after install, run `pipx ensurepath` and restart your terminal.
 
 ## Quickstart
 

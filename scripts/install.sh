@@ -71,8 +71,28 @@ if ! command -v pipx >/dev/null 2>&1; then
   python3 -m pip install --user --upgrade pip pipx
 fi
 
+# Ensure pipx logs are writable (avoids PermissionError on some systems)
+PIPX_LOG_DIR="${PIPX_LOG_DIR:-$HOME/.local/pipx/logs}"
+mkdir -p "$PIPX_LOG_DIR" >/dev/null 2>&1 || true
+if [[ ! -w "$PIPX_LOG_DIR" ]]; then
+  PIPX_LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/pipx/logs"
+  mkdir -p "$PIPX_LOG_DIR" >/dev/null 2>&1 || true
+fi
+export PIPX_LOG_DIR
+
+# Ensure pipx bin dir is writable; fall back if needed.
+mkdir -p "$HOME/.local/bin" "$HOME/.local" >/dev/null 2>&1 || true
+if [[ ! -w "$HOME/.local/bin" ]]; then
+  echo "[claw-daw] '$HOME/.local/bin' is not writable. Falling back to '$HOME/bin'." >&2
+  mkdir -p "$HOME/bin"
+  export PIPX_BIN_DIR="$HOME/bin"
+  export PATH="$HOME/bin:$PATH"
+else
+  export PIPX_BIN_DIR="$HOME/.local/bin"
+  export PATH="$HOME/.local/bin:$PATH"
+fi
+
 python3 -m pipx ensurepath >/dev/null 2>&1 || true
-export PATH="$HOME/.local/bin:$PATH"
 
 echo "[claw-daw] Installing claw-daw via pipx…"
 if ! pipx install --force "claw-daw"; then
@@ -110,6 +130,13 @@ if [[ -z "${SKIP_SOUNDFONT:-}" ]]; then
       echo "[claw-daw] WARNING: curl/wget not found; install a GM .sf2 manually." >&2
     fi
   fi
+fi
+
+if ! command -v claw-daw >/dev/null 2>&1; then
+  echo "[claw-daw] ERROR: install completed but 'claw-daw' is not on PATH." >&2
+  echo "Run: pipx ensurepath  (then restart your terminal)" >&2
+  echo "Or add: export PATH=\"${PIPX_BIN_DIR:-$HOME/.local/bin}:\$PATH\"" >&2
+  exit 2
 fi
 
 echo
