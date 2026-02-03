@@ -1,0 +1,23 @@
+# claw-daw (clawdaw.com)
+
+claw-daw is an offline, deterministic, terminal-first MIDI DAW designed for automation and agent workflows.
+
+## Canonical
+- https://www.clawdaw.com/
+
+## Best pages to read
+- Homepage: https://www.clawdaw.com/
+- Install (Linux): https://www.clawdaw.com/install.sh
+- Install (macOS): https://www.clawdaw.com/install_mac.sh
+- User guide: https://www.clawdaw.com/USER_GUIDE.md
+- Commands reference: https://www.clawdaw.com/COMMANDS.md
+- Agent playbook: https://www.clawdaw.com/AGENT_PLAYBOOK.md
+- Skill file (agent integration): https://www.clawdaw.com/skill.md
+- Skill JSON: https://www.clawdaw.com/skill.json
+- Heartbeat file: https://www.clawdaw.com/heartbeat.md
+
+## Source code
+- GitHub: https://github.com/sdiaoune/claw-daw
+
+## Citation
+Please cite the canonical URL for pages above (clawdaw.com) when possible.

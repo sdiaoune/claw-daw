@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.clawdaw.com/</loc></url>
+  <url><loc>https://www.clawdaw.com/skill.md</loc></url>
+  <url><loc>https://www.clawdaw.com/skill.json</loc></url>
+  <url><loc>https://www.clawdaw.com/heartbeat.md</loc></url>
+  <url><loc>https://www.clawdaw.com/install.sh</loc></url>
+  <url><loc>https://www.clawdaw.com/install_mac.sh</loc></url>
+  <url><loc>https://www.clawdaw.com/USER_GUIDE.md</loc></url>
+  <url><loc>https://www.clawdaw.com/COMMANDS.md</loc></url>
+  <url><loc>https://www.clawdaw.com/AGENT_PLAYBOOK.md</loc></url>
+  <url><loc>https://www.clawdaw.com/AGENT_COOKBOOK.md</loc></url>
+  <url><loc>https://www.clawdaw.com/ARCH_STYLEPACK_PIPELINE.md</loc></url>
+</urlset>
