@@ -42,5 +42,6 @@ class AttemptReport:
     acceptance_errors: list[str]
     similarity_to_prev: float | None
     spectral: dict[str, Any] | None
+    sanity: dict[str, Any] | None
     score: float | None
     chosen: bool = False

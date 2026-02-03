@@ -7,6 +7,7 @@ from pathlib import Path
 from random import Random
 
 from claw_daw.arrange.sections import Section, Variation
+from claw_daw.arrange.drum_macros import generate_drum_macro_pack
 from claw_daw.arrange.transform import reverse as pat_reverse
 from claw_daw.arrange.transform import shift as pat_shift
 from claw_daw.arrange.transform import stretch as pat_stretch
@@ -222,6 +223,49 @@ class HeadlessRunner:
         if cmd == "set_chorus":
             idx = int(args[0])
             proj.tracks[idx].chorus = max(0, min(127, int(args[1])))
+            proj.dirty = True
+            return
+
+        if cmd == "apply_palette":
+            # apply_palette <style> [mood=..]
+            # Applies per-style TrackSound + mixer defaults to tracks by role name.
+            # Roles are inferred from track.name (case-insensitive): drums,bass,keys,pad,lead.
+            style = str(args[0]).strip().lower()
+            mood = None
+            for a in args[1:]:
+                if a.startswith("mood="):
+                    mood = a.split("=", 1)[1]
+
+            from claw_daw.prompt.palette import select_track_preset
+
+            for t in proj.tracks:
+                role = str(t.name).strip().lower()
+                if role not in {"drums", "bass", "keys", "pad", "lead"}:
+                    continue
+                preset = select_track_preset(role, style=style, mood=mood)
+
+                # Sound selection
+                snd = preset.sound
+                if snd.program is not None:
+                    t.program = int(snd.program)
+                    # If switching to GM program, disable sampler unless explicitly requested.
+                    t.sampler = None
+                    t.sampler_preset = None
+                if snd.sampler:
+                    t.sampler = snd.sampler
+                    t.sampler_preset = snd.sampler_preset
+
+                # Mixer
+                mix = preset.mix
+                if mix.volume is not None:
+                    t.volume = max(0, min(127, int(mix.volume)))
+                if mix.pan is not None:
+                    t.pan = max(0, min(127, int(mix.pan)))
+                if mix.reverb is not None:
+                    t.reverb = max(0, min(127, int(mix.reverb)))
+                if mix.chorus is not None:
+                    t.chorus = max(0, min(127, int(mix.chorus)))
+
             proj.dirty = True
             return
 
@@ -666,6 +710,165 @@ class HeadlessRunner:
                     # snare on 2 and 4
                     if s % 8 == 4:
                         pat.notes.append(Note(start=tick, duration=step, pitch=snare, velocity=105))
+
+            proj.dirty = True
+            return
+
+        if cmd == "gen_drum_macros":
+            # gen_drum_macros <track> <base_pattern> [out_prefix=drums] [seed=0] [make=both|4|8]
+            ti = int(args[0])
+            base_pat = args[1]
+            seed = 0
+            out_prefix: str | None = None
+            make = "both"
+            for a in args[2:]:
+                if a.startswith("seed="):
+                    seed = int(a.split("=", 1)[1])
+                elif a.startswith("out_prefix="):
+                    out_prefix = a.split("=", 1)[1].strip() or None
+                elif a.startswith("make="):
+                    make = a.split("=", 1)[1].strip().lower() or "both"
+
+            make_4 = make in {"both", "4", "v4"}
+            make_8 = make in {"both", "8", "v8"}
+            if not (make_4 or make_8):
+                raise ValueError("make must be: both|4|8")
+
+            t = proj.tracks[ti]
+            generate_drum_macro_pack(
+                t,
+                base_pattern=base_pat,
+                ppq=proj.ppq,
+                seed=seed,
+                out_prefix=out_prefix,
+                make_4=make_4,
+                make_8=make_8,
+                max_patterns=MAX_PATTERNS_PER_TRACK,
+            )
+            proj.dirty = True
+            return
+
+        if cmd == "gen_bass_follow":
+            # gen_bass_follow <track> <pattern> <length_ticks>
+            #   roots=45,53,50,52 (MIDI note numbers; interpreted per bar, repeated)
+            #   seed=0 gap_prob=0.12 glide_prob=0.25 cadence_bars=4 turnaround=1
+            #   vel=98 vel_jitter=10 note_len=0:1 glide_ticks=0:0:90
+            ti = int(args[0])
+            name = args[1]
+            length = _tick(proj, args[2])
+
+            kv: dict[str, str] = {}
+            for a in args[3:]:
+                if "=" not in a:
+                    continue
+                k, v = a.split("=", 1)
+                kv[k.strip()] = v.strip()
+
+            roots_raw = kv.get("roots", "")
+            if not roots_raw:
+                raise ValueError("gen_bass_follow requires roots=... (comma-separated MIDI note numbers)")
+            roots = [int(x.strip()) for x in roots_raw.split(",") if x.strip()]
+            if not roots:
+                raise ValueError("gen_bass_follow requires at least one root")
+
+            seed = int(kv.get("seed", "0"))
+            gap_prob = max(0.0, min(1.0, float(kv.get("gap_prob", "0.12"))))
+            glide_prob = max(0.0, min(1.0, float(kv.get("glide_prob", "0.25"))))
+            cadence_bars = max(1, int(kv.get("cadence_bars", "4")))
+            turnaround = kv.get("turnaround", "1") not in {"0", "false", "no"}
+
+            base_vel = max(1, min(127, int(kv.get("vel", "98"))))
+            vel_jitter = max(0, min(30, int(kv.get("vel_jitter", "10"))))
+
+            # Default duration is an 8th note.
+            note_len = _tick(proj, kv.get("note_len", "0:0:240"))
+            glide_ticks = _tick(proj, kv.get("glide_ticks", "0")) if "glide_ticks" in kv else 0
+
+            rnd = Random(seed)
+
+            t = proj.tracks[ti]
+            if name not in t.patterns:
+                if len(t.patterns) >= MAX_PATTERNS_PER_TRACK:
+                    raise RuntimeError(f"max patterns reached ({MAX_PATTERNS_PER_TRACK})")
+                t.patterns[name] = Pattern(name=name, length=length)
+            pat = t.patterns[name]
+            pat.length = length
+            pat.notes = []
+
+            tpbar = _ticks_per_bar(proj)
+            step = proj.ppq // 4  # 16th
+            bars = max(1, length // tpbar)
+
+            # Simple, musical rhythmic templates (16th steps within a bar)
+            templates: list[list[int]] = [
+                [0, 8],
+                [0, 6, 8, 14],
+                [0, 4, 8, 12],
+                [0, 10],
+            ]
+
+            last_pitch: int | None = None
+            last_start: int | None = None
+
+            def add_note(start: int, pitch: int, dur: int) -> None:
+                nonlocal last_pitch, last_start
+                vel = base_vel + rnd.randint(-vel_jitter, vel_jitter)
+                vel = max(1, min(127, vel))
+                gt = 0
+                if glide_ticks:
+                    gt = int(glide_ticks)
+                elif getattr(t, "glide_ticks", 0):
+                    gt = int(t.glide_ticks or 0)
+
+                # Decide glide per-note (only if pitch changes, and close enough).
+                use_glide = False
+                if gt and last_pitch is not None and pitch != last_pitch:
+                    if abs(int(pitch) - int(last_pitch)) <= 7 and rnd.random() < glide_prob:
+                        use_glide = True
+
+                pat.notes.append(
+                    Note(
+                        start=int(start),
+                        duration=max(1, int(dur)),
+                        pitch=int(pitch),
+                        velocity=int(vel),
+                        glide_ticks=int(gt if use_glide else 0),
+                    )
+                )
+                last_pitch = int(pitch)
+                last_start = int(start)
+
+            for b in range(bars):
+                bar_root = roots[b % len(roots)]
+                tmpl = templates[int(rnd.random() * len(templates)) % len(templates)]
+
+                # Ensure a stable downbeat, thin the rest via gap_prob
+                for i, st16 in enumerate(tmpl):
+                    if i > 0 and rnd.random() < gap_prob:
+                        continue
+                    start = b * tpbar + st16 * step
+                    add_note(start, bar_root, note_len)
+
+                # Cadence: at phrase ends, add a short approach into next root.
+                if (b + 1) % cadence_bars == 0:
+                    next_root = roots[(b + 1) % len(roots)]
+                    # semitone or whole-step approach
+                    approach = next_root - (1 if rnd.random() < 0.6 else 2)
+                    add_note(b * tpbar + 15 * step, approach, step)
+
+                # Turnaround: in the final bar, do a tiny walk into the loop.
+                if turnaround and b == bars - 1:
+                    next_root = roots[0]
+                    add_note(b * tpbar + 12 * step, bar_root, step)
+                    add_note(b * tpbar + 14 * step, bar_root + (2 if rnd.random() < 0.5 else -2), step)
+                    add_note(b * tpbar + 15 * step, next_root, step)
+
+            # Tighten durations so notes don't smear across the bar end unless intended.
+            pat.notes.sort(key=lambda n: int(n.start))
+            for i, n in enumerate(pat.notes[:-1]):
+                nxt = pat.notes[i + 1]
+                max_dur = max(1, int(nxt.start) - int(n.start))
+                n.duration = min(int(n.duration), max_dur)
 
             proj.dirty = True
             return

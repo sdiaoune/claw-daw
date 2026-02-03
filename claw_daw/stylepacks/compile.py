@@ -106,6 +106,18 @@ def compile_to_script(
 
     lines = new_lines
 
+    # Apply palette preset (programs + mixer defaults) for the style.
+    # Insert before the first pattern creation, after tracks exist.
+    palette_style = pack.name  # reuse pack name tokens
+    out: list[str] = []
+    inserted = False
+    for ln in lines:
+        if (not inserted) and ln.startswith("new_pattern "):
+            out.append(f"apply_palette {palette_style}")
+            inserted = True
+        out.append(ln)
+    lines = out
+
     # Apply drum kit selection.
     kit = str(spec.knobs.get("drum_kit") or "")
     if kit:
@@ -163,6 +175,22 @@ def compile_to_script(
                 patched.append(ln + f" chance={max(0.0, min(1.0, chance + jitter)):.2f}")
             else:
                 patched.append(ln)
+        lines = patched
+
+    # Optional mix/mastering override.
+    # If present, force export_* preset=... so the iteration loop can auto-tune mastering.
+    mp = str(spec.knobs.get("mastering_preset") or "").strip()
+    if mp:
+        patched = []
+        for ln in lines:
+            s = ln.strip()
+            if s.startswith("export_") and " preset=" in s:
+                import re
+
+                ln = re.sub(r"preset=[^\s]+", f"preset={mp}", ln)
+            elif s.startswith("export_") and (s.startswith("export_mp3") or s.startswith("export_m4a") or s.startswith("export_wav") or s.startswith("export_preview_mp3")):
+                ln = ln + f" preset={mp}" if " preset=" not in ln else ln
+            patched.append(ln)
         lines = patched
 
     tool_dir = Path(tools_dir)

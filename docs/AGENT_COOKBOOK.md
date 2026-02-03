@@ -2,6 +2,47 @@
 
 claw-daw is an offline, deterministic, terminal-first MIDI DAW that agents can drive via **headless scripts**.
 
+If you want the “how to be a good music-producing agent” workflow + checklists, start here:
+- `docs/AGENT_PLAYBOOK.md`
+
+---
+
+## The 5 agent-first features (cheat sheet)
+
+1) **Drum Kits (role-based drums)**
+```txt
+set_sampler 0 drums
+set_drum_kit 0 trap_hard
+add_note_pat 0 d1 kick  0:0 0:0:120 112
+add_note_pat 0 d1 snare 0:2 0:0:120 108
+```
+
+2) **808 presets + glide**
+```txt
+set_sampler 1 808
+set_808 1 dist
+set_glide 1 0:0:90
+```
+
+3) **Genre Packs (from-scratch generation)**
+```bash
+claw-daw pack trap --out 2026-02-03_trap_140_v1 --seed 7 --attempts 6 --max-similarity 0.9 --render
+# tools/2026-02-03_trap_140_v1.txt
+# out/2026-02-03_trap_140_v1.{mp3,mid,json}
+```
+
+4) **Novelty control (prompt→script iteration)**
+```bash
+claw-daw prompt --out ideas_v1 \
+  --prompt "dark lofi, 78bpm, Rhodes, dusty drums" \
+  --iters 6 --max-similarity 0.88 --seed 3
+```
+
+5) **Acceptance tests (quality gates)**
+- See `docs/AGENT_PLAYBOOK.md#9-acceptance-tests-per-genre-mini-gates`
+
+---
+
 ## Quick start
 
 ```bash
@@ -10,46 +51,42 @@ claw-daw --headless \
   --script templates/hiphop_1min.txt
 ```
 
-## How agents should use claw-daw (recommended)
+---
 
-For the full “agent-as-producer” workflow and checklists, see:
-- `docs/AGENT_PLAYBOOK.md`
-
-Treat **claw-daw as the workstation**, not the “thing you prompt.”
-
-- The **user prompts the agent** (you) with a producer brief (style, BPM, key, sections, palette, deliverables).
-- The **agent writes/edits a headless script** (patterns + clips), renders, listens, tweaks, and re-renders.
-- Output artifacts stay deterministic and reviewable: JSON + MIDI + audio.
-
-This mirrors how a good producer works: intent → arrangement → sound choices → iteration.
-
-### Minimal agent loop
+## Minimal agent loop (recommended)
 
 1) Pick a **unique output prefix** (to avoid overwriting): `YYYY-MM-DD_<genre>_<bpm>_v1`
 2) Write `tools/<name>.txt`
-3) Render: `claw-daw --headless --soundfont <SF2> --script tools/<name>.txt`
-4) Iterate: change the script and rerender to a **new version** (`_v2`, `_v3`, …) so old renders remain available.
+3) Render:
+
+```bash
+claw-daw --headless --soundfont <SF2> --script tools/<name>.txt
+```
+
+4) Iterate by editing the script and rerendering to a **new version** (`_v2`, `_v3`, …).
+
+---
 
 ## Optional: claw-daw prompt (helper, not a replacement)
 
 claw-daw includes an **offline prompt→script helper** for quick scaffolding. It’s best treated as a starting point, not the final result.
 
 Key features for one-shot agent workflows:
-- **Genre Packs (style presets):** the prompt parser infers a `style` and applies defaults (BPM, swing, drum density, mastering preset).
-  - Supported styles: `hiphop | lofi | house | techno | ambient` (fallback: `unknown`)
-- **Novelty control:** the generator can iterate and enforce that each attempt is **different enough** from the previous one via similarity scoring.
+- **Style presets**: the prompt parser infers a `style` and applies defaults (BPM, swing, drum density, mastering preset).
+- **Novelty control**: iterate while keeping attempts “different enough” using similarity scoring.
 
 ```bash
 claw-daw prompt --out prompt_v1 \
   --prompt "lofi, dusty, 82bpm, Rhodes chords, soft hats" \
   --seed 7 --iters 6 --max-similarity 0.88
 # tools/prompt_v1.txt
-# out/prompt_v1.preview.mp3 (if --render)
 ```
 
 Notes:
-- Lower `--max-similarity` ⇒ stronger novelty requirement (more change between attempts).
+- Lower `--max-similarity` ⇒ stronger novelty requirement.
 - For deterministic A/B tests, keep `--seed` fixed and only change one constraint at a time.
+
+---
 
 ## Time model (ticks / PPQ)
 
@@ -63,6 +100,8 @@ Practical conversions (4/4):
 - `beat_ticks = ppq`
 - `sixteenth_ticks = ppq//4`
 
+---
+
 ## Swing semantics
 
 `set_swing <0-75>` applies swing by delaying **odd 16th steps** (offbeat 16ths).
@@ -70,6 +109,8 @@ Practical conversions (4/4):
 - `15–30` = typical hiphop/lofi feel
 
 Swing is applied during MIDI rendering (export/playback), not by permanently rewriting notes.
+
+---
 
 ## Loop vs render region
 
@@ -82,6 +123,8 @@ Swing is applied during MIDI rendering (export/playback), not by permanently rew
   - useful for "render only bars 8–16" workflows
 
 If neither is set, exports render the whole song up to the derived end tick.
+
+---
 
 ## Arrangement model
 
@@ -105,17 +148,21 @@ Key idiom: keep patterns short (1–2 bars), then place them repeatedly.
 - `delete_clip <track> <clip_index>`
 - `rename_pattern`, `duplicate_pattern`, `delete_pattern`
 
+---
+
 ## Determinism guidelines
 
 For shareable, repeatable outputs:
 - Prefer patterns + clips (avoid long linear note lists)
-- Use deterministic generators (`gen_drums ... seed=N`)
-- Avoid real-time randomness or timestamps in filenames
+- Use deterministic generators (`gen_drums ... seed=N`) when you generate
+- Pin version + SoundFont path for strict reproducibility
+
+---
 
 ## Common workflow (agent)
 
 1) Create project + tracks
-2) Create 1-bar patterns (drums/bass/keys)
+2) Create 1–2 bar patterns (drums/bass/keys)
 3) Place patterns across ~24 bars (≈60s at ~96 BPM)
 4) Export mp3 and dump state
 
@@ -132,20 +179,20 @@ save_project demo.json
 dump_state demo_state.json
 ```
 
+---
+
 ## Drum Kits + drum generation
 
 ### Drum Kits (sampler)
-For agent-friendly scripts, prefer the kit/bass abstractions:
-- `set_kit <track_index> <preset>` — selects the built-in drum sampler and labels the kit preset
-- `set_808 <track_index> <preset>` — selects the built-in 808 sampler preset
+Agent-friendly abstractions:
+- `set_kit <track_index> <preset>` — selects built-in drums sampler preset
+- `set_808 <track_index> <preset>` — selects built-in 808 sampler preset
 - `set_glide <track_index> <ticks|bar:beat>` — portamento for the 808 sampler
 
-This keeps “sound choice” separate from “notes,” which is useful for one-shot generation + revisions.
-
 ### Drum kits (role → MIDI mapping)
-Separately from sampler presets, you can choose a deterministic **drum kit mapping** for role-based drum notes:
-- `set_drum_kit <track_index> <trap_hard|house_clean|boombap_dusty>`
-- `add_note_pat <track> <pattern> <pitch|role> ...`
+Choose a deterministic drum kit mapping so you can write role names:
+- `set_drum_kit <track_index> <trap_hard|house_clean|boombap_dusty|gm_basic>`
+- `list_drum_kits`
 
 Example:
 ```txt
@@ -153,17 +200,21 @@ add_track Drums 0
 set_sampler 0 drums
 set_drum_kit 0 trap_hard
 new_pattern 0 d 2:0
-add_note_pat 0 d kick 0:0 0:0:180 115
-add_note_pat 0 d snare 0:2 0:0:150 98
+add_note_pat 0 d kick  0:0 0:0:180 115
+add_note_pat 0 d snare 0:2 0:0:150  98
 ```
 
 ### Drum generation utility
 
 `gen_drums <track> <pattern> <length_ticks> <style> seed=0 density=0.8`
 
+`gen_drum_macros <track> <base_pattern> out_prefix=dr seed=0 make=both|4|8` (variations + fills)
+
 - `style`: `hiphop|lofi|house`
 - deterministic (`seed`)
 - writes kick/snare/hats pattern using 16th grid
+
+---
 
 ## Export and stems
 
@@ -182,15 +233,12 @@ Mastering presets:
 - `clean` (quieter, less aggressive)
 - `loud` (hotter)
 
-## Shareability helpers
+---
 
-`render_demo <style> <out_prefix>` writes:
-- `<out_prefix>.mp3` (60s)
-- `<out_prefix>.mid`
-- `<out_prefix>.json`
-- `<out_prefix>_cover.txt`
+## Agent-native utilities (lint/diff/validation)
 
-Shortcuts:
-- `template_house <out_prefix>`
-- `template_lofi <out_prefix>`
-- `template_hiphop <out_prefix>`
+These commands are designed for automated workflows:
+
+- `analyze_refs <out.json>` — detect missing pattern references / unused patterns
+- `validate_project` — best-effort clamp/migrate in-memory project
+- `diff_projects <a.json> <b.json> <out.diff>` — produce a unified diff

@@ -1,0 +1,29 @@
+# Example Arrange Spec (v1)
+# Apply with:
+#   claw-daw arrange-spec demos/arrange_spec_example.yaml --in out/my_project.json --out out/my_project.arranged.json
+
+version: 1
+
+# Optional: choose which pattern each track loops by default.
+# Keys are track indices (0-based).
+base_patterns:
+  0: main
+  1: main
+
+sections:
+  - name: intro
+    bars: 4
+    cues:
+      - type: dropout
+        at: end
+        bars: 1
+        tracks: [1]
+
+  - name: chorus
+    bars: 4
+    cues:
+      - type: fill
+        at: end
+        bars: 1
+        tracks: [0]
+        pattern: fill

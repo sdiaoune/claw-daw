@@ -51,13 +51,23 @@ Score is a simple 0..1 value where **1.0 = balanced** and lower scores indicate:
 
 This is intentionally lightweight and deterministic.
 
+### 5b) Render → mix sanity gate (peaks/silence/loudness/balance)
+In addition to the spectral balance score, we run a **mix sanity** pass:
+- **peak/clipping risk** (max_volume close to 0 dBFS)
+- **silence detection** (silencedetect; catches empty renders)
+- **crude loudness proxy** (mean_volume)
+- **low/mid/high balance warnings** (coarse band splits)
+
+The loop integrates this as a gate: the attempt score is bounded by both
+`min(spectral_score, sanity_score)`.
+
 ### 6) Score → iterate (up to N attempts)
 If `score < threshold`, we adjust a small set of knobs and regenerate.
 Example adjustments:
 - increase humanize timing/velocity
-- increase velocity variance
 - simplify melody (reduce lead density)
 - change drum kit
+- **auto-fix mastering preset** via `knobs.mastering_preset` (e.g. switch to `clean` if peaks are hot)
 
 ### 7) Deliver + report
 We write `out/<name>.report.json` containing:

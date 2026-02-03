@@ -126,6 +126,19 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--score-threshold", default=0.60, type=float, help="Stop early if score >= threshold")
     sp.add_argument("--knob", action="append", default=[], help="Knob override as key=value (repeatable)")
 
+    ar = sub.add_parser(
+        "arrange-spec",
+        help="Apply a section/cue arrangement spec (YAML/JSON) to an existing project.",
+    )
+    ar.add_argument("spec", help="Path to arrangement spec (.yaml/.yml/.json)")
+    ar.add_argument("--in", dest="inp", required=True, help="Input project JSON")
+    ar.add_argument("--out", dest="out", required=True, help="Output project JSON")
+    ar.add_argument(
+        "--keep-existing-clips",
+        action="store_true",
+        help="Do not clear existing clips before placing arrangement (advanced).",
+    )
+
     dm = sub.add_parser("demos", help="Compile and render golden demos from demos/<style>/*.yaml")
     dm.add_argument("action", choices=["compile", "render"], help="compile scripts or render outputs")
     dm.add_argument("--soundfont", default=None, help="Required for render")
@@ -199,6 +212,17 @@ def main(argv: list[str] | None = None) -> None:
         else:
             for n in names:
                 print(n)
+        return
+
+    if args.cmd == "arrange-spec":
+        from claw_daw.arrange.arrange_spec import load_arrange_spec
+        from claw_daw.arrange.compiler import compile_arrangement
+        from claw_daw.io.project_json import load_project, save_project
+
+        spec = load_arrange_spec(args.spec)
+        proj = load_project(args.inp)
+        compile_arrangement(proj, spec, clear_existing=not bool(args.keep_existing_clips))
+        save_project(proj, args.out)
         return
 
     if args.cmd == "play":

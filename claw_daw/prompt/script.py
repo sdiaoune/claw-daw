@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from random import Random
 import re
 
-from claw_daw.prompt.palette import select_track_sound
+from claw_daw.prompt.palette import select_track_preset
 from claw_daw.prompt.style import preset_for
 from claw_daw.prompt.types import Brief
 
@@ -62,8 +62,9 @@ def brief_to_script(
         ti = len(track_indices)
         track_indices[role] = ti
 
-        # Choose sound.
-        sound = select_track_sound(role, style=brief.style, mood=brief.mood)
+        preset_role = select_track_preset(role, style=brief.style, mood=brief.mood)
+        sound = preset_role.sound
+        mix = preset_role.mix
 
         # add_track <name> [program]
         program = sound.program if sound.program is not None else 0
@@ -74,17 +75,18 @@ def brief_to_script(
             if sound.sampler_preset:
                 lines.append(f"set_sampler_preset {ti} {sound.sampler_preset}")
 
-        # small defaults (caller can override)
-        if role == "bass":
-            lines.append(f"set_volume {ti} {int(volumes.get(role, 105))}")
-        elif role == "drums":
-            lines.append(f"set_volume {ti} {int(volumes.get(role, 112))}")
-        else:
-            if role in volumes:
-                lines.append(f"set_volume {ti} {int(volumes[role])}")
+        # Mixer defaults (style palette), caller can override volume via volumes={...}
+        if mix.volume is not None:
+            lines.append(f"set_volume {ti} {int(volumes.get(role, mix.volume))}")
+        elif role in volumes:
+            lines.append(f"set_volume {ti} {int(volumes[role])}")
 
-        if role in {"pad", "keys"}:
-            lines.append(f"set_reverb {ti} 35")
+        if mix.pan is not None:
+            lines.append(f"set_pan {ti} {int(mix.pan)}")
+        if mix.reverb is not None:
+            lines.append(f"set_reverb {ti} {int(mix.reverb)}")
+        if mix.chorus is not None:
+            lines.append(f"set_chorus {ti} {int(mix.chorus)}")
 
     # Drums
     if "drums" in track_indices:
@@ -94,35 +96,37 @@ def brief_to_script(
         lines.append(f"gen_drums {ti} d 2:0 {style} seed={seed} density={preset.drum_density}")
         lines.append(f"place_pattern {ti} d 0:0 {bars // 2}")
 
-    # Bass
+    # A tiny chord progression (roots only), used by keys + bass follower.
+    # (These are scale degrees around A-minor-ish; deterministic & loopable.)
+    chord_roots = [scale[0], scale[5], scale[3], scale[4]]
+
+    # Bass (follows chord roots, adds cadences/turnarounds + occasional gaps/glides)
     if "bass" in track_indices:
         ti = track_indices["bass"]
-        lines.append(f"new_pattern {ti} b 2:0")
-        # A simple 2-bar groove.
-        root = scale[0]
-        fifth = scale[4]
-        octave = root + 12
-        # Seed-controlled groove variation: choose between a couple of stable patterns.
-        if rnd.random() < 0.5:
-            hits = [("0:0", root), ("0:2", fifth), ("1:0", octave), ("1:2", fifth)]
-        else:
-            hits = [("0:0", root), ("0:3", fifth), ("1:0", root), ("1:2", octave)]
+        lines.append(f"new_pattern {ti} b 4:0")
+        # For 808-ish lines, enable a little portamento; harmless for GM bass too.
+        lines.append(f"set_glide {ti} 0:0:90")
+        roots_csv = ",".join(str(int(r)) for r in chord_roots)
+        lines.append(
+            f"gen_bass_follow {ti} b 4:0 roots={roots_csv} seed={seed} "
+            f"gap_prob={0.14:.2f} glide_prob={0.28:.2f} cadence_bars=4 turnaround=1"
+        )
+        lines.append(f"place_pattern {ti} b 0:0 {max(1, bars // 4)}")
 
-        for st, pitch in hits:
-            vel = 92 + rnd.randint(-8, 10)
-            lines.append(f"add_note_pat {ti} b {pitch} {st} 0:0:240 {vel}")
-        lines.append(f"place_pattern {ti} b 0:0 {bars // 2}")
-
-    # Keys
+    # Keys (simple stabs that follow the same chord roots)
     if "keys" in track_indices:
         ti = track_indices["keys"]
-        lines.append(f"new_pattern {ti} k 2:0")
-        chord = [scale[0] + 12, scale[2] + 12, scale[4] + 12]  # triad-ish
-        for beat in ["0:0", "0:2", "1:0", "1:2"]:
-            for p in chord:
-                vel = 70 + rnd.randint(-6, 6)
-                lines.append(f"add_note_pat {ti} k {p} {beat} 0:1 {vel} chance=0.85")
-        lines.append(f"place_pattern {ti} k 0:0 {bars // 2}")
+        lines.append(f"new_pattern {ti} k 4:0")
+        # Build minor-ish triads off each root (naive but musical enough).
+        stabs = ["0:0", "0:2", "1:0", "1:2", "2:0", "2:2", "3:0", "3:2"]
+        for bar_i, root in enumerate(chord_roots):
+            chord = [root + 12, root + 15, root + 19]  # root, m3, 5
+            # 2 stabs per bar
+            for beat in stabs[bar_i * 2 : bar_i * 2 + 2]:
+                for p in chord:
+                    vel = 68 + rnd.randint(-7, 7)
+                    lines.append(f"add_note_pat {ti} k {p} {beat} 0:1 {vel} chance=0.88")
+        lines.append(f"place_pattern {ti} k 0:0 {max(1, bars // 4)}")
 
     # Pad
     if "pad" in track_indices:

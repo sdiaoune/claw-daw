@@ -238,6 +238,29 @@ Pattern transform primitives:
 
 ### Drum generator
 - `gen_drums <track> <pattern> <length_ticks> <style> seed=0 density=0.8`
+- `gen_drum_macros <track> <base_pattern> out_prefix=drums seed=0 make=both|4|8`
+
+### Bassline follower
+Generate a bass/808 line from chord roots (one root per bar), with optional cadence/turnaround, glides, and gaps:
+
+- `gen_bass_follow <track> <pattern> <length_ticks> roots=45,53,50,52 seed=0 gap_prob=0.12 glide_prob=0.25 cadence_bars=4 turnaround=1`
+
+Notes:
+- `roots=` are MIDI note numbers (e.g. A2=45). If fewer roots than bars, they repeat.
+- `glide_ticks=` (optional) can override per-note glide length; otherwise it uses `set_glide` on the track.
+
+### Palette presets
+Apply per-style instrument choices + mixer defaults to tracks by role name:
+
+- `apply_palette <style> [mood=dark]`
+
+Roles inferred from track names: `drums|bass|keys|pad|lead`.
+
+`gen_drum_macros` creates:
+- `<out_prefix>_fill_hatroll` (1 bar)
+- `<out_prefix>_fill_kickturn` (1 bar)
+- `<out_prefix>_v4` (4 bars, with a fill on the last bar)
+- `<out_prefix>_v8` (8 bars, with a fill on the last bar)
 
 Styles: `hiphop|lofi|house`
 
@@ -286,6 +309,46 @@ These are optional metadata you can use to label parts and swap patterns per sec
 
 At export time, if a clip starts inside a section with a matching variation rule,
 `src_pattern` is replaced with `dst_pattern` for that track.
+
+---
+
+## Arrange Spec compiler (sections + cues → clips)
+
+If you already have patterns in a project, you can compile a deterministic song structure
+from a small YAML/JSON spec.
+
+CLI:
+
+- `claw-daw arrange-spec <spec.yaml> --in <project.json> --out <project_out.json>`
+
+Minimal spec (v1):
+
+```yaml
+version: 1
+base_patterns:
+  0: main        # track 0 uses pattern "main" as its loop
+  1: main
+sections:
+  - name: intro
+    bars: 4
+    cues:
+      - type: dropout
+        at: end
+        bars: 1
+        tracks: [1]      # remove track 1 for last bar of section
+  - name: chorus
+    bars: 4
+    cues:
+      - type: fill
+        at: end
+        bars: 1
+        tracks: [0]
+        pattern: fill    # swap to pattern "fill" for last bar
+```
+
+Supported cue types:
+- `dropout` — remove clips for `tracks` in the cue window
+- `fill` — replace clips with `pattern` for `tracks` in the cue window
 
 ## Agent-native utilities (lint/diff/validation)
 

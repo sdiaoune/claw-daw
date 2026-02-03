@@ -167,16 +167,21 @@ def _gen_house(seed: int, attempt: int, out_prefix: str | None) -> str:
     lines.append(f"gen_drums {ti} d 2:0 house seed={seed + attempt} density={0.80 + 0.03 * spec.drum_variant}")
     lines.append(f"place_pattern {ti} d 0:0 {bars // 2}")
 
-    # Bass (simple offbeat)
+    # Bass (follower; offbeat-y + cadences)
     ti = idx["bass"]
-    lines.append(f"new_pattern {ti} b 2:0")
-    root = scale[0]
-    # Variant chooses offbeat emphasis
-    offbeats = ["0:2", "1:2"] if spec.bass_variant % 2 == 0 else ["0:2", "0:3", "1:2", "1:3"]
-    for st in offbeats:
-        vel = 92 + rnd.randint(-6, 10)
-        lines.append(f"add_note_pat {ti} b {root} {st} 0:0:240 {vel}")
-    lines.append(f"place_pattern {ti} b 0:0 {bars // 2}")
+    lines.append(f"new_pattern {ti} b 4:0")
+    # House uses a tighter, less glide-y bass.
+    lines.append(f"set_glide {ti} 0:0:30")
+    roots = [scale[0], scale[5], scale[3], scale[4]]
+    roots_csv = ",".join(str(int(r)) for r in roots)
+    # Variant influences gaps/glide a little.
+    gap = 0.10 + 0.03 * (spec.bass_variant % 3)
+    glide = 0.10 + 0.06 * (spec.bass_variant % 2)
+    lines.append(
+        f"gen_bass_follow {ti} b 4:0 roots={roots_csv} seed={seed + attempt} "
+        f"gap_prob={gap:.2f} glide_prob={glide:.2f} cadence_bars=4 turnaround=1"
+    )
+    lines.append(f"place_pattern {ti} b 0:0 {max(1, bars // 4)}")
 
     # Chords stab
     ti = idx["keys"]
@@ -215,29 +220,20 @@ def _gen_trap(seed: int, attempt: int, out_prefix: str | None) -> str:
     lines.append(f"gen_drums {ti} d 2:0 trap seed={seed + attempt} density={0.75 + 0.05 * spec.drum_variant}")
     lines.append(f"place_pattern {ti} d 0:0 {bars // 2}")
 
-    # 808 Bass
+    # 808 Bass (follower)
     ti = idx["bass"]
     lines.append(f"set_glide {ti} 0:0:90")
-    lines.append(f"new_pattern {ti} b 2:0")
-    root = scale[0]
-    fifth = scale[4]
-    octave = root + 12
-
-    if spec.bass_variant == 0:
-        hits = [("0:0", root), ("0:3", root), ("1:0", fifth), ("1:2", octave)]
-    elif spec.bass_variant == 1:
-        hits = [("0:0", root), ("0:2", fifth), ("1:1", root), ("1:3", octave)]
-    elif spec.bass_variant == 2:
-        hits = [("0:0", root), ("0:2:120", octave), ("1:0", root), ("1:2", fifth)]
-    else:
-        hits = [("0:0", root), ("0:1:120", fifth), ("1:0", octave), ("1:2:120", root)]
-
-    for st, pitch in hits:
-        vel = 100 + rnd.randint(-8, 12)
-        # a bit longer notes for trap subs
-        lines.append(f"add_note_pat {ti} b {pitch} {st} 0:1 {vel}")
-
-    lines.append(f"place_pattern {ti} b 0:0 {bars // 2}")
+    lines.append(f"new_pattern {ti} b 4:0")
+    roots = [scale[0], scale[5], scale[3], scale[4]]
+    roots_csv = ",".join(str(int(r)) for r in roots)
+    # Variant biases gaps/glides slightly.
+    gap = 0.08 + 0.04 * (spec.bass_variant % 3)
+    glide = 0.22 + 0.08 * (spec.bass_variant % 2)
+    lines.append(
+        f"gen_bass_follow {ti} b 4:0 roots={roots_csv} seed={seed + attempt} "
+        f"gap_prob={gap:.2f} glide_prob={glide:.2f} cadence_bars=4 turnaround=1"
+    )
+    lines.append(f"place_pattern {ti} b 0:0 {max(1, bars // 4)}")
 
     # Dark keys
     ti = idx["keys"]
@@ -290,21 +286,18 @@ def _gen_boom_bap(seed: int, attempt: int, out_prefix: str | None) -> str:
     lines.append(f"set_humanize {ti} timing=12 velocity=8 seed={seed + attempt}")
     lines.append(f"place_pattern {ti} d 0:0 {bars // 2}")
 
-    # Bass
+    # Bass (follower)
     ti = idx["bass"]
-    lines.append(f"new_pattern {ti} b 2:0")
-    root = scale[0]
-    third = scale[2]
-    fifth = scale[4]
-    if spec.bass_variant < 2:
-        hits = [("0:0", root), ("0:2", root), ("1:0", fifth), ("1:2", third)]
-    else:
-        hits = [("0:0", root), ("0:3", fifth), ("1:0", root), ("1:3", third)]
-
-    for st, pitch in hits:
-        vel = 88 + rnd.randint(-10, 10)
-        lines.append(f"add_note_pat {ti} b {pitch} {st} 0:0:240 {vel}")
-    lines.append(f"place_pattern {ti} b 0:0 {bars // 2}")
+    lines.append(f"new_pattern {ti} b 4:0")
+    roots = [scale[0], scale[3], scale[5], scale[4]]
+    roots_csv = ",".join(str(int(r)) for r in roots)
+    gap = 0.12 + 0.03 * (spec.bass_variant % 2)
+    glide = 0.08 + 0.04 * (spec.bass_variant % 3)
+    lines.append(
+        f"gen_bass_follow {ti} b 4:0 roots={roots_csv} seed={seed + attempt} "
+        f"gap_prob={gap:.2f} glide_prob={glide:.2f} cadence_bars=4 turnaround=1"
+    )
+    lines.append(f"place_pattern {ti} b 0:0 {max(1, bars // 4)}")
 
     # Sample-ish keys loop
     ti = idx["keys"]
