@@ -62,9 +62,9 @@ claw-daw exports are file-based. If you reuse the same `<name>` / `--out` prefix
 
 When tasked to make a beat/song with claw-daw, agents should follow this workflow.
 
-**Recommendation:** for best musical results, spawn a **music-only subagent** (isolated session) to do the composition + arrangement work.
+**Best practice (recommended):** for best musical results, spawn **music-only subagents** (isolated sessions) and run them in a pipeline (brief → drums → harmony/bass → lead → arrangement → mix/polish).
 - Isolation reduces cross-contamination from prior tasks and tends to produce more genre-faithful creative decisions.
-- The main agent can then handle packaging (exports, naming, docs, posting) and revisions.
+- The main agent coordinates handoffs (files + constraints) and handles packaging (exports, naming, docs/posting) + revisions.
 
 When tasked to make a beat/song with claw-daw, agents should follow this workflow:
 
