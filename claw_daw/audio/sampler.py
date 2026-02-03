@@ -175,6 +175,11 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
         harm2, harm3, drive = 0.10, 0.04, 1.15
 
     # Render monophonic: later note steals pitch; glide ramps.
+    # IMPORTANT: keep phase continuous across notes and apply a short release fade-out
+    # to avoid audible clicks/crackles at note boundaries.
+    phase = 0.0
+    rel_s = 0.008  # 8ms release
+
     for idx, n in enumerate(notes):
         if getattr(n, "mute", False):
             continue
@@ -187,6 +192,7 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
 
         start_s = int(n.start * sec_per_tick * sample_rate)
         end_s = int(n.end * sec_per_tick * sample_rate)
+        dur = max(0, end_s - start_s)
         vel = (n.effective_velocity() if hasattr(n, "effective_velocity") else n.velocity) / 127.0
 
         f0 = _midi_to_hz(n.pitch)
@@ -200,8 +206,9 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
         if nt > 0:
             glide_s = max(0.0, nt * sec_per_tick)
 
-        phase = 0.0
-        for i in range(max(0, end_s - start_s)):
+        rel_n = max(1, int(rel_s * sample_rate))
+
+        for i in range(dur):
             t = i / sample_rate
             # pitch glide at the start of the note
             if glide_s > 0 and t < glide_s:
@@ -210,8 +217,10 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
             else:
                 f = f0
 
-            # simple amp envelope (fast attack, medium decay)
+            # amp envelope: fast attack, medium decay, short release at end.
             env = min(1.0, t / 0.005) * math.exp(-t * 1.7)
+            if dur - i <= rel_n:
+                env *= max(0.0, (dur - i) / rel_n)
 
             phase += 2 * math.pi * f / sample_rate
             base = math.sin(phase)
