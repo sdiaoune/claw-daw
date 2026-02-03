@@ -7,6 +7,7 @@ set -euo pipefail
 # then install claw-daw from GitHub via pipx.
 
 REPO_URL="https://github.com/sdiaoune/claw-daw.git"
+SOUNDFONT_URL="https://github.com/pianobooster/fluid-soundfont/releases/latest/download/FluidR3_GM.sf2"
 
 if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
   SUDO=""
@@ -28,7 +29,8 @@ if command -v pacman >/dev/null 2>&1; then pm="pacman"; fi
 if [[ -z "$pm" ]]; then
   echo "ERROR: Unsupported Linux (no apt-get/dnf/yum/pacman found)." >&2
   echo "Install manually: fluidsynth + ffmpeg + a GM soundfont + pipx, then:" >&2
-  echo "  pipx install 'git+${REPO_URL}'" >&2
+  echo "  pipx install claw-daw" >&2
+  echo "  # (fallback) pipx install 'git+${REPO_URL}'" >&2
   exit 1
 fi
 
@@ -72,8 +74,43 @@ fi
 python3 -m pipx ensurepath >/dev/null 2>&1 || true
 export PATH="$HOME/.local/bin:$PATH"
 
-echo "[claw-daw] Installing claw-daw from GitHub via pipx…"
-pipx install --force "git+${REPO_URL}"
+echo "[claw-daw] Installing claw-daw via pipx…"
+if ! pipx install --force "claw-daw"; then
+  echo "[claw-daw] PyPI install failed; falling back to GitHub…" >&2
+  pipx install --force "git+${REPO_URL}"
+fi
+
+# Optional: download a GM SoundFont if none found
+if [[ -z "${SKIP_SOUNDFONT:-}" ]]; then
+  SF2_FOUND=""
+  for p in \
+    "/usr/share/sounds/sf2/default-GM.sf2" \
+    "/usr/share/sounds/sf2/FluidR3_GM.sf2" \
+    "/usr/share/sounds/sf2/GeneralUser-GS-v1.471.sf2" \
+    "/usr/share/soundfonts/FluidR3_GM.sf2" \
+    "/usr/share/soundfonts/default.sf2"; do
+    if [[ -f "$p" ]]; then
+      SF2_FOUND="$p"
+      break
+    fi
+  done
+
+  DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+  SF2_DIR="$DATA_HOME/claw-daw/soundfonts"
+  SF2_PATH="$SF2_DIR/FluidR3_GM.sf2"
+
+  if [[ -z "$SF2_FOUND" && ! -f "$SF2_PATH" ]]; then
+    echo "[claw-daw] No GM SoundFont found; downloading FluidR3_GM…" >&2
+    mkdir -p "$SF2_DIR"
+    if command -v curl >/dev/null 2>&1; then
+      curl -fsSL "$SOUNDFONT_URL" -o "$SF2_PATH"
+    elif command -v wget >/dev/null 2>&1; then
+      wget -O "$SF2_PATH" "$SOUNDFONT_URL"
+    else
+      echo "[claw-daw] WARNING: curl/wget not found; install a GM .sf2 manually." >&2
+    fi
+  fi
+fi
 
 echo
 echo "[claw-daw] Done. Try:"

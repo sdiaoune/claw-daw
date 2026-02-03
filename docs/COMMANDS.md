@@ -19,8 +19,14 @@ sudo apt-get install -y fluidsynth ffmpeg fluid-soundfont-gm
 macOS:
 ```bash
 brew install fluidsynth ffmpeg
-# then download a GM .sf2
+# then install a GM .sf2
 ```
+
+Windows (PowerShell):
+```powershell
+iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+```
+Run in Administrator PowerShell to install system deps (Chocolatey).
 
 ## Run validation / health check
 ```bash

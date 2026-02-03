@@ -66,8 +66,15 @@ macOS:
 
 ```bash
 brew install fluidsynth ffmpeg
-# then download a GM .sf2 soundfont
+# then install a GM .sf2 soundfont (or use the installer below)
 ```
+
+Windows (PowerShell):
+
+```powershell
+iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+```
+Run in Administrator PowerShell to install system deps (Chocolatey).
 
 ### SoundFont (.sf2)
 You need a GM SoundFont.
@@ -79,6 +86,8 @@ Otherwise, provide one via CLI:
 ```bash
 claw-daw --soundfont /path/to/your.sf2
 ```
+
+Tip: run `claw-daw paths --soundfont` to see common locations on your OS.
 
 ---
 

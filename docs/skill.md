@@ -1,6 +1,6 @@
 ---
 name: claw-daw
-version: 0.0.0
+version: 0.2.0
 description: Offline, deterministic, terminal-first MIDI DAW (TUI + headless scripts)
 homepage: https://www.clawdaw.com/
 metadata: {"clawdaw":{"category":"music","emoji":"🦞"}}
@@ -29,6 +29,12 @@ curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
 ```bash
 curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
 ```
+
+### Windows (PowerShell)
+```powershell
+iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+```
+Run in Administrator PowerShell to install system deps (Chocolatey).
 
 ## Quickstart
 

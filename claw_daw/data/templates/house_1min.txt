@@ -1,0 +1,33 @@
+# House 1-min template
+new_project template_house 124
+set_swing 0
+add_track Drums 0
+add_track Bass 33
+add_track Keys 4
+set_volume 0 118
+set_volume 1 100
+set_volume 2 90
+new_pattern 0 d 1920
+new_pattern 1 b 1920
+new_pattern 2 k 1920
+# 4-on-the-floor kick
+add_note_pat 0 d 36 0 240 115
+add_note_pat 0 d 36 480 240 115
+add_note_pat 0 d 36 960 240 115
+add_note_pat 0 d 36 1440 240 115
+# hat
+add_note_pat 0 d 42 240 120 70
+add_note_pat 0 d 42 720 120 70
+add_note_pat 0 d 42 1200 120 70
+add_note_pat 0 d 42 1680 120 70
+# bass root
+add_note_pat 1 b 45 0 480 90
+add_note_pat 1 b 45 960 480 90
+# chord
+add_note_pat 2 k 57 0 960 45
+add_note_pat 2 k 60 0 960 45
+add_note_pat 2 k 64 0 960 45
+place_pattern 0 d 0 24
+place_pattern 1 b 0 24
+place_pattern 2 k 0 24
+export_mp3 out_template_house.mp3 trim=60

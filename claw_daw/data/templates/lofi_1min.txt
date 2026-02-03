@@ -1,0 +1,27 @@
+# Lo-fi 1-min template
+new_project template_lofi 78
+set_swing 18
+add_track Drums 0
+add_track Bass 33
+add_track Keys 4
+set_volume 0 108
+set_volume 1 95
+set_volume 2 92
+set_pan 2 76
+set_reverb 2 45
+new_pattern 0 d 1920
+new_pattern 1 b 1920
+new_pattern 2 k 1920
+add_note_pat 0 d 42 0 120 60
+add_note_pat 0 d 38 480 240 95
+add_note_pat 0 d 38 1440 240 95
+add_note_pat 0 d 36 0 240 100
+add_note_pat 1 b 45 0 960 85
+add_note_pat 1 b 43 960 960 80
+add_note_pat 2 k 57 480 720 50
+add_note_pat 2 k 60 480 720 50
+add_note_pat 2 k 64 480 720 50
+place_pattern 0 d 0 24
+place_pattern 1 b 0 24
+place_pattern 2 k 0 24
+export_mp3 out_template_lofi.mp3 trim=60

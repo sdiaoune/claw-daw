@@ -11,6 +11,7 @@ set -euo pipefail
 # - This script is best-effort across common distros (apt, dnf, yum, pacman).
 
 REPO_URL="https://github.com/sdiaoune/claw-daw.git"
+SOUNDFONT_URL="https://github.com/pianobooster/fluid-soundfont/releases/latest/download/FluidR3_GM.sf2"
 # Best practice: pin to a tag for stable installs, e.g.
 # REPO_REF="v0.1.0"
 # REPO_URL="${REPO_URL}@${REPO_REF}"
@@ -35,7 +36,8 @@ if command -v pacman >/dev/null 2>&1; then pm="pacman"; fi
 if [[ -z "$pm" ]]; then
   echo "ERROR: Unsupported Linux (no apt-get/dnf/yum/pacman found)." >&2
   echo "Install manually: fluidsynth + ffmpeg + a GM soundfont + pipx, then:" >&2
-  echo "  pipx install 'git+${REPO_URL}'" >&2
+  echo "  pipx install claw-daw" >&2
+  echo "  # (fallback) pipx install 'git+${REPO_URL}'" >&2
   exit 1
 fi
 
@@ -93,9 +95,12 @@ if ! command -v pipx >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "[claw-daw] Installing claw-daw from GitHub via pipx…"
+echo "[claw-daw] Installing claw-daw via pipx…"
 # Use --force for idempotency; avoid `pipx upgrade` with a URL.
-pipx install --force "git+${REPO_URL}"
+if ! pipx install --force "claw-daw"; then
+  echo "[claw-daw] PyPI install failed; falling back to GitHub…" >&2
+  pipx install --force "git+${REPO_URL}"
+fi
 
 # Verify binary
 if ! command -v claw-daw >/dev/null 2>&1; then
@@ -103,6 +108,38 @@ if ! command -v claw-daw >/dev/null 2>&1; then
   echo "Try: export PATH=\"$HOME/.local/bin:\$PATH\"" >&2
   echo "Then: claw-daw --help" >&2
   exit 2
+fi
+
+# Optional: download a GM SoundFont if none found
+if [[ -z "${SKIP_SOUNDFONT:-}" ]]; then
+  SF2_FOUND=""
+  for p in \
+    "/usr/share/sounds/sf2/default-GM.sf2" \
+    "/usr/share/sounds/sf2/FluidR3_GM.sf2" \
+    "/usr/share/sounds/sf2/GeneralUser-GS-v1.471.sf2" \
+    "/usr/share/soundfonts/FluidR3_GM.sf2" \
+    "/usr/share/soundfonts/default.sf2"; do
+    if [[ -f "$p" ]]; then
+      SF2_FOUND="$p"
+      break
+    fi
+  done
+
+  DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
+  SF2_DIR="$DATA_HOME/claw-daw/soundfonts"
+  SF2_PATH="$SF2_DIR/FluidR3_GM.sf2"
+
+  if [[ -z "$SF2_FOUND" && ! -f "$SF2_PATH" ]]; then
+    echo "[claw-daw] No GM SoundFont found; downloading FluidR3_GM…" >&2
+    mkdir -p "$SF2_DIR"
+    if command -v curl >/dev/null 2>&1; then
+      curl -fsSL "$SOUNDFONT_URL" -o "$SF2_PATH"
+    elif command -v wget >/dev/null 2>&1; then
+      wget -O "$SF2_PATH" "$SOUNDFONT_URL"
+    else
+      echo "[claw-daw] WARNING: curl/wget not found; install a GM .sf2 manually." >&2
+    fi
+  fi
 fi
 
 echo

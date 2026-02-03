@@ -1,0 +1,13 @@
+name: boom_bap_default
+stylepack: boom_bap
+seed: 44
+max_attempts: 6
+length_bars: 32
+score_threshold: 0.60
+max_similarity: 0.92
+knobs:
+  drum_density: 0.60
+  drum_kit: boombap_dusty
+  humanize_timing: 12
+  humanize_velocity: 12
+  lead_density: 0.25

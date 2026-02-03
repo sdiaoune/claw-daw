@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
+from claw_daw.util.resources import read_text_resource
 
 
 def demo_script_text(style: str) -> str:
@@ -13,4 +13,4 @@ def demo_script_text(style: str) -> str:
     }
     if style not in templates:
         raise ValueError("style must be one of: hiphop, trap, lofi, house")
-    return Path(templates[style]).read_text(encoding="utf-8")
+    return read_text_resource(templates[style])

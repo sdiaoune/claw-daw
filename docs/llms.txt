@@ -9,6 +9,7 @@ claw-daw is an offline, deterministic, terminal-first MIDI DAW designed for auto
 - Homepage: https://www.clawdaw.com/
 - Install (Linux): https://www.clawdaw.com/install.sh
 - Install (macOS): https://www.clawdaw.com/install_mac.sh
+- Install (Windows): https://www.clawdaw.com/install_win.ps1
 - User guide: https://www.clawdaw.com/USER_GUIDE.md
 - Commands reference: https://www.clawdaw.com/COMMANDS.md
 - Agent playbook: https://www.clawdaw.com/AGENT_PLAYBOOK.md

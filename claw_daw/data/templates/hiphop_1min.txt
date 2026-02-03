@@ -1,0 +1,47 @@
+# Hip hop 1-min template (offline). Requires: --soundfont default-GM.sf2
+new_project template_hiphop 96
+set_swing 22
+add_track Drums 0
+add_track Bass 33
+add_track Keys 4
+add_track Lead 80
+set_volume 0 118
+set_volume 1 106
+set_volume 2 92
+set_volume 3 86
+set_pan 1 54
+set_pan 2 80
+set_pan 3 48
+set_reverb 2 28
+set_reverb 3 40
+new_pattern 0 d_main 1920
+new_pattern 0 d_fill 1920
+new_pattern 1 b_main 1920
+new_pattern 2 k_main 1920
+new_pattern 3 l_main 1920
+# (minimal content; customize)
+add_note_pat 0 d_main 42 0 120 78
+add_note_pat 0 d_main 42 240 120 55
+add_note_pat 0 d_main 42 480 120 72
+add_note_pat 0 d_main 42 720 120 55
+add_note_pat 0 d_main 42 960 120 78
+add_note_pat 0 d_main 42 1200 120 55
+add_note_pat 0 d_main 42 1440 120 72
+add_note_pat 0 d_main 42 1680 120 55
+add_note_pat 0 d_main 36 0 240 112
+add_note_pat 0 d_main 38 480 240 108
+add_note_pat 0 d_main 38 1440 240 108
+add_note_pat 1 b_main 45 0 840 92
+add_note_pat 1 b_main 45 960 840 92
+add_note_pat 2 k_main 57 480 360 55
+add_note_pat 2 k_main 60 480 360 55
+add_note_pat 2 k_main 64 480 360 55
+add_note_pat 3 l_main 72 0 240 55
+add_note_pat 3 l_main 74 240 240 55
+add_note_pat 3 l_main 76 480 480 60
+place_pattern 0 d_main 0 23
+place_pattern 0 d_fill 44160 1
+place_pattern 1 b_main 7680 16
+place_pattern 2 k_main 0 24
+place_pattern 3 l_main 23040 8
+export_mp3 out_template_hiphop.mp3 trim=60

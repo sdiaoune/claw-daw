@@ -5,6 +5,7 @@ set -euo pipefail
 # Installs Homebrew deps + installs claw-daw from GitHub via pipx.
 
 REPO_URL="https://github.com/sdiaoune/claw-daw.git"
+SOUNDFONT_URL="https://github.com/pianobooster/fluid-soundfont/releases/latest/download/FluidR3_GM.sf2"
 # Best practice: pin to a tag for stable installs, e.g.
 # REPO_REF="v0.1.0"
 # REPO_URL="${REPO_URL}@${REPO_REF}"
@@ -42,9 +43,12 @@ if [[ ! -w "$HOME/.local/bin" ]]; then
   export PATH="$HOME/bin:$PATH"
 fi
 
-echo "[claw-daw] Installing claw-daw from GitHub via pipx…"
+echo "[claw-daw] Installing claw-daw via pipx…"
 # --force makes reruns idempotent across failures/partial installs.
-pipx install --force "git+${REPO_URL}"
+if ! pipx install --force "claw-daw"; then
+  echo "[claw-daw] PyPI install failed; falling back to GitHub…" >&2
+  pipx install --force "git+${REPO_URL}"
+fi
 
 # Verify binary is reachable.
 if ! command -v claw-daw >/dev/null 2>&1; then
@@ -53,6 +57,33 @@ if ! command -v claw-daw >/dev/null 2>&1; then
   echo "Then run: pipx ensurepath  (and restart your terminal)" >&2
   echo "Current PATH: $PATH" >&2
   exit 2
+fi
+
+# Optional: download a GM SoundFont if none found
+if [[ -z "${SKIP_SOUNDFONT:-}" ]]; then
+  SF2_FOUND=""
+  for p in \
+    "$HOME/Library/Audio/Sounds/Banks/default.sf2" \
+    "/Library/Audio/Sounds/Banks/default.sf2"; do
+    if [[ -f "$p" ]]; then
+      SF2_FOUND="$p"
+      break
+    fi
+  done
+
+  DATA_HOME="$HOME/Library/Application Support"
+  SF2_DIR="$DATA_HOME/claw-daw/soundfonts"
+  SF2_PATH="$SF2_DIR/FluidR3_GM.sf2"
+
+  if [[ -z "$SF2_FOUND" && ! -f "$SF2_PATH" ]]; then
+    echo "[claw-daw] No GM SoundFont found; downloading FluidR3_GM…" >&2
+    mkdir -p "$SF2_DIR"
+    if command -v curl >/dev/null 2>&1; then
+      curl -fsSL "$SOUNDFONT_URL" -o "$SF2_PATH"
+    else
+      echo "[claw-daw] WARNING: curl not found; install a GM .sf2 manually." >&2
+    fi
+  fi
 fi
 
 echo

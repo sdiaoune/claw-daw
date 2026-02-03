@@ -18,6 +18,7 @@ from claw_daw.util.gm import parse_program
 # (unused) slice_project_loop was removed from imports
 from claw_daw.util.region import slice_project_range
 from claw_daw.util.derived import project_song_end_tick
+from claw_daw.util.soundfont import find_default_soundfont
 from claw_daw.util.quantize import parse_grid, quantize_project_track
 from claw_daw.util.limits import MAX_TRACKS, MAX_PATTERNS_PER_TRACK, MAX_CLIPS_PER_TRACK, MAX_NOTES_PER_PATTERN
 
@@ -61,9 +62,9 @@ class DawApp:
         self.stdscr.keypad(True)
 
         # prompt for soundfont on first run, default to system GM
-        default_sf = Path("/usr/share/sounds/sf2/default-GM.sf2")
-        if default_sf.exists():
-            self.soundfont = str(default_sf)
+        default_sf = find_default_soundfont()
+        if default_sf:
+            self.soundfont = default_sf
 
         while True:
             self.draw()
@@ -574,12 +575,15 @@ class DawApp:
 
     def export_wav(self, path: str) -> None:
         proj = self.require_project()
+        sf = self.soundfont or find_default_soundfont()
+        if not sf:
+            raise RuntimeError("No SoundFont available. Install a GM .sf2 and/or set --soundfont in headless mode.")
         tmp = tempfile.NamedTemporaryFile(prefix="claw-daw-", suffix=".mid", delete=False)
         tmp.close()
         midi_path = tmp.name
         try:
             export_midi(proj, midi_path)
-            render_wav(self.soundfont or "/usr/share/sounds/sf2/default-GM.sf2", midi_path, path)
+            render_wav(sf, midi_path, path)
         finally:
             Path(midi_path).unlink(missing_ok=True)
 

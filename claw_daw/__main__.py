@@ -7,6 +7,8 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from claw_daw.util.soundfont import default_soundfont_paths, find_default_soundfont
+
 
 @dataclass
 class DoctorResult:
@@ -16,14 +18,6 @@ class DoctorResult:
 
 def _which(cmd: str) -> str | None:
     return shutil.which(cmd)
-
-
-def _default_soundfont_paths() -> list[str]:
-    return [
-        "/usr/share/sounds/sf2/default-GM.sf2",
-        "/usr/share/sounds/sf2/FluidR3_GM.sf2",
-        "/usr/share/sounds/sf2/GeneralUser-GS-v1.471.sf2",
-    ]
 
 
 def _doctor() -> DoctorResult:
@@ -46,11 +40,7 @@ def _doctor() -> DoctorResult:
         ok = False
         notes.append("ffmpeg: MISSING (needed for MP3 encodes)")
 
-    sf2_found = None
-    for p in _default_soundfont_paths():
-        if Path(p).exists():
-            sf2_found = p
-            break
+    sf2_found = find_default_soundfont()
     if sf2_found:
         notes.append(f"soundfont: OK ({sf2_found})")
     else:
@@ -188,11 +178,12 @@ def main(argv: list[str] | None = None) -> None:
         if not res.ok:
             print("\nLinux (Debian/Ubuntu): sudo apt-get install fluidsynth ffmpeg fluid-soundfont-gm")
             print("macOS: brew install fluidsynth ffmpeg")
+            print("Windows (PowerShell): iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex")
         return
 
     if args.cmd == "paths":
         if args.soundfont:
-            for pth in _default_soundfont_paths():
+            for pth in default_soundfont_paths():
                 print(pth)
         else:
             print(f"cwd: {os.getcwd()}")

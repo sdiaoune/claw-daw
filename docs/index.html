@@ -33,7 +33,7 @@
         "@type": "SoftwareApplication",
         "name": "claw-daw",
         "applicationCategory": "MultimediaApplication",
-        "operatingSystem": "Linux, macOS",
+        "operatingSystem": "Linux, macOS, Windows",
         "url": "https://www.clawdaw.com/",
         "description": "Offline, deterministic, terminal-first MIDI DAW designed for automation and agent workflows."
       }
@@ -515,27 +515,36 @@ claw-daw prompt --out views_style_v1 --prompt-file prompt.txt --iters 3 --max-si
             <div class="tabs" role="tablist" aria-label="Install options">
               <button class="tabbtn" role="tab" aria-selected="true" data-tab="linux" type="button">Linux</button>
               <button class="tabbtn" role="tab" aria-selected="false" data-tab="macos" type="button">macOS</button>
+              <button class="tabbtn" role="tab" aria-selected="false" data-tab="windows" type="button">Windows</button>
               <button class="tabbtn" role="tab" aria-selected="false" data-tab="manual" type="button">Manual (Ubuntu)</button>
             </div>
 
             <div class="tabpanel active" data-panel="linux">
               <pre><code id="install-linux">curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash</code></pre>
               <div class="small" style="margin-top:8px">
-                Best on Debian/Ubuntu • attempts common distros • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (when available), and <code class="inline">claw-daw</code>.
+                Best on Debian/Ubuntu • attempts common distros • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (if missing), and <code class="inline">claw-daw</code>.
               </div>
             </div>
 
             <div class="tabpanel" data-panel="macos">
               <pre><code id="install-macos">curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash</code></pre>
               <div class="small" style="margin-top:8px">
-                Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, and <code class="inline">claw-daw</code>.
+                Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (if missing), and <code class="inline">claw-daw</code>.
+              </div>
+            </div>
+
+            <div class="tabpanel" data-panel="windows">
+              <pre><code id="install-windows">iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex</code></pre>
+              <div class="small" style="margin-top:8px">
+                PowerShell • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (if missing), and <code class="inline">claw-daw</code>.<br>
+                Run in Administrator PowerShell to install system deps (Chocolatey).
               </div>
             </div>
 
             <div class="tabpanel" data-panel="manual">
               <pre><code id="install-manual">sudo apt-get update
 sudo apt-get install -y fluidsynth ffmpeg fluid-soundfont-gm pipx
-pipx reinstall "git+https://github.com/sdiaoune/claw-daw.git"</code></pre>
+pipx install claw-daw</code></pre>
               <div class="small" style="margin-top:8px">Use this if you prefer explicit package installs.</div>
             </div>
           </div>
@@ -548,7 +557,8 @@ claw-daw --help</code></pre>
               If <code class="inline">claw-daw</code> is not found, restart your terminal.
               Still not found? Try:
               <code class="inline">export PATH="$HOME/.local/bin:$PATH"</code> (Linux)
-              or <code class="inline">export PATH="$HOME/bin:$PATH"</code> (some mac installs).
+              or <code class="inline">export PATH="$HOME/bin:$PATH"</code> (some mac installs).<br>
+              Windows: run <code class="inline">pipx ensurepath</code> then restart PowerShell.
             </div>
           </div>
 
@@ -556,7 +566,7 @@ claw-daw --help</code></pre>
             <div style="font-weight:700; margin-bottom:8px">Update</div>
             <div class="small">
               Rerun the installer (safe) or use:
-              <code class="inline">pipx reinstall "git+https://github.com/sdiaoune/claw-daw.git"</code>
+              <code class="inline">pipx reinstall claw-daw</code>
             </div>
           </div>
 

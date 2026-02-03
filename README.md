@@ -39,11 +39,17 @@ curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
 curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
 ```
 
+### Windows (PowerShell)
+```powershell
+iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+```
+Run in Administrator PowerShell to install system deps (Chocolatey).
+
 Manual (Ubuntu):
 ```bash
 sudo apt-get update
 sudo apt-get install -y fluidsynth ffmpeg fluid-soundfont-gm pipx
-pipx reinstall "git+https://github.com/sdiaoune/claw-daw.git"
+pipx install claw-daw
 ```
 
 ## Quickstart
