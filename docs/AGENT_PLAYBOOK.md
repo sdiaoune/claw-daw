@@ -112,6 +112,7 @@ A reliable agent workflow is boring on purpose:
 - [ ] **Arrange**: place patterns into sections (energy changes every 4–8 bars)
 - [ ] **Preview fast**: render 8–16 bars (`export_preview_mp3`) before full render
   - sanity-check **0:00–0:10 drums** specifically (kick/snare/hats should sound like drums; no crackle/noise)
+  - sanity-check **bass translation** (audible fundamental or harmonics; not swallowed by chords)
 - [ ] **Apply the 5 features when useful**:
   - Drum kit roles (`kick/snare/hh`)
   - 808 preset + glide

@@ -126,6 +126,23 @@ If drums sound like crackling/noise or “not drums”, it’s almost always one
 
 3) **Always do a 0–10s preview before exporting stems**
 - Render a short preview (`export_preview_mp3`) and listen specifically for: kick/snare clarity + hats not crackling.
+
+### Bass rendering sanity checklist (prevents “bass present in MIDI but inaudible” failures)
+
+If bass notes exist but you can’t hear bass, check:
+
+1) **No `drum_kit` on melodic tracks**
+- `drum_kit` is for role-based drum mapping. Don’t set it on bass/keys/lead tracks.
+
+2) **Pick a bass patch that translates on small speakers**
+- Prefer GM synth bass patches (e.g. `synth_bass_1`) or layer some mid harmonics.
+
+3) **Keep bass FX minimal**
+- Avoid reverb on bass; keep it mostly mono/center.
+
+4) **Preview the low-end early**
+- Before stems/final export: listen to the first 10–20 seconds on small speakers/headphones.
+
 - **808 presets + glide**:
   - `set_808 <track_index> <preset>`
   - `set_glide <track_index> <ticks|bar:beat>`
