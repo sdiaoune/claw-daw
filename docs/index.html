@@ -288,7 +288,8 @@
             <span>from-scratch — script, validate, export</span>
           </div>
           <pre><code># install (Linux)
-$ curl -fsSL https://www.clawdaw.com/install.sh | bash
+$ curl -fsSL https://www.clawdaw.com/install.sh -o /tmp/clawdaw-install.sh
+$ bash /tmp/clawdaw-install.sh
 
 # sanity check
 $ claw-daw doctor
@@ -521,21 +522,21 @@ claw-daw prompt --out views_style_v1 --prompt-file prompt.txt --iters 3 --max-si
             </div>
 
             <div class="tabpanel active" data-panel="linux">
-              <pre><code id="install-linux">curl -fsSL https://www.clawdaw.com/install.sh | bash</code></pre>
+              <pre><code id="install-linux">curl -fsSL https://www.clawdaw.com/install.sh -o /tmp/clawdaw-install.sh && bash /tmp/clawdaw-install.sh</code></pre>
               <div class="small" style="margin-top:8px">
                 Best on Debian/Ubuntu • attempts common distros • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (if missing), and <code class="inline">claw-daw</code>.
               </div>
             </div>
 
             <div class="tabpanel" data-panel="macos">
-              <pre><code id="install-macos">curl -fsSL https://www.clawdaw.com/install_mac.sh | bash</code></pre>
+              <pre><code id="install-macos">curl -fsSL https://www.clawdaw.com/install_mac.sh -o /tmp/clawdaw-install.sh && bash /tmp/clawdaw-install.sh</code></pre>
               <div class="small" style="margin-top:8px">
                 Requires Homebrew • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (if missing), and <code class="inline">claw-daw</code>.
               </div>
             </div>
 
             <div class="tabpanel" data-panel="windows">
-              <pre><code id="install-windows">iwr https://www.clawdaw.com/install_win.ps1 -useb | iex</code></pre>
+              <pre><code id="install-windows">iwr https://www.clawdaw.com/install_win.ps1 -UseBasicParsing -OutFile $env:TEMP\clawdaw-install.ps1; &amp; $env:TEMP\clawdaw-install.ps1</code></pre>
               <div class="small" style="margin-top:8px">
                 PowerShell • installs <code class="inline">fluidsynth</code>, <code class="inline">ffmpeg</code>, a GM SoundFont (if missing), and <code class="inline">claw-daw</code>.<br>
                 Run in Administrator PowerShell to install system deps (Chocolatey).

@@ -116,6 +116,11 @@ if (-not $SkipSoundfont) {
 
 Write-Host ""
 if (-not (Test-Command "claw-daw")) {
+  Write-Host "[claw-daw] claw-daw not found after install; retrying pipx…" -ForegroundColor Yellow
+  Invoke-Python -Args @("-m", "pipx", "install", "--force", "claw-daw") | Out-Null
+}
+
+if (-not (Test-Command "claw-daw")) {
   Write-Host "[claw-daw] ERROR: install completed but 'claw-daw' is not on PATH." -ForegroundColor Yellow
   Write-Host "Run: pipx ensurepath  (then restart PowerShell)"
   Write-Host "Then try: claw-daw --help"

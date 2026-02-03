@@ -10,8 +10,8 @@
     "skill_json": "https://www.clawdaw.com/skill.json"
   },
   "install": {
-    "linux": "curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash",
-    "macos": "curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash",
-    "windows": "iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex"
+    "linux": "curl -fsSL https://www.clawdaw.com/install.sh -o /tmp/clawdaw-install.sh && bash /tmp/clawdaw-install.sh",
+    "macos": "curl -fsSL https://www.clawdaw.com/install_mac.sh -o /tmp/clawdaw-install.sh && bash /tmp/clawdaw-install.sh",
+    "windows": "iwr https://www.clawdaw.com/install_win.ps1 -UseBasicParsing -OutFile $env:TEMP\\clawdaw-install.ps1; & $env:TEMP\\clawdaw-install.ps1"
   }
 }

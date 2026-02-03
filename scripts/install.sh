@@ -100,6 +100,21 @@ if ! pipx install --force "claw-daw"; then
   pipx install --force "git+${REPO_URL}"
 fi
 
+# Ensure pipx registered the install; retry once if not.
+if ! pipx list | grep -q "package claw-daw"; then
+  echo "[claw-daw] pipx install did not register; retrying…" >&2
+  if ! pipx install --force "claw-daw"; then
+    echo "[claw-daw] PyPI install failed; falling back to GitHub…" >&2
+    pipx install --force "git+${REPO_URL}"
+  fi
+fi
+
+if ! pipx list | grep -q "package claw-daw"; then
+  echo "[claw-daw] ERROR: pipx did not install claw-daw." >&2
+  echo "Try: pipx install claw-daw" >&2
+  exit 2
+fi
+
 # Optional: download a GM SoundFont if none found
 if [[ -z "${SKIP_SOUNDFONT:-}" ]]; then
   SF2_FOUND=""

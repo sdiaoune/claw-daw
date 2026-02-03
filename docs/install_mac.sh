@@ -67,6 +67,21 @@ if ! pipx install --force "claw-daw"; then
   pipx install --force "git+${REPO_URL}"
 fi
 
+# Ensure pipx registered the install; retry once if not.
+if ! pipx list | grep -q "package claw-daw"; then
+  echo "[claw-daw] pipx install did not register; retrying…" >&2
+  if ! pipx install --force "claw-daw"; then
+    echo "[claw-daw] PyPI install failed; falling back to GitHub…" >&2
+    pipx install --force "git+${REPO_URL}"
+  fi
+fi
+
+if ! pipx list | grep -q "package claw-daw"; then
+  echo "[claw-daw] ERROR: pipx did not install claw-daw." >&2
+  echo "Try: pipx install claw-daw" >&2
+  exit 2
+fi
+
 # Verify binary is reachable.
 if ! command -v claw-daw >/dev/null 2>&1; then
   echo "[claw-daw] ERROR: install completed but 'claw-daw' is not on PATH." >&2

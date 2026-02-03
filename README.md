@@ -31,17 +31,20 @@ Offline, deterministic, terminal-first MIDI DAW.
 
 ### Linux (recommended)
 ```bash
-curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
+curl -fsSL https://www.clawdaw.com/install.sh -o /tmp/clawdaw-install.sh
+bash /tmp/clawdaw-install.sh
 ```
 
 ### macOS
 ```bash
-curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
+curl -fsSL https://www.clawdaw.com/install_mac.sh -o /tmp/clawdaw-install.sh
+bash /tmp/clawdaw-install.sh
 ```
 
 ### Windows (PowerShell)
 ```powershell
-iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+iwr https://www.clawdaw.com/install_win.ps1 -UseBasicParsing -OutFile $env:TEMP\clawdaw-install.ps1
+& $env:TEMP\clawdaw-install.ps1
 ```
 Run in Administrator PowerShell to install system deps (Chocolatey).
 
