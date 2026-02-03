@@ -43,6 +43,7 @@ If `claw-daw` is not found after install, run `pipx ensurepath` and restart your
 ## Quickstart
 
 ```bash
+claw-daw --version
 claw-daw doctor
 claw-daw paths --soundfont
 

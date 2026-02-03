@@ -56,6 +56,12 @@ pipx install claw-daw
 ```
 If `claw-daw` is not found after install, run `pipx ensurepath` and restart your terminal.
 
+### Verify install
+```bash
+claw-daw --version
+claw-daw doctor
+```
+
 ## Quickstart
 
 ### 1) Health check + SoundFont
