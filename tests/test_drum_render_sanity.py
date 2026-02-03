@@ -4,6 +4,16 @@ from claw_daw.audio.drum_render_sanity import convert_sampler_drums_to_gm
 from claw_daw.model.types import Note, Pattern, Project, Track
 
 
+def test_render_default_is_gm_mode_docstring_contract() -> None:
+    # This is a light guard: default behavior should be to prefer GM for reliability.
+    # (We don't render audio in unit tests.)
+    import inspect
+    from claw_daw.audio.render import render_project_wav
+
+    sig = inspect.signature(render_project_wav)
+    assert sig.parameters["drum_mode"].default == "gm"
+
+
 def test_convert_sampler_drums_to_gm_sets_channel_and_disables_sampler() -> None:
     dr = Track(name="Drums", channel=0, sampler="drums", drum_kit="house_clean")
     dr.patterns["p1"] = Pattern(

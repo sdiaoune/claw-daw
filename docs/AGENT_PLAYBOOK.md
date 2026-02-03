@@ -113,7 +113,8 @@ A reliable agent workflow is boring on purpose:
 - [ ] **Preview fast**: render 8–16 bars (`export_preview_mp3`) before full render
   - sanity-check **0:00–0:10 drums** specifically (kick/snare/hats should sound like drums; no crackle/noise)
   - sanity-check **bass translation** (audible fundamental or harmonics; not swallowed by chords)
-  - If you hear crackle/noise: switch drums to **GM drum channel 10** (or rely on the automatic fallback in `render_project_wav(drum_mode="auto")`).
+  - If you hear crackle/noise: switch drums to **GM drum channel 10**.
+  - Note: exports now default to the safe path (sampler drums are converted to GM channel 10 unless you explicitly opt in).
 - [ ] **Apply the 5 features when useful**:
   - Drum kit roles (`kick/snare/hh`)
   - 808 preset + glide

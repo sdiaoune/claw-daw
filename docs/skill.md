@@ -120,9 +120,9 @@ If drums sound like crackling/noise or “not drums”, it’s almost always one
 - If you need more percussion, use `perc`, `shaker`, or `tom_*`.
 
 2) **Wrong render mode for drums (sampler vs GM drum channel)**
-- If you use role-based kits, prefer:
-  - `set_sampler <drum_track> drums` + `set_drum_kit <drum_track> <kit>`
-- If you want plain GM/FluidSynth drums, ensure the drum track is on **MIDI channel 10** (channel index `9`) and not in sampler mode.
+- **Default for reliable exports:** render drums as **plain GM drums on MIDI channel 10** (channel index `9`).
+- Sampler drums (`set_sampler <drum_track> drums` + `set_drum_kit ...`) are **opt-in** and may crackle on some setups.
+- The renderer now defaults to a safe path (converts sampler drums → GM channel 10) unless you explicitly opt in to sampler drums.
 
 3) **Always do a 0–10s preview before exporting stems**
 - Render a short preview (`export_preview_mp3`) and listen specifically for: kick/snare clarity + hats not crackling.

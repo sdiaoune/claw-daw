@@ -40,7 +40,7 @@ def render_project_wav(
     soundfont: str,
     out_wav: str,
     sample_rate: int = 44100,
-    drum_mode: str = "auto",  # auto|sampler|gm
+    drum_mode: str = "gm",  # gm|auto|sampler
 ) -> str:
     """Render a project to a stereo WAV.
 
@@ -48,9 +48,10 @@ def render_project_wav(
     - All other tracks are rendered via FluidSynth.
 
     drum_mode:
-      - "sampler": keep sampler drums as-is
-      - "gm": convert sampler drums to plain GM drums (MIDI channel 10) and render via FluidSynth
-      - "auto": render a short preview in both modes and pick the more reliable one
+      - "gm" (default): ALWAYS convert sampler drums to plain GM drums (MIDI channel 10) and render via FluidSynth.
+        This is the most reliable option across SoundFonts and avoids crackly sampler drum renders.
+      - "auto": render a short preview in both modes and pick the more reliable one.
+      - "sampler": keep sampler drums as-is (opt-in; may crackle depending on environment).
 
     The goal is correctness + determinism for an offline MVP, not real-time.
     """
@@ -62,7 +63,7 @@ def render_project_wav(
 
     # Optional: auto-fallback for crackly sampler drums.
     if drum_mode not in {"auto", "sampler", "gm"}:
-        raise ValueError("drum_mode must be: auto|sampler|gm")
+        raise ValueError("drum_mode must be: gm|auto|sampler")
 
     # We choose mode up front so the rest of the render logic stays simple.
     if drum_mode == "gm":
