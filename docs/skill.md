@@ -15,24 +15,24 @@ When a user prompts an agent, the agent should use claw-daw like a producer uses
 The user is prompting the *agent*, not claw-daw.
 
 - **Homepage:** https://www.clawdaw.com/
-- **Docs:** https://sdiaoune.github.io/claw-daw/
+- **Docs:** https://www.clawdaw.com/USER_GUIDE.md
 - **GitHub:** https://github.com/sdiaoune/claw-daw
 
 ## Quick install (one-go)
 
 ### Linux
 ```bash
-curl -fsSL https://sdiaoune.github.io/claw-daw/install.sh | bash
+curl -fsSL https://www.clawdaw.com/install.sh | bash
 ```
 
 ### macOS
 ```bash
-curl -fsSL https://sdiaoune.github.io/claw-daw/install_mac.sh | bash
+curl -fsSL https://www.clawdaw.com/install_mac.sh | bash
 ```
 
 ### Windows (PowerShell)
 ```powershell
-iwr https://sdiaoune.github.io/claw-daw/install_win.ps1 -useb | iex
+iwr https://www.clawdaw.com/install_win.ps1 -useb | iex
 ```
 Run in Administrator PowerShell to install system deps (Chocolatey).
 
@@ -40,12 +40,14 @@ Run in Administrator PowerShell to install system deps (Chocolatey).
 
 ```bash
 claw-daw doctor
+claw-daw paths --soundfont
 
 # Render a headless script
 claw-daw --headless \
-  --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
+  --soundfont /path/to/your.sf2 \
   --script tools/<unique_name>.txt
 ```
+Tip: set `CLAW_DAW_SOUNDFONT=/path/to/your.sf2` to make renders less verbose.
 
 ## Output naming / overwrite prevention (MANDATORY)
 
@@ -69,6 +71,7 @@ claw-daw exports are file-based. If you reuse the same `<name>` / `--out` prefix
 When tasked to make a beat/song with claw-daw, agents should follow this workflow.
 
 **Best practice (recommended):** for best musical results, spawn **music-only subagents** (isolated sessions) and run them in a pipeline.
+If your environment does not support subagents, proceed as a single agent and follow the same steps.
 
 ### Recommended subagent roles (use these titles)
 
@@ -104,7 +107,7 @@ When tasked to make a beat/song with claw-daw, agents should follow this workflo
 
 2) **Song Structure Research** (MANDATORY for genre/era)
 - Research structure + bar counts + tempo range
-- Cite sources
+- Cite sources (or explicitly note when web access is unavailable)
 - Save the blueprint into the working plan
 
 3) **Generate a solid v1 quickly (choose one path)**
@@ -192,7 +195,7 @@ If bass notes exist but you can’t hear bass, check:
   - `apply_palette <style> [mood=...]` (uses track names to infer roles)
 - **Section-aware arrangement compiler**:
   - `claw-daw arrange-spec <spec.yaml> --in <project.json> --out <project_out.json>`
-- **Acceptance tests** (agent workflow): per-genre mini-gates in `docs/AGENT_PLAYBOOK.md`
+- **Acceptance tests** (agent workflow): per-genre mini-gates in https://www.clawdaw.com/AGENT_PLAYBOOK.md
 
 ## Song Structure Research (required for genre/era requests)
 
@@ -200,7 +203,7 @@ When the user requests a beat/song in a specific **genre and/or era** (e.g., “
 
 1) **Research typical song structure** for that style using reputable internet sources.
    - Use web research when available.
-   - If web access is not available, use an LLM as a fallback.
+   - If web access is not available, use an LLM/heuristics as a fallback and explicitly note the lack of sources.
 
 2) **Output a concise structure blueprint** that includes:
    - sections (e.g., intro / verse / hook / bridge / outro)
@@ -210,7 +213,7 @@ When the user requests a beat/song in a specific **genre and/or era** (e.g., “
 
 3) **Cite sources used**:
    - If web research: include URLs.
-   - If LLM fallback: record the model used + a short rationale for why the structure is plausible.
+   - If web access is unavailable: explicitly state that and provide a short rationale for why the structure is plausible.
 
 4) **Save the structure template into the working plan** (the agent’s plan / scratchpad) so downstream steps (loop generation, arrangement, export) follow it.
 
@@ -222,7 +225,7 @@ When the user requests a beat/song in a specific **genre and/or era** (e.g., “
 ## Agent Playbook (recommended)
 
 If you’re building an agent that uses claw-daw, start here:
-- https://sdiaoune.github.io/claw-daw/AGENT_PLAYBOOK.md
+- https://www.clawdaw.com/AGENT_PLAYBOOK.md
 
 ## Skill files
 
@@ -232,4 +235,4 @@ These are hosted for convenience:
 - `skill.json`: https://www.clawdaw.com/skill.json
 
 Additional docs:
-- Agent Playbook: https://sdiaoune.github.io/claw-daw/AGENT_PLAYBOOK.md
+- Agent Playbook: https://www.clawdaw.com/AGENT_PLAYBOOK.md
