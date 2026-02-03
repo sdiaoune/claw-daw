@@ -58,6 +58,42 @@ claw-daw exports are file-based. If you reuse the same `<name>` / `--out` prefix
 
 **Agent requirement:** before rendering, the agent must check whether any of these files already exist for the chosen prefix and, if so, pick a new prefix (or ask the user).
 
+## Agent-first workflow (what to do, every time)
+
+When tasked to make a beat/song with claw-daw, agents should follow this workflow:
+
+1) **Pick a unique output prefix** (MANDATORY)
+- Use: `YYYY-MM-DD_<genre>_<bpm>_v1`
+- If any `out/<name>.*` already exists, bump to `_v2`, `_v3`, …
+
+2) **Song Structure Research** (MANDATORY for genre/era)
+- Research structure + bar counts + tempo range
+- Cite sources
+- Save the blueprint into the working plan
+
+3) **Generate a solid v1 quickly (choose one path)**
+- **Stylepack (best default, includes scoring + report):**
+  - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> --attempts 6`
+- **Genre pack (fast scaffolding):**
+  - `claw-daw pack <trap|house|boom_bap> --out <name> --seed <n> --attempts 6`
+- **From scratch (manual script):**
+  - write `tools/<name>.txt` with patterns + clips
+
+4) **Apply palette + groove macros (recommended quality lift)**
+- `apply_palette <style>` to set better GM programs + mixer defaults per role
+- `gen_drum_macros <track> <base_pattern> ...` to create 4/8-bar variations + fills
+- `gen_bass_follow <track> <pattern> <length> roots=...` to lock bass/808 to harmony
+- `arrange-spec <spec.yaml> ...` to place sections + dropouts/fills deterministically
+
+5) **Render + export deliverables**
+- Always export: MP3 + MIDI + JSON
+- If using stylepacks: ensure `out/<name>.report.json` is produced
+
+6) **Quality gates before sending**
+- Check: genre acceptance tests + avoid overwriting + listen to preview
+
+---
+
 ## One-shot features (agent-first)
 
 When a user prompts an agent, the agent can use claw-daw for fast “one-shot” generation and revisions:
@@ -73,6 +109,18 @@ When a user prompts an agent, the agent can use claw-daw for fast “one-shot”
   - `claw-daw pack <trap|house|boom_bap> --out <name> --seed <n> --attempts <n> --max-similarity <0..1>`
 - **Novelty control** for prompt→script iteration:
   - `claw-daw prompt ... --iters N --max-similarity 0.85–0.95`
+- **Stylepacks v1 (best default for agents)**: BeatSpec → compile → render → score → iterate → report
+  - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> --attempts 6 --score-threshold 0.60`
+  - writes `out/<name>.report.json`
+- **Mix sanity gate (audio-level)** is included in stylepacks scoring and will retry deterministically when it detects obvious issues.
+- **Drum variations + fills macro**:
+  - `gen_drum_macros <track> <base_pattern> out_prefix=drums seed=0 make=both|4|8`
+- **Bass follower**:
+  - `gen_bass_follow <track> <pattern> <length> roots=... seed=... gap_prob=... glide_prob=...`
+- **Palette presets**:
+  - `apply_palette <style> [mood=...]` (uses track names to infer roles)
+- **Section-aware arrangement compiler**:
+  - `claw-daw arrange-spec <spec.yaml> --in <project.json> --out <project_out.json>`
 - **Acceptance tests** (agent workflow): per-genre mini-gates in `docs/AGENT_PLAYBOOK.md`
 
 ## Song Structure Research (required for genre/era requests)
