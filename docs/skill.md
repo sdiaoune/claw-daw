@@ -62,7 +62,31 @@ claw-daw exports are file-based. If you reuse the same `<name>` / `--out` prefix
 
 When tasked to make a beat/song with claw-daw, agents should follow this workflow.
 
-**Best practice (recommended):** for best musical results, spawn **music-only subagents** (isolated sessions) and run them in a pipeline (brief → drums → harmony/bass → lead → arrangement → mix/polish).
+**Best practice (recommended):** for best musical results, spawn **music-only subagents** (isolated sessions) and run them in a pipeline.
+
+### Recommended subagent roles (use these titles)
+
+1) **A&R / Reference Agent**
+- Clarifies genre lane + era, BPM/key, mood, 2–3 reference *vibes* (describe only).
+- Outputs: creative brief + bar-based section map.
+
+2) **Drum & Perc Agent**
+- Programs the signature groove + 2 variations + fills (every 8 bars), with swing/microtiming notes.
+- Uses **supported drum roles** only.
+
+3) **Harmony & Bass Agent**
+- Writes chord loop + bouncy bassline (+ turnaround variation).
+- Avoids bass pitfalls (no `drum_kit` on melodic tracks; minimal bass reverb).
+
+4) **Melody / Lead Agent**
+- Writes a sparse, catchy motif + call/response fills that stay out of the vocal pocket.
+
+5) **Arrangement Agent**
+- Builds the full song (2:30–3:10) from sections; adds drops, risers/impacts, and energy changes.
+
+6) **Mix / Polish Agent**
+- Gain stages + basic FX balance; exports master + stems; ensures drums/bass translate.
+
 - Isolation reduces cross-contamination from prior tasks and tends to produce more genre-faithful creative decisions.
 - The main agent coordinates handoffs (files + constraints) and handles packaging (exports, naming, docs/posting) + revisions.
 
