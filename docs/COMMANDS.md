@@ -58,7 +58,10 @@ pytest -q
 ruff check .
 ```
 
-## Generate a stylepack beat directly
+## Generate a stylepack beat directly (opt-in)
+Use this only when you explicitly want scored iteration + `out/<name>.report.json`.
+The default “full artistic freedom” workflow is to write/edit a headless script in `tools/<name>.txt`.
+
 ```bash
 claw-daw stylepack trap_2020s --out my_trap --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
   --seed 2026 --attempts 6 --bars 36 --score-threshold 0.62 \

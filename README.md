@@ -22,7 +22,7 @@ Offline, deterministic, terminal-first MIDI DAW.
   - **Drum Kits v1 (role-based)**: `list_drum_kits`, `set_drum_kit <track> <kit>`, and `add_note_pat ... <pitch|role> ...`
   - **808 presets**: `set_808 <track> <preset>` + `set_glide` for portamento
 - **Genre Packs v1** (from-scratch, deterministic): `claw-daw pack <trap|house|boom_bap> ...`
-- **Stylepacks v1** (scored iteration + reports): `claw-daw stylepack <trap_2020s|boom_bap|house> ...`
+- **Stylepacks v1 (opt-in / explicit request)** (scored iteration + reports): `claw-daw stylepack <trap_2020s|boom_bap|house> ...`
 - **Prompt → script helper** (offline): style-aware scaffolding with **novelty control** (`--max-similarity`)
   - Supported styles: `hiphop | lofi | house | techno | ambient | trap | boom_bap`
 - **MIDI out**: play to hardware/virtual MIDI ports (`claw-daw play`)
