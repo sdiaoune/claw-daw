@@ -145,6 +145,9 @@ Scripts are plain text files containing one command per line.
 For best results, treat **claw-daw as the workstation**.
 You prompt an agent with a producer brief, and the agent uses claw-daw (headless scripts + iteration) to build the track.
 
+**Default for full artistic freedom:** have the agent write/edit a fresh headless script in `tools/<name>.txt` (from scratch).
+(Stylepacks/genre packs are optional and should be used only when explicitly requested.)
+
 Agent Playbook (recommended reading):
 - `docs/AGENT_PLAYBOOK.md`
 
