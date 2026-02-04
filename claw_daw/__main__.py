@@ -67,9 +67,12 @@ def _doctor(*, audio: str | None = None) -> DoctorResult:
             s = analyze_mix_sanity(audio)
 
             notes.append(f"audio.integrated_lufs: {m.integrated_lufs}")
+            notes.append(f"audio.shortterm_lufs: {m.shortterm_lufs}")
             notes.append(f"audio.true_peak_dbtp: {m.true_peak_dbtp}")
             notes.append(f"audio.crest_factor_db: {m.crest_factor_db}")
             notes.append(f"audio.stereo_correlation: {m.stereo_correlation}")
+            notes.append(f"audio.stereo_balance_db: {m.stereo_balance_db}")
+            notes.append(f"audio.spectral_tilt_db: {m.spectral_tilt_db}")
             notes.append(f"audio.sanity_score: {s.score:.2f}")
             for r in s.reasons[:6]:
                 notes.append(f"audio.warn: {r}")

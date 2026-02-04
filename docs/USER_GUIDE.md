@@ -291,9 +291,10 @@ Styles: `hiphop|lofi|house`
 - `export_m4a [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
 - `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=demo|clean|lofi sr=44100 br=192k`
 - `analyze_audio <in_audio> <out.json>`
-- `meter_audio <in_audio> <out.json> spectral=1` (LUFS/true-peak/crest/DC offset/stereo correlation)
+- `meter_audio <in_audio> <out.json> spectral=1` (LUFS integrated + short-term, true-peak, crest/DC offset, stereo correlation + balance, spectral tilt)
 - `export_stems <dir>`
-- `export_busses <dir>` (heuristic grouping: drums/bass/music)
+- `export_busses <dir>` (bus stems; if you use `set_bus`, it’s explicit; otherwise heuristic)
+- `export_package <out_prefix> preset=clean mix=tools/mix.json stems=1 busses=1 meter=1`
 
 Notes:
 - `trim` is optional; when set, exports are limited to N seconds.
@@ -345,7 +346,7 @@ Supported track FX keys (v1):
 - `gate`: `{threshold_db, release_ms?}`
 - `expander`: `{threshold_db, ratio}` (approx; uses `compand`)
 - `comp`: `{threshold_db,ratio,attack_ms,release_ms}`
-- `sat`: `{type=tanh|atan|cubic|clip, drive}`
+- `sat`: `{type=tanh|atan|cubic|clip, drive, tone_hz?, mix?}`
 - `stereo`: `{width}`
 - `transient`: `{attack, sustain}`
 - `sends`: `{reverb, delay}`
@@ -359,6 +360,7 @@ Headless script helpers (write to project mix spec):
 - `eq track=<i> type=bell|hp|lp f=<hz> q=<q> g=<db>`
 - `eq master type=bell f=<hz> q=<q> g=<db>`
 - `sidechain src=<i> dst=<j> threshold_db=-24 ratio=6 attack_ms=5 release_ms=120`
+- `sidechain src=<i>:kick dst=<j> ...` (kick-only key, when the source track uses drum roles)
 - `transient track=<i>|master attack=0.25 sustain=-0.10`
 
 ## Sampler support (drum one-shots)

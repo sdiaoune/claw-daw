@@ -260,7 +260,7 @@ class HeadlessRunner:
             return
 
         if cmd == "sidechain":
-            # sidechain src=<i> dst=<j> threshold_db=-24 ratio=6 attack_ms=5 release_ms=120
+            # sidechain src=<i>|<i>:kick dst=<j> threshold_db=-24 ratio=6 attack_ms=5 release_ms=120
             from claw_daw.cli.mix_cmds import apply_sidechain
 
             kv = {}
@@ -268,14 +268,22 @@ class HeadlessRunner:
                 if "=" in a:
                     k, v = a.split("=", 1)
                     kv[k.strip()] = v.strip()
+
+            src_raw = kv.get("src", "0")
+            src_role = None
+            if ":" in src_raw:
+                src_raw, src_role = src_raw.split(":", 1)
+                src_role = src_role.strip().lower() or None
+
             apply_sidechain(
                 proj,
-                src_track=int(kv.get("src", "0")),
+                src_track=int(src_raw),
                 dst_track=int(kv.get("dst", "1")),
                 threshold_db=float(kv.get("threshold_db", "-24")),
                 ratio=float(kv.get("ratio", "6")),
                 attack_ms=float(kv.get("attack_ms", "5")),
                 release_ms=float(kv.get("release_ms", "120")),
+                src_role=src_role,
             )
             proj.dirty = True
             return
@@ -1209,6 +1217,44 @@ class HeadlessRunner:
             encode_audio(str(mastered), out_mp3, trim_seconds=None, sample_rate=sr, codec="mp3", bitrate=br)
             Path(tmp_wav).unlink(missing_ok=True)
             Path(mastered).unlink(missing_ok=True)
+            return
+
+        if cmd == "export_package":
+            # export_package <out_prefix> [preset=clean] [mix=tools/mix.json] [stems=0|1] [busses=0|1] [meter=0|1]
+            # Convenience for agents: write json+mid+mp3 (+ optional stems/busses + metering).
+            if self.dry_run:
+                return
+            out_prefix = args[0]
+            preset = "clean"
+            mix_path: str | None = None
+            stems = False
+            busses = False
+            meter = False
+            for a in args[1:]:
+                if a.startswith("preset="):
+                    preset = a.split("=", 1)[1]
+                if a.startswith("mix="):
+                    mix_path = a.split("=", 1)[1]
+                if a.startswith("stems="):
+                    stems = a.split("=", 1)[1] not in {"0", "false", "no"}
+                if a.startswith("busses="):
+                    busses = a.split("=", 1)[1] not in {"0", "false", "no"}
+                if a.startswith("meter="):
+                    meter = a.split("=", 1)[1] not in {"0", "false", "no"}
+
+            self.run_command(f"save_project out/{out_prefix}.json")
+            self.run_command(f"export_midi out/{out_prefix}.mid")
+            mp3_cmd = f"export_mp3 out/{out_prefix}.mp3 preset={preset}"
+            if mix_path:
+                mp3_cmd += f" mix={mix_path}"
+            self.run_command(mp3_cmd)
+
+            if stems:
+                self.run_command(f"export_stems out/{out_prefix}_stems")
+            if busses:
+                self.run_command(f"export_busses out/{out_prefix}_busses")
+            if meter:
+                self.run_command(f"meter_audio out/{out_prefix}.mp3 out/{out_prefix}.meter.json")
             return
 
         if cmd == "export_mp3":

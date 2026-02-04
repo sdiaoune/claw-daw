@@ -8,6 +8,7 @@ from array import array
 from dataclasses import dataclass
 
 from claw_daw.audio.spectrogram import band_energy_report
+from claw_daw.audio.ebur128 import measure_shortterm_lufs
 
 
 @dataclass(frozen=True)
@@ -17,14 +18,16 @@ class AudioMetering:
     All metrics are deterministic and derived from ffmpeg/ffprobe or simple math.
 
     Notes:
-    - LUFS/true-peak are sourced via ffmpeg loudnorm analysis (EBU R128).
+    - LUFS/true-peak/LRA are sourced via ffmpeg loudnorm analysis (EBU R128).
+    - Short-term LUFS is sourced via ffmpeg ebur128.
     - RMS/peak/DC offset/crest factor are sourced via ffmpeg astats.
-    - Stereo correlation is computed in Python from decoded PCM (no numpy required).
+    - Stereo correlation/balance are computed in Python from decoded PCM or parsed from astats.
     """
 
     integrated_lufs: float | None
     loudness_range_lu: float | None
     true_peak_dbtp: float | None
+    shortterm_lufs: float | None
 
     peak_dbfs: float | None
     rms_dbfs: float | None
@@ -33,8 +36,10 @@ class AudioMetering:
 
     dc_offset: float | None
     stereo_correlation: float | None
+    stereo_balance_db: float | None
 
     spectral_bands: dict[str, dict[str, float]] | None
+    spectral_tilt_db: float | None
 
     raw: dict
 
@@ -104,7 +109,12 @@ def measure_lufs_truepeak(in_audio: str) -> dict[str, float] | None:
 
 
 def measure_astats(in_audio: str) -> dict[str, float] | None:
-    """Return peak/RMS/DC offset/crest factor (from ffmpeg astats 'Overall' section)."""
+    """Return peak/RMS/DC offset/crest factor (from ffmpeg astats 'Overall' section).
+
+    Also includes per-channel RMS when detectable:
+      - ch1_rms_dbfs
+      - ch2_rms_dbfs
+    """
 
     cmd = [
         "ffmpeg",
@@ -121,6 +131,7 @@ def measure_astats(in_audio: str) -> dict[str, float] | None:
     p = _run(cmd)
 
     overall = False
+    channel: int | None = None
     metrics: dict[str, float] = {}
 
     # Example lines:
@@ -129,15 +140,22 @@ def measure_astats(in_audio: str) -> dict[str, float] | None:
     # [Parsed_astats_0 ...] Peak level dB: -0.000002
     # [Parsed_astats_0 ...] RMS level dB: -3.010300
     # [Parsed_astats_0 ...] Crest factor: 1.414213
+    # [Parsed_astats_0 ...] Channel: 1
+    # [Parsed_astats_0 ...] RMS level dB: -12.3
     for ln in (p.stderr or "").splitlines():
         s = ln.strip()
-        if s.endswith("] Overall") or s.endswith("] Overall:") or s.endswith("] Overall"):
-            overall = True
-            continue
-        if overall and "] Channel:" in s:
-            # In some builds, Overall is followed by channels again; stop once we exit overall block.
+
+        if "] Channel:" in s:
+            try:
+                channel = int(s.split("] Channel:", 1)[1].strip().split()[0])
+            except Exception:
+                channel = None
             overall = False
-        if not overall:
+            continue
+
+        if s.endswith("] Overall") or s.endswith("] Overall:"):
+            overall = True
+            channel = None
             continue
 
         def _grab(prefix: str) -> float | None:
@@ -148,18 +166,23 @@ def measure_astats(in_audio: str) -> dict[str, float] | None:
             except Exception:
                 return None
 
-        v = _grab("DC offset:")
-        if v is not None:
-            metrics["dc_offset"] = v
-        v = _grab("Peak level dB:")
-        if v is not None:
-            metrics["peak_dbfs"] = v
-        v = _grab("RMS level dB:")
-        if v is not None:
-            metrics["rms_dbfs"] = v
-        v = _grab("Crest factor:")
-        if v is not None:
-            metrics["crest_factor_linear"] = v
+        if overall:
+            v = _grab("DC offset:")
+            if v is not None:
+                metrics["dc_offset"] = v
+            v = _grab("Peak level dB:")
+            if v is not None:
+                metrics["peak_dbfs"] = v
+            v = _grab("RMS level dB:")
+            if v is not None:
+                metrics["rms_dbfs"] = v
+            v = _grab("Crest factor:")
+            if v is not None:
+                metrics["crest_factor_linear"] = v
+        elif channel in {1, 2}:
+            v = _grab("RMS level dB:")
+            if v is not None:
+                metrics[f"ch{channel}_rms_dbfs"] = v
 
     if not metrics:
         return None
@@ -277,6 +300,7 @@ def analyze_metering(in_audio: str, *, include_spectral: bool = True) -> AudioMe
     loud = measure_lufs_truepeak(in_audio) or {}
     ast = measure_astats(in_audio) or {}
     corr = measure_stereo_correlation(in_audio)
+    st = measure_shortterm_lufs(in_audio)
 
     bands = band_energy_report(in_audio) if include_spectral else None
 
@@ -291,18 +315,40 @@ def analyze_metering(in_audio: str, *, include_spectral: bool = True) -> AudioMe
     cfd = float(ast["crest_factor_db"]) if "crest_factor_db" in ast else None
     dc = float(ast["dc_offset"]) if "dc_offset" in ast else None
 
-    raw = {"loudnorm": loud, "astats": ast, "stereo_correlation": corr}
+    # Stereo balance: RMS L vs RMS R (positive means Left louder).
+    bal = None
+    if "ch1_rms_dbfs" in ast and "ch2_rms_dbfs" in ast:
+        try:
+            bal = float(ast["ch1_rms_dbfs"]) - float(ast["ch2_rms_dbfs"])
+        except Exception:
+            bal = None
+
+    # Spectral tilt (coarse): high_mean - low_mean (dB). Positive = brighter.
+    tilt = None
+    if bands is not None:
+        try:
+            low = float((bands.get("low_90_200") or {}).get("mean_volume") or 0.0)
+            high = float((bands.get("high_ge4k") or {}).get("mean_volume") or 0.0)
+            if low != 0.0 and high != 0.0:
+                tilt = high - low
+        except Exception:
+            tilt = None
+
+    raw = {"loudnorm": loud, "astats": ast, "stereo_correlation": corr, "ebur128": {"shortterm_lufs": st.shortterm_lufs}}
 
     return AudioMetering(
         integrated_lufs=integrated_lufs,
         loudness_range_lu=lra,
         true_peak_dbtp=tp,
+        shortterm_lufs=st.shortterm_lufs,
         peak_dbfs=peak,
         rms_dbfs=rms,
         crest_factor_linear=cfl,
         crest_factor_db=cfd,
         dc_offset=dc,
         stereo_correlation=corr,
+        stereo_balance_db=bal,
         spectral_bands=bands,
+        spectral_tilt_db=tilt,
         raw=raw,
     )

@@ -127,14 +127,17 @@ def _track_fx_chain(spec: dict[str, Any]) -> str:
 
     sat = spec.get("sat") or None
     if sat:
-        # Minimal deterministic saturation via asoftclip.
+        # Saturation is handled either inline (simple) or as a dry/wet graph (tone/mix).
         stype = str(sat.get("type", "tanh")).strip().lower()
         if stype not in {"tanh", "atan", "cubic", "clip"}:
             stype = "tanh"
         drive = _flt(sat.get("drive", 1.0), 1.0)
-        if abs(drive - 1.0) > 1e-6:
-            chain.append(f"volume={drive}")
-        chain.append(f"asoftclip=type={stype}")
+        mix = sat.get("mix", None)
+        tone_hz = sat.get("tone_hz", None)
+        if mix is None and tone_hz is None:
+            if abs(drive - 1.0) > 1e-6:
+                chain.append(f"volume={drive}")
+            chain.append(f"asoftclip=type={stype}")
 
     stereo = spec.get("stereo") or None
     if stereo:
@@ -247,6 +250,39 @@ def mix_project_wav(
             else:
                 fc.append(f"[{i}:a]anull[{out_lbl}]")
 
+            # Optional saturation with tone + dry/wet mix (requires filtergraph labels).
+            sat = (ts.get("sat") or {}) if isinstance(ts.get("sat"), dict) else None
+            if sat and (sat.get("mix") is not None or sat.get("tone_hz") is not None):
+                stype = str(sat.get("type", "tanh")).strip().lower()
+                if stype not in {"tanh", "atan", "cubic", "clip"}:
+                    stype = "tanh"
+                drive = _flt(sat.get("drive", 1.0), 1.0)
+                mix = max(0.0, min(1.0, _flt(sat.get("mix", 1.0), 1.0)))
+                tone = sat.get("tone_hz", None)
+                tone_f = _flt(tone, 12000.0) if tone is not None else None
+
+                dry = f"sat{i}_dry"
+                wet = f"sat{i}_wet"
+                fc.append(f"[{out_lbl}]asplit=2[{dry}][{wet}]")
+
+                wet2 = f"sat{i}_wet2"
+                wet_chain = []
+                if abs(drive - 1.0) > 1e-6:
+                    wet_chain.append(f"volume={drive}")
+                if tone_f is not None:
+                    wet_chain.append(f"lowpass=f={tone_f}")
+                wet_chain.append(f"asoftclip=type={stype}")
+                fc.append(f"[{wet}]" + ",".join(wet_chain) + f"[{wet2}]")
+
+                dryv = f"sat{i}_dryv"
+                wetv = f"sat{i}_wetv"
+                fc.append(f"[{dry}]volume={1.0 - mix}[{dryv}]")
+                fc.append(f"[{wet2}]volume={mix}[{wetv}]")
+
+                out2 = f"t{i}_sat"
+                fc.append(f"[{dryv}][{wetv}]amix=inputs=2:normalize=0[{out2}]")
+                labels[i] = out2
+
         # Sidechain: apply to destination track streams.
         # We do this after per-track FX.
         # NOTE: only one rule per dst is supported for now; later rules override earlier.
@@ -261,9 +297,67 @@ def mix_project_wav(
                 continue
             sc_by_dst[dst] = dict(sc)
 
+        # Optional: generate kick-only (or role-only) sidechain keys as extra ffmpeg inputs.
+        role_keys: dict[tuple[int, str], int] = {}
+        extra_inputs: list[str] = []
+
+        def _filter_track_to_role(p: Project, *, track_index: int, role: str) -> Project:
+            p2 = Project.from_dict(p.to_dict())
+            # mute all tracks except the source
+            for j, tj in enumerate(p2.tracks):
+                tj.mute = j != track_index
+                tj.solo = False
+            # filter notes/pattern notes on the source track
+            t = p2.tracks[track_index]
+            rr = role.strip().lower()
+            keep_pitches = set()
+            if rr == "kick":
+                keep_pitches = {35, 36}
+            def _keep(n) -> bool:
+                r = (getattr(n, "role", None) or "").strip().lower()
+                if r:
+                    return r == rr
+                return int(getattr(n, "pitch", -1)) in keep_pitches if keep_pitches else True
+            t.notes = [n for n in t.notes if _keep(n)]
+            for pat in t.patterns.values():
+                pat.notes = [n for n in pat.notes if _keep(n)]
+            return p2
+
+        # Render extra key wavs for role-based sidechain.
+        for dst, sc in sc_by_dst.items():
+            src = _int(sc.get("src"), 0)
+            src_role = sc.get("src_role", None)
+            if src_role:
+                key = (src, str(src_role).strip().lower())
+                if key in role_keys:
+                    continue
+                # render a key wav and add as extra ffmpeg input
+                try:
+                    from claw_daw.audio.render import render_project_wav
+
+                    key_proj = _filter_track_to_role(project, track_index=src, role=key[1])
+                    key_wav = str((stems_dir / f"key_{src}_{key[1]}.wav").resolve())
+                    render_project_wav(key_proj, soundfont=soundfont, out_wav=key_wav, sample_rate=sample_rate, mix=None)
+                    role_keys[key] = len(stems) + len(extra_inputs)
+                    extra_inputs.append(key_wav)
+                except Exception:
+                    continue
+
         # If a track is used as a sidechain key *and* also needs to stay audible in the mix,
         # we must split it; ffmpeg filtergraphs consume streams.
-        key_srcs = sorted({int(_int(sc.get("src"), -1)) for sc in sc_by_dst.values()} - {-1})
+        key_srcs = []
+        for sc in sc_by_dst.values():
+            src_i = int(_int(sc.get("src"), -1))
+            if src_i < 0:
+                continue
+            r = sc.get("src_role", None)
+            if r:
+                key = (src_i, str(r).strip().lower())
+                # if we have an external role key input, don't split the audible src track.
+                if key in role_keys:
+                    continue
+            key_srcs.append(src_i)
+        key_srcs = sorted(set(key_srcs))
         key_labels: dict[int, str] = {}
         for src in key_srcs:
             if src < 0 or src >= len(stems):
@@ -275,6 +369,10 @@ def mix_project_wav(
             labels[src] = dry_lbl
             key_labels[src] = key_lbl
 
+        # Append extra ffmpeg inputs for role keys.
+        for inp in extra_inputs:
+            cmd += ["-i", inp]
+
         for dst, sc in sc_by_dst.items():
             src = _int(sc.get("src"), 0)
             thr = _flt(sc.get("threshold_db", -24.0), -24.0)
@@ -282,9 +380,22 @@ def mix_project_wav(
             atk = _flt(sc.get("attack_ms", 5.0), 5.0)
             rel = _flt(sc.get("release_ms", 120.0), 120.0)
             main_lbl = labels.get(dst, f"t{dst}")
-            key_lbl = key_labels.get(src, labels.get(src, f"t{src}"))
+
+            src_role = sc.get("src_role", None)
+            if src_role:
+                key = (src, str(src_role).strip().lower())
+                in_idx = role_keys.get(key)
+                if in_idx is not None:
+                    key_lbl = f"key_{src}_{key[1]}"
+                    # optional: emphasize lows for kick key
+                    low = "lowpass=f=140" if key[1] == "kick" else "anull"
+                    fc.append(f"[{in_idx}:a]{low}[{key_lbl}]")
+                else:
+                    key_lbl = key_labels.get(src, labels.get(src, f"t{src}"))
+            else:
+                key_lbl = key_labels.get(src, labels.get(src, f"t{src}"))
+
             out_lbl = f"t{dst}_sc"
-            # sidechaincompress takes 2 inputs: main and sidechain.
             fc.append(f"[{main_lbl}][{key_lbl}]sidechaincompress=threshold={thr}dB:ratio={ratio}:attack={atk}:release={rel}[{out_lbl}]")
             labels[dst] = out_lbl
 

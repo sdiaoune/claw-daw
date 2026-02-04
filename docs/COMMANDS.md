@@ -98,5 +98,5 @@ transient track=0 attack=0.25 sustain=-0.10
 
 - Doctor audio QA:
 ```bash
-claw-daw doctor --audio out/my_song.mp3
+claw-daw doctor --audio out/my_song.mp3  # includes LUFS (integrated+short-term), true peak, balance/tilt + mix sanity warnings
 ```

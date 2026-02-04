@@ -197,7 +197,7 @@ If bass notes exist but you can’t hear bass, check:
   - `export_mp3 out/<name>.mp3 preset=demo mix=tools/mix.json`
   - `export_wav out/<name>.wav preset=demo mix=tools/mix.json`
 - **Metering (post-export QA)**:
-  - `meter_audio out/<name>.mp3 out/<name>.meter.json` (LUFS/true-peak/crest/DC offset/stereo correlation)
+  - `meter_audio out/<name>.mp3 out/<name>.meter.json` (LUFS integrated+short-term, true-peak, crest/DC offset, stereo correlation+balance, spectral tilt)
 - **Bus stems (quick deliverables)**:
   - `export_busses out/busses_<name>`
 - **Drum variations + fills macro**:
