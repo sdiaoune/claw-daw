@@ -286,9 +286,9 @@ Styles: `hiphop|lofi|house`
 
 ### Export
 - `export_midi <path>`
-- `export_wav [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 mix=tools/mix.json` (use `-` to stream WAV to stdout)
-- `export_mp3 [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream MP3 to stdout)
-- `export_m4a [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
+- `export_wav [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 mix=tools/mix.json` (use `-` to stream WAV to stdout)
+- `export_mp3 [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream MP3 to stdout)
+- `export_m4a [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
 - `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=demo|clean|lofi sr=44100 br=192k`
 - `analyze_audio <in_audio> <out.json>`
 - `meter_audio <in_audio> <out.json> spectral=1` (LUFS/true-peak/crest/DC offset/stereo correlation)
@@ -341,11 +341,25 @@ This is designed for agent workflows (repeatable, diffable config), not as a ful
 Supported track FX keys (v1):
 - `gain_db`
 - `eq`: list of `{f,q,g}` parametric bands
-- `gate`: `{threshold_db}`
+- `highpass_hz` / `lowpass_hz`
+- `gate`: `{threshold_db, release_ms?}`
+- `expander`: `{threshold_db, ratio}` (approx; uses `compand`)
 - `comp`: `{threshold_db,ratio,attack_ms,release_ms}`
 - `sat`: `{type=tanh|atan|cubic|clip, drive}`
 - `stereo`: `{width}`
+- `transient`: `{attack, sustain}`
 - `sends`: `{reverb, delay}`
+
+Bus/master keys (v1):
+- `busses`: map of bus name → fx dict (same shape as master subset)
+- `mono_below_hz`: mono-maker crossover (use on bus or master)
+
+Headless script helpers (write to project mix spec):
+- `set_bus <track> <drums|bass|music|vox>`
+- `eq track=<i> type=bell|hp|lp f=<hz> q=<q> g=<db>`
+- `eq master type=bell f=<hz> q=<q> g=<db>`
+- `sidechain src=<i> dst=<j> threshold_db=-24 ratio=6 attack_ms=5 release_ms=120`
+- `transient track=<i>|master attack=0.25 sustain=-0.10`
 
 ## Sampler support (drum one-shots)
 

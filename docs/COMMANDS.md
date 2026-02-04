@@ -70,8 +70,11 @@ claw-daw stylepack trap_2020s --out my_trap --soundfont /usr/share/sounds/sf2/de
 
 ## Sound engineering helpers (headless scripts)
 
-- Render bus stems (heuristic grouping by track name: drums/bass/music):
+- Render bus stems (explicit track bus assignment via `set_bus`, fallback is heuristic grouping):
 ```txt
+set_bus 0 drums
+set_bus 1 bass
+set_bus 2 music
 export_busses out/busses
 ```
 
@@ -80,8 +83,20 @@ export_busses out/busses
 meter_audio out/my_song.mp3 out/my_song.meter.json
 ```
 
-- Use a mix spec (track EQ/comp/gate/saturation/stereo tools, sends/returns, sidechain) during export:
+- Use a mix spec (track EQ/comp/gate/expander/saturation/stereo tools, transient, sends/returns, sidechain, bus/master mono-maker) during export:
 ```txt
 export_wav out/my_song.wav preset=demo mix=tools/mix.json
 export_mp3 out/my_song.mp3 preset=demo mix=tools/mix.json
+```
+
+- Inline mix-spec helpers (writes to project JSON’s `mix` field):
+```txt
+eq track=1 type=bell f=300 q=1.0 g=-3
+sidechain src=0 dst=1 threshold_db=-24 ratio=6 attack_ms=5 release_ms=120
+transient track=0 attack=0.25 sustain=-0.10
+```
+
+- Doctor audio QA:
+```bash
+claw-daw doctor --audio out/my_song.mp3
 ```

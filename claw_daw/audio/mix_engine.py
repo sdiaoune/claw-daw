@@ -39,7 +39,12 @@ class MixSpec:
       "master": {
         "eq": [{"f": 9000, "q": 0.7, "g": 1.5}],
         "comp": {"threshold_db": -20, "ratio": 2.5, "attack_ms": 3, "release_ms": 60},
-        "limiter": {"limit": 0.98}
+        "limiter": {"limit": 0.98},
+        "mono_below_hz": 120
+      },
+      "busses": {
+        "drums": {"comp": {"threshold_db": -24, "ratio": 3, "attack_ms": 3, "release_ms": 80}},
+        "music": {"mono_below_hz": 140}
       }
     }
     """
@@ -84,10 +89,33 @@ def _track_fx_chain(spec: dict[str, Any]) -> str:
             continue
         chain.append(f"equalizer=f={f}:t=q:width_type=q:width={q}:g={g}")
 
+    # Simple highpass/lowpass helpers
+    hp = spec.get("highpass_hz", None)
+    if hp is not None:
+        chain.append(f"highpass=f={_flt(hp, 30.0)}")
+    lp = spec.get("lowpass_hz", None)
+    if lp is not None:
+        chain.append(f"lowpass=f={_flt(lp, 18000.0)}")
+
     gate = spec.get("gate") or None
     if gate:
         thr = _flt(gate.get("threshold_db", -45.0), -45.0)
-        chain.append(f"agate=threshold={thr}dB")
+        # Optional hold/release when provided (ffmpeg agate supports range/ratio/attack/release/hold).
+        rel = gate.get("release_ms", None)
+        args = [f"threshold={thr}dB"]
+        if rel is not None:
+            args.append(f"release={_flt(rel, 20.0)}")
+        chain.append("agate=" + ":".join(args))
+
+    # Expander (approx) via compand when requested.
+    exp = spec.get("expander") or None
+    if exp:
+        # This is a crude downward expander curve.
+        thr = _flt(exp.get("threshold_db", -45.0), -45.0)
+        ratio = max(1.0, _flt(exp.get("ratio", 2.0), 2.0))
+        # compand expects a points curve in dB: in/out.
+        # Below threshold, reduce more aggressively.
+        chain.append(f"compand=points=-90/-90|{thr}/{thr}|0/{0/ratio}")
 
     comp = spec.get("comp") or None
     if comp:
@@ -114,8 +142,6 @@ def _track_fx_chain(spec: dict[str, Any]) -> str:
         # Width via mid/side gains; keep mid 1.0, scale side.
         if abs(width - 1.0) > 1e-6:
             chain.append(f"stereotools=mlev=1.0:slev={width}")
-        # Note: a true "mono-maker below X Hz" requires a labeled filtergraph; we keep this out of
-        # the simple per-track chain for now (see docs for workaround via stems/bus processing).
 
     return ",".join([c for c in chain if c])
 
@@ -165,6 +191,9 @@ def mix_project_wav(
     mix = MixSpec.from_dict(mix.raw if mix else None) if isinstance(mix, MixSpec) else MixSpec.from_dict((mix or None))
     ms = mix.raw
 
+    # Optional explicit bus FX in mix spec (name -> fx dict)
+    busses_spec: dict[str, dict[str, Any]] = dict((ms.get("busses") or {}) or {})
+
     outp = Path(out_wav).expanduser().resolve()
     outp.parent.mkdir(parents=True, exist_ok=True)
 
@@ -173,16 +202,36 @@ def mix_project_wav(
         stems_dir = tdir / "stems"
         stems = export_stems(project, soundfont=soundfont, out_dir=str(stems_dir), sample_rate=sample_rate)
 
-        # Inputs: one per track stem.
-        cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error"]
-        for s in stems:
-            cmd += ["-i", str(s)]
-
         tracks_spec = (ms.get("tracks") or {})
         returns_spec = (ms.get("returns") or {})
         sidechain_spec = (ms.get("sidechain") or [])
         master_spec = (ms.get("master") or {})
         transient = master_spec.get("transient") or None
+
+        # Optional per-track transient shaping (applied to stems before mixing).
+        try:
+            from claw_daw.audio.transient import TransientSpec, transient_shaper_wav
+
+            for i, _t in enumerate(project.tracks):
+                ts = (tracks_spec.get(str(i), {}) or {})
+                tr = ts.get("transient") or None
+                if not tr:
+                    continue
+                atk = _flt(tr.get("attack", 0.0), 0.0)
+                sus = _flt(tr.get("sustain", 0.0), 0.0)
+                if abs(atk) < 1e-6 and abs(sus) < 1e-6:
+                    continue
+                stem_path = Path(stems[i])
+                tmp = stem_path.with_suffix(".transient.wav")
+                transient_shaper_wav(str(stem_path), str(tmp), spec=TransientSpec(attack=atk, sustain=sus), sample_rate=sample_rate)
+                tmp.replace(stem_path)
+        except Exception:
+            pass
+
+        # Inputs: one per track stem.
+        cmd = ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error"]
+        for s in stems:
+            cmd += ["-i", str(s)]
 
         # Build filtergraph.
         # For each input i, produce a labeled stream and keep a mapping of the current label.
@@ -294,18 +343,72 @@ def mix_project_wav(
             )
             ret_streams.append("[dly]")
 
-        # Sum dry + returns.
-        mix_inputs = drys + ret_streams
-        # normalize=0 to keep deterministic levels; limiter later.
+        # Bus routing: group dry tracks by Track.bus.
+        # If no explicit bus is set, Track.bus defaults to "music".
+        bus_members: dict[str, list[str]] = {}
+        for i, t in enumerate(project.tracks):
+            # drys is a list of labeled streams like "[dry0]" or "[t0]".
+            lbl = drys[i] if i < len(drys) else None
+            if not lbl:
+                continue
+            b = str(getattr(t, "bus", "music") or "music").strip().lower() or "music"
+            bus_members.setdefault(b, []).append(lbl)
+
+        bus_outs: list[str] = []
+        for bus, members in sorted(bus_members.items()):
+            if not members:
+                continue
+            bus_in = "".join(members)
+            bus_lbl = f"bus_{bus}"
+            fc.append(f"{bus_in}amix=inputs={len(members)}:normalize=0[{bus_lbl}]")
+
+            # Optional bus FX (same shape as master/tracks subset)
+            fx = busses_spec.get(bus, {}) or {}
+            chain = _master_fx_chain(fx)
+            # Optional mono-below
+            mono_hz = fx.get("mono_below_hz", None)
+            if mono_hz is not None:
+                from claw_daw.audio.mono import mono_below_filter
+
+                hz = _flt(mono_hz, 120.0)
+                out2 = f"{bus_lbl}_mono"
+                lo = f"lo_{bus}"
+                hi = f"hi_{bus}"
+                fc.append(f"[{bus_lbl}]{mono_below_filter(hz=hz, low_label=lo, high_label=hi)}[{out2}]")
+                bus_lbl = out2
+
+            if chain:
+                out2 = f"{bus_lbl}_fx"
+                fc.append(f"[{bus_lbl}]{chain}[{out2}]")
+                bus_lbl = out2
+
+            bus_outs.append(f"[{bus_lbl}]")
+
+        # Sum busses + returns.
+        mix_inputs = bus_outs + ret_streams
+        if not mix_inputs:
+            mix_inputs = drys + ret_streams
         fc.append(f"{''.join(mix_inputs)}amix=inputs={len(mix_inputs)}:normalize=0[mix]")
 
         # Master FX from spec.
         mchain = _master_fx_chain(master_spec)
+
+        # Optional mono-below on master.
+        mono_hz = master_spec.get("mono_below_hz", None)
+        if mono_hz is not None:
+            from claw_daw.audio.mono import mono_below_filter
+
+            hz = _flt(mono_hz, 120.0)
+            fc.append(f"[mix]{mono_below_filter(hz=hz, low_label='lo_m', high_label='hi_m')}[mix_mono]")
+            base = "[mix_mono]"
+        else:
+            base = "[mix]"
+
         if mchain:
-            fc.append(f"[mix]{mchain}[mix2]")
+            fc.append(f"{base}{mchain}[mix2]")
             final = "[mix2]"
         else:
-            final = "[mix]"
+            final = base
 
         # Always add a limiter safety net at the end of the mix stage.
         fc.append(f"{final}alimiter=limit=0.98[out]")
@@ -315,10 +418,8 @@ def mix_project_wav(
         cmd += ["-filter_complex", filter_complex, "-map", "[out]", "-ar", str(int(sample_rate)), str(outp)]
         subprocess.run(cmd, check=True)
 
-        # Optional master transient shaping (python). This runs before mastering presets.
+        # Master transient shaping (applied to mixed wav before mastering presets).
         if transient:
-            from claw_daw.audio.transient import TransientSpec, transient_shaper_wav
-
             atk = _flt(transient.get("attack", 0.0), 0.0)
             sus = _flt(transient.get("sustain", 0.0), 0.0)
             if abs(atk) > 1e-6 or abs(sus) > 1e-6:

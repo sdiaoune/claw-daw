@@ -31,7 +31,38 @@ MASTER_PRESETS: dict[str, MasterPreset] = {
         name="lofi",
         afilter="highpass=f=120,lowpass=f=6000,acompressor=threshold=-22dB:ratio=3,alimiter=limit=0.96",
     ),
+    # Punchy macro: a bit more compression + gentle saturation + limiter.
+    "punchy": MasterPreset(
+        name="punchy",
+        afilter="highpass=f=30,acompressor=threshold=-24dB:ratio=4:attack=3:release=80,asoftclip=type=tanh,alimiter=limit=0.97",
+    ),
 }
+
+
+def _load_custom_preset(preset: str) -> MasterPreset | None:
+    """Load a custom mastering preset from file.
+
+    Supported forms:
+      - preset="file:/path/to/afilter.txt"  (file contains an ffmpeg audio filtergraph)
+      - preset="@/path/to/afilter.txt"      (same)
+
+    Returns None if preset is not a file reference.
+    """
+
+    p = preset.strip()
+    path = None
+    if p.startswith("file:"):
+        path = p.split(":", 1)[1]
+    elif p.startswith("@"):
+        path = p[1:]
+    if not path:
+        return None
+
+    fp = Path(path).expanduser()
+    af = fp.read_text(encoding="utf-8").strip()
+    if not af:
+        raise ValueError(f"empty mastering chain file: {fp}")
+    return MasterPreset(name=str(fp.name), afilter=af)
 
 
 def _fade_filter(*, fade_in_seconds: float, fade_out_seconds: float, dur_seconds: float | None) -> str:
@@ -59,7 +90,8 @@ def master_wav(
     Returns path to the mastered wav.
     """
 
-    if preset not in MASTER_PRESETS:
+    custom = _load_custom_preset(preset)
+    if custom is None and preset not in MASTER_PRESETS:
         raise ValueError(f"unknown preset: {preset}")
 
     inp = str(Path(in_wav))
@@ -67,7 +99,8 @@ def master_wav(
     outp = "pipe:1" if stream_to_stdout else str(Path(out_wav))
 
     # Build a deterministic filtergraph.
-    filters = [MASTER_PRESETS[preset].afilter]
+    base = custom.afilter if custom is not None else MASTER_PRESETS[preset].afilter
+    filters = [base]
     fade = _fade_filter(fade_in_seconds=fade_in_seconds, fade_out_seconds=fade_out_seconds, dur_seconds=trim_seconds)
     if fade:
         filters.append(fade)

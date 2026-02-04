@@ -18,7 +18,7 @@ def clamp(v: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, int(v)))
 
 
-CURRENT_SCHEMA_VERSION = 8
+CURRENT_SCHEMA_VERSION = 9
 
 
 def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
@@ -68,6 +68,12 @@ def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
     if schema < 8:
         d.setdefault("mix", {})
         schema = 8
+
+    # v8 -> v9: track bus assignment
+    if schema < 9:
+        for t in d.get("tracks", []) or []:
+            t.setdefault("bus", "music")
+        schema = 9
 
     d["schema_version"] = CURRENT_SCHEMA_VERSION
     return d
@@ -144,6 +150,9 @@ def validate_and_migrate_project(project: Project) -> Project:
 
         # sampler preset (optional; validated at render time)
         t.sampler_preset = str(getattr(t, "sampler_preset", "default") or "default")
+
+        # bus assignment
+        t.bus = str(getattr(t, "bus", "music") or "music").strip().lower() or "music"
 
         # drum kit (role-based drums)
         try:

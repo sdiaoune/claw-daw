@@ -226,6 +226,78 @@ class HeadlessRunner:
             proj.dirty = True
             return
 
+        # -------- sound engineering (mix spec helpers) --------
+
+        if cmd == "set_bus":
+            # set_bus <track_index> <bus>
+            idx = int(args[0])
+            proj.tracks[idx].bus = str(args[1]).strip().lower() or "music"
+            proj.dirty = True
+            return
+
+        if cmd == "eq":
+            # eq track=<i>|master type=bell|hp|lp f=<hz> q=<q> g=<db>
+            from claw_daw.cli.mix_cmds import apply_master_eq, apply_track_eq
+
+            kv = {}
+            for a in args:
+                if "=" in a:
+                    k, v = a.split("=", 1)
+                    kv[k.strip()] = v.strip()
+
+            typ = kv.get("type", "bell")
+            f = float(kv.get("f", "1000"))
+            q = float(kv.get("q", "1.0"))
+            g = float(kv.get("g", "0.0"))
+            tgt = kv.get("track", None)
+            if tgt is None and ("master" in args or kv.get("target") == "master"):
+                apply_master_eq(proj, f_hz=f, q=q, g_db=g)
+            else:
+                if tgt is None:
+                    raise ValueError("eq requires track=<index> or 'master'")
+                apply_track_eq(proj, track=int(tgt), kind=typ, f_hz=f, q=q, g_db=g)
+            proj.dirty = True
+            return
+
+        if cmd == "sidechain":
+            # sidechain src=<i> dst=<j> threshold_db=-24 ratio=6 attack_ms=5 release_ms=120
+            from claw_daw.cli.mix_cmds import apply_sidechain
+
+            kv = {}
+            for a in args:
+                if "=" in a:
+                    k, v = a.split("=", 1)
+                    kv[k.strip()] = v.strip()
+            apply_sidechain(
+                proj,
+                src_track=int(kv.get("src", "0")),
+                dst_track=int(kv.get("dst", "1")),
+                threshold_db=float(kv.get("threshold_db", "-24")),
+                ratio=float(kv.get("ratio", "6")),
+                attack_ms=float(kv.get("attack_ms", "5")),
+                release_ms=float(kv.get("release_ms", "120")),
+            )
+            proj.dirty = True
+            return
+
+        if cmd == "transient":
+            # transient track=<i>|master attack=<...> sustain=<...>
+            from claw_daw.cli.mix_cmds import apply_transient
+
+            kv = {}
+            for a in args:
+                if "=" in a:
+                    k, v = a.split("=", 1)
+                    kv[k.strip()] = v.strip()
+            atk = float(kv.get("attack", "0"))
+            sus = float(kv.get("sustain", "0"))
+            if kv.get("track") is not None:
+                apply_transient(proj, track=int(kv["track"]), attack=atk, sustain=sus)
+            else:
+                apply_transient(proj, track=None, attack=atk, sustain=sus)
+            proj.dirty = True
+            return
+
         if cmd == "apply_palette":
             # apply_palette <style> [mood=..]
             # Applies per-style TrackSound + mixer defaults to tracks by role name.
@@ -1053,8 +1125,9 @@ class HeadlessRunner:
                 if a.startswith("mix="):
                     mix_path = a.split("=", 1)[1]
 
-            if preset not in MASTER_PRESETS:
-                raise ValueError(f"preset must be one of: {', '.join(sorted(MASTER_PRESETS))}")
+            # presets may be built-in (clean/demo/lofi/...) or file-based (file:/path or @/path)
+            if not (preset in MASTER_PRESETS or preset.startswith("file:") or preset.startswith("@")):
+                raise ValueError(f"preset must be one of: {', '.join(sorted(MASTER_PRESETS))} or file:/path/to/afilter.txt")
 
             # derive region
             start = proj.render_start if proj.render_start is not None else 0

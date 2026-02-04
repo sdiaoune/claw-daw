@@ -20,11 +20,12 @@ def _which(cmd: str) -> str | None:
     return shutil.which(cmd)
 
 
-def _doctor() -> DoctorResult:
+def _doctor(*, audio: str | None = None) -> DoctorResult:
     notes: list[str] = []
 
     fluidsynth = _which("fluidsynth")
     ffmpeg = _which("ffmpeg")
+    ffprobe = _which("ffprobe")
 
     ok = True
 
@@ -38,7 +39,13 @@ def _doctor() -> DoctorResult:
         notes.append(f"ffmpeg: OK ({ffmpeg})")
     else:
         ok = False
-        notes.append("ffmpeg: MISSING (needed for MP3 encodes)")
+        notes.append("ffmpeg: MISSING (needed for MP3 encodes + metering)")
+
+    if ffprobe:
+        notes.append(f"ffprobe: OK ({ffprobe})")
+    else:
+        ok = False
+        notes.append("ffprobe: MISSING (needed for metering)")
 
     sf2_found = find_default_soundfont()
     if sf2_found:
@@ -49,6 +56,26 @@ def _doctor() -> DoctorResult:
 
     notes.append(f"python: {sys.version.split()[0]}")
     notes.append(f"platform: {sys.platform}")
+
+    # Optional audio QA
+    if audio:
+        try:
+            from claw_daw.audio.metering import analyze_metering
+            from claw_daw.audio.sanity import analyze_mix_sanity
+
+            m = analyze_metering(audio, include_spectral=True)
+            s = analyze_mix_sanity(audio)
+
+            notes.append(f"audio.integrated_lufs: {m.integrated_lufs}")
+            notes.append(f"audio.true_peak_dbtp: {m.true_peak_dbtp}")
+            notes.append(f"audio.crest_factor_db: {m.crest_factor_db}")
+            notes.append(f"audio.stereo_correlation: {m.stereo_correlation}")
+            notes.append(f"audio.sanity_score: {s.score:.2f}")
+            for r in s.reasons[:6]:
+                notes.append(f"audio.warn: {r}")
+        except Exception as e:
+            ok = False
+            notes.append(f"audio: ERROR ({e})")
 
     return DoctorResult(ok=ok, notes=notes)
 
@@ -76,7 +103,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--script", default=None, help="Path to headless script (.txt)")
 
     sub = p.add_subparsers(dest="cmd")
-    sub.add_parser("doctor", help="Check for required deps (fluidsynth/ffmpeg/soundfont).")
+    d = sub.add_parser("doctor", help="Check for required deps (fluidsynth/ffmpeg/soundfont) and optional audio QA.")
+    d.add_argument("--audio", default=None, help="Optional: path to audio file to meter + sanity-check.")
 
     paths = sub.add_parser("paths", help="Print common paths used by claw-daw.")
     paths.add_argument("--soundfont", action="store_true", help="Print common GM SoundFont (.sf2) locations.")
@@ -170,7 +198,7 @@ def main(argv: list[str] | None = None) -> None:
         return
 
     if args.cmd == "doctor":
-        res = _doctor()
+        res = _doctor(audio=getattr(args, "audio", None))
         status = "OK" if res.ok else "MISSING_DEPS"
         print(f"claw-daw doctor: {status}")
         for n in res.notes:

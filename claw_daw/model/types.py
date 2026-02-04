@@ -141,6 +141,10 @@ class Track:
     humanize_velocity: int = 0
     humanize_seed: int = 0
 
+    # Optional bus assignment for mix routing.
+    # Common conventions: drums|bass|music|vox.
+    bus: str = "music"
+
     # legacy linear notes (still supported)
     notes: list[Note] = field(default_factory=list)
 
@@ -183,6 +187,7 @@ class Track:
                 "velocity": self.humanize_velocity,
                 "seed": self.humanize_seed,
             },
+            "bus": getattr(self, "bus", "music"),
             "mute": self.mute,
             "solo": self.solo,
             "notes": [n.to_dict() for n in sorted(self.notes)],
@@ -208,6 +213,7 @@ class Track:
             humanize_timing=int(human.get("timing", d.get("humanize_timing", 0) or 0)),
             humanize_velocity=int(human.get("velocity", d.get("humanize_velocity", 0) or 0)),
             humanize_seed=int(human.get("seed", d.get("humanize_seed", 0) or 0)),
+            bus=str(d.get("bus", "music") or "music"),
             mute=bool(d.get("mute", False)),
             solo=bool(d.get("solo", False)),
         )
@@ -243,13 +249,14 @@ class Project:
     # Stored as a JSON/YAML-friendly dict for forward compatibility.
     mix: dict[str, Any] = field(default_factory=dict)
 
+
     # runtime-only fields
     path: str | None = None
     dirty: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 8,
+            "schema_version": 9,
             "name": self.name,
             "tempo_bpm": self.tempo_bpm,
             "ppq": self.ppq,
