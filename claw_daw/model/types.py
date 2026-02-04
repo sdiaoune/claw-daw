@@ -239,13 +239,17 @@ class Project:
     render_start: int | None = None
     render_end: int | None = None  # exclusive
 
+    # Optional mix spec (sound engineering FX) used by the mix engine.
+    # Stored as a JSON/YAML-friendly dict for forward compatibility.
+    mix: dict[str, Any] = field(default_factory=dict)
+
     # runtime-only fields
     path: str | None = None
     dirty: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 7,
+            "schema_version": 8,
             "name": self.name,
             "tempo_bpm": self.tempo_bpm,
             "ppq": self.ppq,
@@ -254,6 +258,7 @@ class Project:
             "loop_end": self.loop_end,
             "render_start": self.render_start,
             "render_end": self.render_end,
+            "mix": getattr(self, "mix", {}) or {},
             "arrangement": {
                 "sections": [s.to_dict() for s in getattr(self, "sections", [])],
                 "variations": [v.to_dict() for v in getattr(self, "variations", [])],
@@ -272,6 +277,7 @@ class Project:
             loop_end=d.get("loop_end", None),
             render_start=d.get("render_start", None),
             render_end=d.get("render_end", None),
+            mix=dict(d.get("mix", {}) or {}),
         )
         arr = d.get("arrangement", {}) or {}
         p.sections = [Section.from_dict(x) for x in (arr.get("sections", []) or [])]

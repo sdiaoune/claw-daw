@@ -13,6 +13,7 @@ Offline, deterministic, terminal-first MIDI DAW.
 - **Headless scripting**: build songs with `new_project / add_track / new_pattern / add_note_pat / place_pattern / export_*`
 - **Deterministic output**: same script + same seed + same version + same SoundFont → same render
 - **Exports**: `WAV / MP3 / M4A / MIDI` + project `JSON`
+- **Sound engineering (mix spec, opt-in)**: deterministic per-track EQ/dynamics, sidechain, sends/returns, and audio metering
 - **Agent ergonomics**:
   - bar:beat timecodes (`2:0`, `1:3:120`)
   - note expressions (`chance`, `accent`, `mute`, `glide_ticks`)

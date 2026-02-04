@@ -1040,6 +1040,7 @@ class HeadlessRunner:
             fade = 0.0
             sr = 44100
             trim = None
+            mix_path: str | None = None
             for a in args[1:] if out_wav == args[0] else args:
                 if a.startswith("preset="):
                     preset = a.split("=", 1)[1]
@@ -1049,6 +1050,8 @@ class HeadlessRunner:
                     sr = int(a.split("=", 1)[1])
                 if a.startswith("trim="):
                     trim = float(a.split("=", 1)[1])
+                if a.startswith("mix="):
+                    mix_path = a.split("=", 1)[1]
 
             if preset not in MASTER_PRESETS:
                 raise ValueError(f"preset must be one of: {', '.join(sorted(MASTER_PRESETS))}")
@@ -1066,7 +1069,22 @@ class HeadlessRunner:
                 # Render to a temp wav, then master to stdout.
                 tmp_out = str(Path(_default_export_path(proj, "wav")).with_suffix(".tmp.wav"))
 
-            render_project_wav(render_proj, soundfont=sf, out_wav=tmp_out, sample_rate=sr)
+            mix_spec = None
+            if mix_path:
+                mp = Path(mix_path).expanduser()
+                raw = mp.read_text(encoding="utf-8")
+                if mp.suffix.lower() in {".yaml", ".yml"}:
+                    try:
+                        import yaml  # type: ignore
+                    except Exception as e:
+                        raise RuntimeError("mix= requires PyYAML for .yaml/.yml") from e
+                    mix_spec = yaml.safe_load(raw) or {}
+                else:
+                    import json
+
+                    mix_spec = json.loads(raw or "{}")
+
+            render_project_wav(render_proj, soundfont=sf, out_wav=tmp_out, sample_rate=sr, mix=mix_spec)
 
             # mastering + fades
             if stream:
@@ -1121,7 +1139,7 @@ class HeadlessRunner:
             return
 
         if cmd == "export_mp3":
-            # export_mp3 [out.mp3|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
+            # export_mp3 [out.mp3|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15] [mix=tools/mix.json]
             # Use "-" to stream MP3 bytes to stdout.
             if self.dry_run:
                 return
@@ -1135,6 +1153,7 @@ class HeadlessRunner:
             br = "192k"
             preset = "demo"
             fade = 0.0
+            mix_path: str | None = None
             rest = args[1:] if out_mp3 == args[0] else args
             for a in rest:
                 if a.startswith("sr="):
@@ -1147,17 +1166,20 @@ class HeadlessRunner:
                     preset = a.split("=", 1)[1]
                 if a.startswith("fade="):
                     fade = float(a.split("=", 1)[1])
+                if a.startswith("mix="):
+                    mix_path = a.split("=", 1)[1]
 
             tmp_wav = Path(_default_export_path(proj, "wav")).with_suffix(".tmp.wav") if out_mp3 == "-" else Path(out_mp3).with_suffix(".tmp.wav")
-            self.run_command(
-                f"export_wav {tmp_wav} preset={preset} fade={fade} sr={sr}" + (f" trim={trim}" if trim else "")
-            )
+            cmdline = f"export_wav {tmp_wav} preset={preset} fade={fade} sr={sr}" + (f" trim={trim}" if trim else "")
+            if mix_path:
+                cmdline += f" mix={mix_path}"
+            self.run_command(cmdline)
             encode_audio(str(tmp_wav), out_mp3, trim_seconds=None, sample_rate=sr, codec="mp3", bitrate=br)
             tmp_wav.unlink(missing_ok=True)
             return
 
         if cmd == "export_m4a":
-            # export_m4a [out.m4a|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15]
+            # export_m4a [out.m4a|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15] [mix=tools/mix.json]
             # Use "-" to stream M4A bytes to stdout.
             if self.dry_run:
                 return
@@ -1171,6 +1193,7 @@ class HeadlessRunner:
             br = "192k"
             preset = "demo"
             fade = 0.0
+            mix_path: str | None = None
             rest = args[1:] if out_m4a == args[0] else args
             for a in rest:
                 if a.startswith("sr="):
@@ -1183,11 +1206,14 @@ class HeadlessRunner:
                     preset = a.split("=", 1)[1]
                 if a.startswith("fade="):
                     fade = float(a.split("=", 1)[1])
+                if a.startswith("mix="):
+                    mix_path = a.split("=", 1)[1]
 
             tmp_wav = Path(_default_export_path(proj, "wav")).with_suffix(".tmp.wav") if out_m4a == "-" else Path(out_m4a).with_suffix(".tmp.wav")
-            self.run_command(
-                f"export_wav {tmp_wav} preset={preset} fade={fade} sr={sr}" + (f" trim={trim}" if trim else "")
-            )
+            cmdline = f"export_wav {tmp_wav} preset={preset} fade={fade} sr={sr}" + (f" trim={trim}" if trim else "")
+            if mix_path:
+                cmdline += f" mix={mix_path}"
+            self.run_command(cmdline)
             encode_audio(str(tmp_wav), out_m4a, trim_seconds=None, sample_rate=sr, codec="m4a", bitrate=br)
             tmp_wav.unlink(missing_ok=True)
             return
@@ -1197,6 +1223,35 @@ class HeadlessRunner:
             if not sf:
                 raise RuntimeError("soundfont not set for headless export_stems")
             export_stems(proj, soundfont=sf, out_dir=args[0])
+            return
+
+        if cmd == "export_busses":
+            # export_busses <out_dir>
+            sf = self.ctx.soundfont
+            if not sf:
+                raise RuntimeError("soundfont not set for headless export_busses")
+            from claw_daw.audio.stems import export_busses
+
+            export_busses(proj, soundfont=sf, out_dir=args[0])
+            return
+
+        if cmd == "meter_audio":
+            # meter_audio <in_audio> <out.json> [spectral=1]
+            # Writes a JSON report with LUFS/true-peak/LRA, peak/RMS, crest factor, DC offset,
+            # stereo correlation, and (optionally) coarse spectral band stats.
+            if self.dry_run:
+                return
+            import json
+
+            from claw_daw.audio.metering import analyze_metering
+
+            include_spectral = True
+            for a in args[2:]:
+                if a.startswith("spectral="):
+                    include_spectral = a.split("=", 1)[1] not in {"0", "false", "no"}
+
+            rep = analyze_metering(args[0], include_spectral=include_spectral)
+            Path(args[1]).write_text(json.dumps(rep.__dict__, indent=2, sort_keys=True) + "\n", encoding="utf-8")
             return
 
         if cmd == "spectrogram_audio":

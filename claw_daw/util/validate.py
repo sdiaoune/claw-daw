@@ -18,7 +18,7 @@ def clamp(v: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, int(v)))
 
 
-CURRENT_SCHEMA_VERSION = 7
+CURRENT_SCHEMA_VERSION = 8
 
 
 def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
@@ -64,6 +64,11 @@ def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
             t.setdefault("drum_kit", "trap_hard")
         schema = 7
 
+    # v7 -> v8: optional mix spec (sound engineering FX)
+    if schema < 8:
+        d.setdefault("mix", {})
+        schema = 8
+
     d["schema_version"] = CURRENT_SCHEMA_VERSION
     return d
 
@@ -81,6 +86,9 @@ def validate_and_migrate_project(project: Project) -> Project:
     # arrangement metadata (safe defaults)
     project.sections = list(getattr(project, "sections", []) or [])
     project.variations = list(getattr(project, "variations", []) or [])
+
+    # mix spec (optional)
+    project.mix = dict(getattr(project, "mix", {}) or {})
 
     # hard limits
     if len(project.tracks) > MAX_TRACKS:

@@ -286,19 +286,66 @@ Styles: `hiphop|lofi|house`
 
 ### Export
 - `export_midi <path>`
-- `export_wav [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100` (use `-` to stream WAV to stdout)
-- `export_mp3 [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k` (use `-` to stream MP3 to stdout)
-- `export_m4a [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k` (use `-` to stream M4A to stdout)
+- `export_wav [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 mix=tools/mix.json` (use `-` to stream WAV to stdout)
+- `export_mp3 [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream MP3 to stdout)
+- `export_m4a [path|"-"] preset=demo|clean|lofi fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
 - `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=demo|clean|lofi sr=44100 br=192k`
 - `analyze_audio <in_audio> <out.json>`
+- `meter_audio <in_audio> <out.json> spectral=1` (LUFS/true-peak/crest/DC offset/stereo correlation)
 - `export_stems <dir>`
+- `export_busses <dir>` (heuristic grouping: drums/bass/music)
 
 Notes:
 - `trim` is optional; when set, exports are limited to N seconds.
 - `fade` applies an end fade.
+- `mix=` is optional; when set, claw-daw renders track stems and mixes them with deterministic audio FX (EQ/dynamics/sends/sidechain).
 - Mastering is intentionally light and deterministic.
 
 ---
+
+## Sound engineering (mix spec)
+
+By default, claw-daw renders a project and applies a light deterministic mastering preset.
+
+If you pass `mix=<path>` to `export_wav` / `export_mp3` / `export_m4a`, claw-daw uses the **mix engine**:
+- render per-track stems
+- apply deterministic audio FX via ffmpeg filtergraphs
+- optionally apply sidechain + sends/returns
+
+This is designed for agent workflows (repeatable, diffable config), not as a full DAW replacement.
+
+### Minimal `mix.json` example
+
+```json
+{
+  "tracks": {
+    "0": {"comp": {"threshold_db": -20, "ratio": 3, "attack_ms": 5, "release_ms": 60}},
+    "1": {
+      "eq": [{"f": 250, "q": 1.0, "g": -3.0}],
+      "sends": {"reverb": 0.15}
+    }
+  },
+  "sidechain": [{"src": 0, "dst": 1, "threshold_db": -24, "ratio": 6, "attack_ms": 5, "release_ms": 120}],
+  "returns": {
+    "reverb": {"predelay_ms": 0, "decay": 0.35},
+    "delay": {"ms": 240, "decay": 0.25}
+  },
+  "master": {
+    "eq": [{"f": 9000, "q": 0.7, "g": 1.5}],
+    "limiter": {"limit": 0.98},
+    "transient": {"attack": 0.10, "sustain": -0.05}
+  }
+}
+```
+
+Supported track FX keys (v1):
+- `gain_db`
+- `eq`: list of `{f,q,g}` parametric bands
+- `gate`: `{threshold_db}`
+- `comp`: `{threshold_db,ratio,attack_ms,release_ms}`
+- `sat`: `{type=tanh|atan|cubic|clip, drive}`
+- `stereo`: `{width}`
+- `sends`: `{reverb, delay}`
 
 ## Sampler support (drum one-shots)
 

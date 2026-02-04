@@ -41,8 +41,12 @@ def render_project_wav(
     out_wav: str,
     sample_rate: int = 44100,
     drum_mode: str = "gm",  # gm|auto|sampler
+    mix: dict | None = None,
 ) -> str:
     """Render a project to a stereo WAV.
+
+    If mix is provided (or project.mix is set), we render per-track stems then mix via ffmpeg
+    to enable deterministic sound-engineering FX (EQ, dynamics, sidechain, sends, stereo tools).
 
     - Sampler tracks (track.sampler in {drums,808}) are synthesized in-process.
     - All other tracks are rendered via FluidSynth.
@@ -57,6 +61,13 @@ def render_project_wav(
     """
 
     from claw_daw.audio.drum_render_sanity import choose_drum_render_mode, convert_sampler_drums_to_gm
+
+    # Optional mix engine (slow path).
+    eff_mix = mix or getattr(project, "mix", None)
+    if eff_mix:
+        from claw_daw.audio.mix_engine import MixSpec, mix_project_wav
+
+        return mix_project_wav(project, soundfont=soundfont, out_wav=out_wav, sample_rate=sample_rate, mix=MixSpec.from_dict(eff_mix))
 
     outp = Path(out_wav).expanduser().resolve()
     outp.parent.mkdir(parents=True, exist_ok=True)

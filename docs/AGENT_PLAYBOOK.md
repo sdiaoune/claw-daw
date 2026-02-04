@@ -28,6 +28,10 @@ These are the building blocks that make agent workflows fast, repeatable, and re
 5) **Acceptance tests (quality gates)** — genre-specific checks before you export.
    - See “Acceptance tests” below.
 
+6) **Sound engineering (mix spec + metering)** — deterministic EQ/dynamics/sidechain/sends and measurable loudness checks.
+   - Use `mix=tools/mix.json` on `export_wav/export_mp3` when the user requests mixing/mastering help.
+   - Use `meter_audio` to write LUFS/true-peak/crest/correlation stats for QA.
+
 ---
 
 ## 1) Agent contract (inputs → outputs)
@@ -93,11 +97,22 @@ Top motif:
 - Density: <sparse>
 - Variation rules: <what changes in Hook B>
 
+Mix / mastering (optional):
+- Target loudness: <e.g., -14 LUFS streaming / more dynamic>
+- Vibe: <clean / punchy / lofi>
+- Sidechain: <none / subtle / heavy>
+- Stems needed? <none / per-track / busses>
+
 Deliverables:
 - tools/<name>.txt
 - out/<name>.mp3 (preset=clean)
 - out/<name>.mid
 - out/<name>.json
+
+(Optional, if requested):
+- out/<name>.meter.json (via `meter_audio`)
+- stems/busses directories
+- a `tools/mix.json` (if using the mix engine)
 ```
 
 ---
@@ -115,13 +130,15 @@ A reliable agent workflow is boring on purpose:
   - sanity-check **bass translation** (audible fundamental or harmonics; not swallowed by chords)
   - If you hear crackle/noise: switch drums to **GM drum channel 10**.
   - Note: exports now default to the safe path (sampler drums are converted to GM channel 10 unless you explicitly opt in).
-- [ ] **Apply the 5 features when useful**:
+- [ ] **Apply the 6 features when useful**:
   - Drum kit roles (`kick/snare/hh`)
   - 808 preset + glide
   - Pack for scaffolding
   - Prompt with novelty control for exploration
   - Acceptance tests before final export
+  - Mix spec + metering when requested (`mix=...`, `meter_audio`)
 - [ ] **Export artifacts**: JSON + MIDI + MP3 (and stems if requested)
+- [ ] **Meter the final audio** (optional but recommended for agent QA): `meter_audio out/<name>.mp3 out/<name>.meter.json`
 - [ ] **Repro notes**: claw-daw version + SoundFont path + any seeds
 - [ ] **Revision rule**: never overwrite—bump `_v2/_v3` and include a changelog
 

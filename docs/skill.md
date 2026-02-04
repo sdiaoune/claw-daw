@@ -193,6 +193,13 @@ If bass notes exist but you can’t hear bass, check:
   - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> --attempts 6 --score-threshold 0.60`
   - writes `out/<name>.report.json`
 - **Mix sanity gate (audio-level)** is included in stylepacks scoring and will retry deterministically when it detects obvious issues.
+- **Sound engineering (opt-in mix spec during export)**:
+  - `export_mp3 out/<name>.mp3 preset=demo mix=tools/mix.json`
+  - `export_wav out/<name>.wav preset=demo mix=tools/mix.json`
+- **Metering (post-export QA)**:
+  - `meter_audio out/<name>.mp3 out/<name>.meter.json` (LUFS/true-peak/crest/DC offset/stereo correlation)
+- **Bus stems (quick deliverables)**:
+  - `export_busses out/busses_<name>`
 - **Drum variations + fills macro**:
   - `gen_drum_macros <track> <base_pattern> out_prefix=drums seed=0 make=both|4|8`
 - **Bass follower**:
