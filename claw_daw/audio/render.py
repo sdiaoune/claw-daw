@@ -106,9 +106,18 @@ def render_project_wav(
         tdir = Path(td)
 
         # 1) Render non-sampler tracks with FluidSynth.
+        # Honor mute/solo so stems/busses can be exported correctly.
+        any_solo = any(getattr(t, "solo", False) for t in project.tracks)
+
+        def track_allowed(i: int) -> bool:
+            t = project.tracks[i]
+            if any_solo:
+                return bool(getattr(t, "solo", False))
+            return not bool(getattr(t, "mute", False))
+
         allowed: set[int] = set()
         for i, t in enumerate(project.tracks):
-            if getattr(t, "sampler", None) is None:
+            if getattr(t, "sampler", None) is None and track_allowed(i):
                 allowed.add(i)
 
         midi_path = tdir / "proj.mid"
@@ -135,6 +144,8 @@ def render_project_wav(
         sampler_wavs: list[Path] = []
         for i, t in enumerate(project.tracks):
             if getattr(t, "sampler", None) is None:
+                continue
+            if not track_allowed(i):
                 continue
             res = render_sampler_track(t, project=project, sample_rate=sample_rate)
             w = tdir / f"sampler_{i}.wav"
