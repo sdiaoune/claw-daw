@@ -1,0 +1,227 @@
+# French house / filter-disco beat (original) — from scratch, no stylepacks
+# Note: can't copy any specific artist; this is a genre-accurate French-touch groove.
+# Sources:
+# - French house aka filter house; defining characteristics include filter/phaser effects: https://en.wikipedia.org/wiki/French_house
+# - Tempo commonly 110–130 BPM, 4-on-the-floor foundation: https://emastered.com/blog/french-house-music
+# - Filter sweeps / cutoff automation are characteristic of filtered disco loop technique: https://nitelifeaudio.com/classic-techniques-the-filtered-disco-loop/
+
+new_project 2026-02-05_french_house_124_v1 124
+set_swing 0
+
+# -----------------------------
+# TRACKS (GM-friendly)
+add_track Drums 0
+add_track Bass 39          # Synth Bass 2
+add_track Chords 5         # Electric Piano 1
+add_track Lead 81          # Lead 2 (saw)
+add_track Strings 49       # String Ensemble 2
+
+# Levels
+set_volume 0 124
+set_volume 1 112
+set_volume 2 92
+set_volume 3 86
+set_volume 4 66
+set_reverb 2 10
+set_reverb 3 12
+set_reverb 4 18
+
+# Drums
+set_sampler 0 drums
+set_drum_kit 0 house_clean
+
+# -----------------------------
+# DRUMS (4 bars) — four-on-the-floor + offbeat open hat + disco clap
+new_pattern 0 d4 7680
+# Kick every beat (4 bars)
+add_note_pat 0 d4 kick 0 240 120
+add_note_pat 0 d4 kick 480 240 118
+add_note_pat 0 d4 kick 960 240 120
+add_note_pat 0 d4 kick 1440 240 118
+add_note_pat 0 d4 kick 1920 240 120
+add_note_pat 0 d4 kick 2400 240 118
+add_note_pat 0 d4 kick 2880 240 120
+add_note_pat 0 d4 kick 3360 240 118
+add_note_pat 0 d4 kick 3840 240 120
+add_note_pat 0 d4 kick 4320 240 118
+add_note_pat 0 d4 kick 4800 240 120
+add_note_pat 0 d4 kick 5280 240 118
+add_note_pat 0 d4 kick 5760 240 120
+add_note_pat 0 d4 kick 6240 240 118
+add_note_pat 0 d4 kick 6720 240 120
+add_note_pat 0 d4 kick 7200 240 118
+
+# Clap on 2 & 4
+add_note_pat 0 d4 clap 480 240 96
+add_note_pat 0 d4 clap 1440 240 98
+add_note_pat 0 d4 clap 2400 240 96
+add_note_pat 0 d4 clap 3360 240 98
+add_note_pat 0 d4 clap 4320 240 96
+add_note_pat 0 d4 clap 5280 240 98
+add_note_pat 0 d4 clap 6240 240 96
+add_note_pat 0 d4 clap 7200 240 98
+
+# Closed hats 1/8
+# (light velocity movement to feel human)
+add_note_pat 0 d4 hat_closed 0 120 54
+add_note_pat 0 d4 hat_closed 240 120 50
+add_note_pat 0 d4 hat_closed 480 120 54
+add_note_pat 0 d4 hat_closed 720 120 50
+add_note_pat 0 d4 hat_closed 960 120 54
+add_note_pat 0 d4 hat_closed 1200 120 50
+add_note_pat 0 d4 hat_closed 1440 120 54
+add_note_pat 0 d4 hat_closed 1680 120 50
+add_note_pat 0 d4 hat_closed 1920 120 54
+add_note_pat 0 d4 hat_closed 2160 120 50
+add_note_pat 0 d4 hat_closed 2400 120 54
+add_note_pat 0 d4 hat_closed 2640 120 50
+add_note_pat 0 d4 hat_closed 2880 120 54
+add_note_pat 0 d4 hat_closed 3120 120 50
+add_note_pat 0 d4 hat_closed 3360 120 54
+add_note_pat 0 d4 hat_closed 3600 120 50
+add_note_pat 0 d4 hat_closed 3840 120 54
+add_note_pat 0 d4 hat_closed 4080 120 50
+add_note_pat 0 d4 hat_closed 4320 120 54
+add_note_pat 0 d4 hat_closed 4560 120 50
+add_note_pat 0 d4 hat_closed 4800 120 54
+add_note_pat 0 d4 hat_closed 5040 120 50
+add_note_pat 0 d4 hat_closed 5280 120 54
+add_note_pat 0 d4 hat_closed 5520 120 50
+add_note_pat 0 d4 hat_closed 5760 120 54
+add_note_pat 0 d4 hat_closed 6000 120 50
+add_note_pat 0 d4 hat_closed 6240 120 54
+add_note_pat 0 d4 hat_closed 6480 120 50
+add_note_pat 0 d4 hat_closed 6720 120 54
+add_note_pat 0 d4 hat_closed 6960 120 50
+add_note_pat 0 d4 hat_closed 7200 120 54
+add_note_pat 0 d4 hat_closed 7440 120 50
+
+# Open hat on the offbeat (& of each beat)
+add_note_pat 0 d4 hat_open 240 240 72
+add_note_pat 0 d4 hat_open 720 240 72
+add_note_pat 0 d4 hat_open 1200 240 72
+add_note_pat 0 d4 hat_open 1680 240 72
+add_note_pat 0 d4 hat_open 2160 240 72
+add_note_pat 0 d4 hat_open 2640 240 72
+add_note_pat 0 d4 hat_open 3120 240 72
+add_note_pat 0 d4 hat_open 3600 240 72
+add_note_pat 0 d4 hat_open 4080 240 72
+add_note_pat 0 d4 hat_open 4560 240 72
+add_note_pat 0 d4 hat_open 5040 240 72
+add_note_pat 0 d4 hat_open 5520 240 72
+add_note_pat 0 d4 hat_open 6000 240 72
+add_note_pat 0 d4 hat_open 6480 240 72
+add_note_pat 0 d4 hat_open 6960 240 72
+add_note_pat 0 d4 hat_open 7440 240 72
+
+# -----------------------------
+# HARMONY (A minor) — 4 bars (disco-ish)
+# Am7 | Fmaj7 | G6 | Em7
+new_pattern 2 ch_4 7680
+# Am7 (A3 C4 E4 G4)
+add_note_pat 2 ch_4 57 0 1920 70
+add_note_pat 2 ch_4 60 0 1920 66
+add_note_pat 2 ch_4 64 0 1920 66
+add_note_pat 2 ch_4 67 0 1920 62
+# Fmaj7 (F3 A3 C4 E4)
+add_note_pat 2 ch_4 53 1920 1920 70
+add_note_pat 2 ch_4 57 1920 1920 66
+add_note_pat 2 ch_4 60 1920 1920 66
+add_note_pat 2 ch_4 64 1920 1920 62
+# G6 (G3 B3 D4 E4)
+add_note_pat 2 ch_4 55 3840 1920 70
+add_note_pat 2 ch_4 59 3840 1920 66
+add_note_pat 2 ch_4 62 3840 1920 66
+add_note_pat 2 ch_4 64 3840 1920 62
+# Em7 (E3 G3 B3 D4)
+add_note_pat 2 ch_4 52 5760 1920 70
+add_note_pat 2 ch_4 55 5760 1920 66
+add_note_pat 2 ch_4 59 5760 1920 66
+add_note_pat 2 ch_4 62 5760 1920 62
+
+# -----------------------------
+# BASS (octave pulse)
+new_pattern 1 b_4 7680
+add_note_pat 1 b_4 45 0 960 96
+add_note_pat 1 b_4 57 960 480 78
+add_note_pat 1 b_4 45 1440 480 88
+
+add_note_pat 1 b_4 41 1920 960 96
+add_note_pat 1 b_4 53 2880 480 78
+add_note_pat 1 b_4 41 3360 480 88
+
+add_note_pat 1 b_4 43 3840 960 96
+add_note_pat 1 b_4 55 4800 480 78
+add_note_pat 1 b_4 43 5280 480 88
+
+add_note_pat 1 b_4 40 5760 960 96
+add_note_pat 1 b_4 52 6720 480 78
+add_note_pat 1 b_4 40 7200 480 88
+
+# -----------------------------
+# LEAD (simple disco riff)
+new_pattern 3 l_2 3840
+add_note_pat 3 l_2 72 0 240 86
+add_note_pat 3 l_2 76 360 240 82
+add_note_pat 3 l_2 79 720 360 84
+add_note_pat 3 l_2 76 1200 240 80
+add_note_pat 3 l_2 74 1440 240 80
+add_note_pat 3 l_2 72 1680 360 84
+add_note_pat 3 l_2 76 2160 240 82
+add_note_pat 3 l_2 79 2520 360 84
+add_note_pat 3 l_2 76 3000 240 80
+add_note_pat 3 l_2 74 3240 240 80
+add_note_pat 3 l_2 72 3480 360 84
+
+# Strings bed (8 bars)
+new_pattern 4 str_8 15360
+add_note_pat 4 str_8 69 0 3840 44
+add_note_pat 4 str_8 67 3840 3840 42
+add_note_pat 4 str_8 71 7680 3840 44
+add_note_pat 4 str_8 67 11520 3840 42
+
+# -----------------------------
+# ARRANGEMENT (64 bars)
+# Intro 8 | Groove A 16 | Break 8 | Groove B 16 | Breakdown 8 | Final 8
+
+# Intro (0-8): drums + chords, no bass first 4
+place_pattern 0 d4 0 2
+place_pattern 2 ch_4 0 2
+place_pattern 4 str_8 0 1
+place_pattern 1 b_4 4:0 1
+place_pattern 3 l_2 6:0 1
+
+# Groove A (8-24)
+place_pattern 0 d4 8:0 4
+place_pattern 1 b_4 8:0 4
+place_pattern 2 ch_4 8:0 4
+place_pattern 3 l_2 8:0 2
+place_pattern 3 l_2 16:0 2
+
+# Break (24-32): filter-style tease (we emulate by dropping kick + leaving hats/clap feel)
+# (simple: reuse d4 but reduce energy by removing bass/lead)
+place_pattern 0 d4 24:0 2
+place_pattern 2 ch_4 24:0 2
+
+# Groove B (32-48): full + extra strings
+place_pattern 0 d4 32:0 4
+place_pattern 1 b_4 32:0 4
+place_pattern 2 ch_4 32:0 4
+place_pattern 4 str_8 32:0 1
+place_pattern 3 l_2 32:0 4
+
+# Breakdown (48-56): chords+strings only
+place_pattern 2 ch_4 48:0 2
+place_pattern 4 str_8 48:0 1
+
+# Final (56-64)
+place_pattern 0 d4 56:0 2
+place_pattern 1 b_4 56:0 2
+place_pattern 2 ch_4 56:0 2
+place_pattern 3 l_2 56:0 2
+
+set_render_region 0 64:0
+
+save_project out/2026-02-05_french_house_124_v1.json
+export_midi out/2026-02-05_french_house_124_v1.mid
+export_mp3 out/2026-02-05_french_house_124_v1.mp3 preset=clean fade=0.25 sr=44100 br=192k
