@@ -1,0 +1,65 @@
+{
+  "tracks": {
+    "0": {
+      "highpass_hz": 25,
+      "comp": {"threshold_db": -22, "ratio": 3, "attack_ms": 6, "release_ms": 70},
+      "transient": {"attack": 0.18, "sustain": -0.06},
+      "sat": {"type": "tanh", "drive": 0.12, "mix": 0.35}
+    },
+    "1": {
+      "highpass_hz": 28,
+      "eq": [
+        {"f": 120, "q": 1.0, "g": -2.5},
+        {"f": 750, "q": 1.0, "g": 1.4}
+      ],
+      "comp": {"threshold_db": -26, "ratio": 2.2, "attack_ms": 12, "release_ms": 110},
+      "sat": {"type": "tanh", "drive": 0.16, "mix": 0.35},
+      "stereo": {"width": 0.10}
+    },
+    "2": {
+      "highpass_hz": 160,
+      "eq": [
+        {"f": 300, "q": 1.0, "g": -1.5},
+        {"f": 3200, "q": 0.9, "g": 1.2},
+        {"f": 9000, "q": 0.8, "g": 1.4}
+      ],
+      "comp": {"threshold_db": -28, "ratio": 2.0, "attack_ms": 10, "release_ms": 140},
+      "stereo": {"width": 1.15},
+      "sends": {"reverb": 0.18}
+    },
+    "3": {
+      "highpass_hz": 220,
+      "eq": [
+        {"f": 2500, "q": 1.0, "g": 1.6},
+        {"f": 9500, "q": 0.9, "g": 1.8}
+      ],
+      "comp": {"threshold_db": -30, "ratio": 1.8, "attack_ms": 8, "release_ms": 120},
+      "sat": {"type": "tanh", "drive": 0.12, "mix": 0.30},
+      "stereo": {"width": 1.25},
+      "sends": {"reverb": 0.22, "delay": 0.10}
+    },
+    "4": {
+      "highpass_hz": 140,
+      "eq": [
+        {"f": 400, "q": 1.0, "g": -2.0},
+        {"f": 8000, "q": 0.8, "g": 1.2}
+      ],
+      "comp": {"threshold_db": -32, "ratio": 2.0, "attack_ms": 15, "release_ms": 200},
+      "stereo": {"width": 1.25},
+      "sends": {"reverb": 0.28}
+    }
+  },
+  "returns": {
+    "reverb": {"predelay_ms": 0, "decay": 0.50},
+    "delay": {"ms": 240, "decay": 0.20}
+  },
+  "master": {
+    "eq": [
+      {"f": 35, "q": 0.7, "g": -0.8},
+      {"f": 250, "q": 1.0, "g": -1.2},
+      {"f": 9500, "q": 0.8, "g": 1.2}
+    ],
+    "limiter": {"limit": 0.98},
+    "mono_below_hz": 120
+  }
+}
