@@ -964,7 +964,7 @@ class HeadlessRunner:
 
         if cmd == "select_notes":
             # select_notes <track> <pattern> [filters...]
-            # Filters support: pitch, start, dur, vel with operators (=,!=,>=,<=,>,<)
+            # Filters support: pitch, start, dur, vel, role with operators (=,!=,>=,<=,>,<)
             # Example:
             #   select_notes 0 hats pitch=42 start>=1:0 start<2:0
             ti = int(args[0])
@@ -997,8 +997,19 @@ class HeadlessRunner:
                 elif key == "dur":
                     cur = int(n.duration)
                     val = _tick(proj, raw)
+                elif key == "role":
+                    cur = str(getattr(n, "role", "") or "")
+                    val = str(raw)
                 else:
                     raise ValueError(f"unknown filter key: {key}")
+
+                # String comparisons for role; numeric comparisons for others.
+                if key == "role":
+                    if op == "=":
+                        return cur == val
+                    if op == "!=":
+                        return cur != val
+                    raise ValueError("role filter only supports = and !=")
 
                 if op == "=":
                     return cur == val
