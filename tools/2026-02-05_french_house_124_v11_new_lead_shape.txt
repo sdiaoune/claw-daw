@@ -1,0 +1,20 @@
+open_project out/2026-02-05_french_house_124_v1.json
+
+# Replace lead pattern with a smoother, more "in-pocket" riff
+# (keep the same pattern name so existing arrangement still works)
+delete_pattern 3 l_2
+new_pattern 3 l_2 3840
+
+# Bar 1 (Am7): warm pentatonic-ish phrase, mostly offbeats
+add_note_pat 3 l_2 69 240 360 74     # A4
+add_note_pat 3 l_2 72 720 240 70     # C5
+add_note_pat 3 l_2 76 960 480 72     # E5
+add_note_pat 3 l_2 74 1560 240 66    # D5 (passing)
+
+# Bar 2 (Fmaj7): answer, slightly higher but still soft
+add_note_pat 3 l_2 72 2040 240 70    # C5
+add_note_pat 3 l_2 76 2280 360 72    # E5
+add_note_pat 3 l_2 79 2760 480 74    # G5
+add_note_pat 3 l_2 76 3360 360 66    # E5 (tail)
+
+export_package 2026-02-05_french_house_124_v11_new_lead_shape preset=punchy mix=tools/mix_french_house_release_v7_lead_quarter.json meter=1
