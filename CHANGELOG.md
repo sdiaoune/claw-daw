@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Preserve note attributes (including **role-based drum events**) when slicing projects for export, preventing cases where drums appear in stems but disappear in the rendered master.
+
 ## 0.2.0
 
 - TUI UX polish: visible mode line, consistent keybinds, view toggle (`g`), mute/solo keys, metronome + count-in

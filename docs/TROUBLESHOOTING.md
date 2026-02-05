@@ -44,6 +44,19 @@ If you suspect a hang, inspect temporary files:
 
 ## Audio quality
 
+### Drums audible in stems but missing in exported MP3/WAV
+
+Symptom:
+- `export_stems` shows a `00_Drums.wav` with audio, but the main `export_mp3` / `export_wav` sounds like it has no drums.
+
+Cause:
+- This can happen if the project uses **role-based drum notes** (kick/snare/hh/oh) and an intermediate step that slices/flattens the arrangement drops note attributes like `role`.
+- Without `role`, drum events can’t be expanded/converted correctly for GM drum rendering.
+
+Fix:
+- Ensure the render/slice pipeline preserves note attributes (at minimum: `role`, `chance`, `mute`, `accent`, `glide_ticks`).
+- claw-daw now preserves these attributes when slicing projects for export.
+
 ### “Instruments sound fake”
 claw-daw uses GM SoundFonts and a simple synth pipeline.
 Improving realism typically means:
