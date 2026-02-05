@@ -1,0 +1,267 @@
+# PluggnB type beat — ORIGINAL (from scratch), no stylepacks
+# BPM: 145 (common lane 130–150 BPM)  Source: https://samplefocus.com/blog/make-pluggnb-beats-samples/
+# Genre context: PluggnB = trap fusion w/ hazy atmospheres + bouncy 808s + jazzy/synthetic elements  Source: https://blog.native-instruments.com/pluggnb-music/
+# Plugg rhythm anchor: clap often on 2 & 4, hats sparse w/ clumps  Source: https://en.wikipedia.org/wiki/Plugg_music
+
+new_project 2026-02-05_pluggnb_145_v1 145
+set_swing 8
+
+# -----------------------------
+# TRACKS
+add_track Drums 0
+add_track 808 38            # Synth Bass 1
+add_track Pluck 81          # Lead 2 (saw-ish)
+add_track Guitar 24         # Nylon Guitar
+add_track Pad 89            # Warm Pad
+
+# Drums
+set_sampler 0 drums
+set_drum_kit 0 trap_hard
+set_volume 0 124
+
+# 808
+set_volume 1 112
+set_pan 1 64
+
+# Pluck
+set_volume 2 92
+set_pan 2 80
+set_reverb 2 14
+
+# Guitar
+set_volume 3 88
+set_pan 3 48
+set_reverb 3 18
+
+# Pad
+set_volume 4 72
+set_pan 4 72
+set_reverb 4 26
+
+# -----------------------------
+# DRUM PATTERNS (2 bars each)
+# 1 bar = 1920 ticks
+new_pattern 0 d_hook 3840
+new_pattern 0 d_verse 3840
+new_pattern 0 d_fill 1920
+
+# HOOK (2 bars): clap on 2&4, bouncy kick, hats w/ little rolls, open hat accents
+# Bar 1 claps
+add_note_pat 0 d_hook clap 480 240 106
+add_note_pat 0 d_hook clap 1440 240 108
+# Bar 2 claps
+add_note_pat 0 d_hook clap 2400 240 106
+add_note_pat 0 d_hook clap 3360 240 108
+
+# Hats (mostly 1/8 w/ 1/16 clumps)
+add_note_pat 0 d_hook hat_closed 0 120 64
+add_note_pat 0 d_hook hat_closed 240 120 54
+add_note_pat 0 d_hook hat_closed 480 120 62
+add_note_pat 0 d_hook hat_closed 720 120 54
+add_note_pat 0 d_hook hat_closed 960 120 64
+add_note_pat 0 d_hook hat_closed 1200 120 54
+add_note_pat 0 d_hook hat_closed 1440 120 62
+add_note_pat 0 d_hook hat_closed 1680 120 54
+# little roll before clap (bar1 end)
+add_note_pat 0 d_hook hat_closed 1320 60 58
+add_note_pat 0 d_hook hat_closed 1380 60 60
+
+# Bar 2 hats
+add_note_pat 0 d_hook hat_closed 1920 120 64
+add_note_pat 0 d_hook hat_closed 2160 120 54
+add_note_pat 0 d_hook hat_closed 2400 120 62
+add_note_pat 0 d_hook hat_closed 2640 120 54
+add_note_pat 0 d_hook hat_closed 2880 120 64
+add_note_pat 0 d_hook hat_closed 3120 120 54
+add_note_pat 0 d_hook hat_closed 3360 120 62
+add_note_pat 0 d_hook hat_closed 3600 120 54
+add_note_pat 0 d_hook hat_open 3720 240 70
+
+# Kicks (syncopation)
+add_note_pat 0 d_hook kick 0 240 118
+add_note_pat 0 d_hook kick 720 240 104
+add_note_pat 0 d_hook kick 1080 240 110
+add_note_pat 0 d_hook kick 1680 240 100
+add_note_pat 0 d_hook kick 1920 240 116
+add_note_pat 0 d_hook kick 2520 240 102
+add_note_pat 0 d_hook kick 3000 240 108
+add_note_pat 0 d_hook kick 3600 240 104
+
+# Perc accents
+add_note_pat 0 d_hook perc 360 120 54
+add_note_pat 0 d_hook perc 1560 120 52
+add_note_pat 0 d_hook perc 2280 120 54
+add_note_pat 0 d_hook perc 3480 120 52
+
+# VERSE (2 bars): sparser hats + rim texture
+add_note_pat 0 d_verse clap 480 240 104
+add_note_pat 0 d_verse clap 1440 240 106
+add_note_pat 0 d_verse clap 2400 240 104
+add_note_pat 0 d_verse clap 3360 240 106
+
+# hats: fewer, with space
+add_note_pat 0 d_verse hat_closed 0 120 58
+add_note_pat 0 d_verse hat_closed 480 120 56
+add_note_pat 0 d_verse hat_closed 960 120 58
+add_note_pat 0 d_verse hat_closed 1200 120 54
+add_note_pat 0 d_verse hat_closed 1920 120 58
+add_note_pat 0 d_verse hat_closed 2400 120 56
+add_note_pat 0 d_verse hat_closed 2880 120 58
+add_note_pat 0 d_verse hat_open 3600 240 64
+
+# rim + perc
+add_note_pat 0 d_verse rim 720 120 46
+add_note_pat 0 d_verse rim 2640 120 46
+add_note_pat 0 d_verse perc 1560 120 50
+add_note_pat 0 d_verse perc 3480 120 50
+
+# kicks: simpler
+add_note_pat 0 d_verse kick 0 240 116
+add_note_pat 0 d_verse kick 840 240 98
+add_note_pat 0 d_verse kick 1920 240 114
+add_note_pat 0 d_verse kick 3000 240 100
+
+# Fill (1 bar): snare burst + toms into next section
+add_note_pat 0 d_fill clap 480 240 108
+add_note_pat 0 d_fill clap 1440 240 110
+add_note_pat 0 d_fill snare 1560 120 58
+add_note_pat 0 d_fill snare 1620 120 64
+add_note_pat 0 d_fill snare 1680 120 70
+add_note_pat 0 d_fill snare 1740 120 78
+add_note_pat 0 d_fill tom_low 1440 160 66
+add_note_pat 0 d_fill tom_mid 1600 160 68
+add_note_pat 0 d_fill tom_high 1760 160 70
+add_note_pat 0 d_fill hat_open 1680 240 74
+add_note_pat 0 d_fill kick 1800 120 112
+
+# -----------------------------
+# HARMONY (F# minor) — 8 bars pad + 4 bar pluck/gtr motifs
+# Chords (2 bars each): F#m9 | Dmaj9 | E6/9 | C#7sus->C#7
+
+new_pattern 4 pad_8 15360
+# F#m9: F#3 A3 C#4 E4 G#4
+add_note_pat 4 pad_8 54 0 3840 64
+add_note_pat 4 pad_8 57 0 3840 60
+add_note_pat 4 pad_8 61 0 3840 58
+add_note_pat 4 pad_8 64 0 3840 56
+add_note_pat 4 pad_8 68 0 3840 54
+# Dmaj9: D3 F#3 A3 C#4 E4
+add_note_pat 4 pad_8 50 3840 3840 64
+add_note_pat 4 pad_8 54 3840 3840 60
+add_note_pat 4 pad_8 57 3840 3840 58
+add_note_pat 4 pad_8 61 3840 3840 56
+add_note_pat 4 pad_8 64 3840 3840 54
+# E6/9: E3 G#3 B3 C#4 F#4
+add_note_pat 4 pad_8 52 7680 3840 64
+add_note_pat 4 pad_8 56 7680 3840 60
+add_note_pat 4 pad_8 59 7680 3840 58
+add_note_pat 4 pad_8 61 7680 3840 56
+add_note_pat 4 pad_8 66 7680 3840 54
+# C#7sus -> C#7 (1 bar each)
+add_note_pat 4 pad_8 49 11520 1920 64
+add_note_pat 4 pad_8 56 11520 1920 58
+add_note_pat 4 pad_8 59 11520 1920 56
+add_note_pat 4 pad_8 64 11520 1920 54
+add_note_pat 4 pad_8 49 13440 1920 64
+add_note_pat 4 pad_8 53 13440 1920 58
+add_note_pat 4 pad_8 59 13440 1920 56
+add_note_pat 4 pad_8 64 13440 1920 54
+
+# 808 follows roots (4 bars)
+new_pattern 1 b_4 7680
+add_note_pat 1 b_4 42 0 1680 102      # F#2
+add_note_pat 1 b_4 42 1680 240 86
+add_note_pat 1 b_4 38 1920 1680 100   # D2
+add_note_pat 1 b_4 38 3600 240 84
+add_note_pat 1 b_4 40 3840 1680 100   # E2
+add_note_pat 1 b_4 40 5520 240 84
+add_note_pat 1 b_4 37 5760 1200 100   # C#2
+add_note_pat 1 b_4 39 6960 720 90     # D#2 approach
+
+# Pluck hook (4 bars) — airy, bouncy, lots of space
+new_pattern 2 p_hookA 7680
+# bar1
+add_note_pat 2 p_hookA 78 0 240 92    # F#5
+add_note_pat 2 p_hookA 73 360 240 86  # C#5
+add_note_pat 2 p_hookA 76 720 240 88  # E5
+add_note_pat 2 p_hookA 75 1080 240 84 # D#5
+# bar2
+add_note_pat 2 p_hookA 73 1920 240 90
+add_note_pat 2 p_hookA 71 2280 240 84
+add_note_pat 2 p_hookA 73 2640 240 86
+add_note_pat 2 p_hookA 76 3000 240 88
+# bar3
+add_note_pat 2 p_hookA 76 3840 240 90
+add_note_pat 2 p_hookA 73 4200 240 84
+add_note_pat 2 p_hookA 71 4560 240 84
+add_note_pat 2 p_hookA 69 4920 240 82
+# bar4 (turn)
+add_note_pat 2 p_hookA 73 5760 240 90
+add_note_pat 2 p_hookA 76 6120 240 86
+add_note_pat 2 p_hookA 80 6480 360 88
+add_note_pat 2 p_hookA 78 7080 240 84
+
+# Guitar counter (4 bars) — simple answering line
+new_pattern 3 g_4 7680
+add_note_pat 3 g_4 66 960 960 72     # F#4
+add_note_pat 3 g_4 64 2880 720 70    # E4
+add_note_pat 3 g_4 61 4800 720 70    # C#4
+add_note_pat 3 g_4 62 6720 720 72    # D4
+
+# -----------------------------
+# ARRANGEMENT (64 bars)
+# Intro 8 | Hook 8 | Verse 16 | Hook 8 | Verse 16 | Hook 8 | Outro 8
+
+# Intro (0-8): pad + pluck, light drums late
+place_pattern 4 pad_8 0 1
+place_pattern 2 p_hookA 0 1
+place_pattern 0 d_verse 6:0 1
+place_pattern 0 d_fill 7:0
+
+# Hook1 (8-16)
+place_pattern 0 d_hook 8:0 4
+place_pattern 0 d_hook 12:0 4
+place_pattern 1 b_4 8:0 2
+place_pattern 4 pad_8 8:0 1
+place_pattern 2 p_hookA 8:0 1
+place_pattern 3 g_4 8:0 1
+place_pattern 0 d_fill 15:0
+
+# Verse1 (16-32): drop guitar first half, keep bounce
+place_pattern 0 d_verse 16:0 8
+place_pattern 0 d_verse 24:0 8
+place_pattern 1 b_4 16:0 4
+place_pattern 4 pad_8 16:0 2
+place_pattern 2 p_hookA 16:0 2
+place_pattern 3 g_4 24:0 1
+place_pattern 0 d_fill 31:0
+
+# Hook2 (32-40)
+place_pattern 0 d_hook 32:0 8
+place_pattern 1 b_4 32:0 2
+place_pattern 4 pad_8 32:0 1
+place_pattern 2 p_hookA 32:0 1
+place_pattern 3 g_4 32:0 1
+place_pattern 0 d_fill 39:0
+
+# Verse2 (40-56): slightly sparser drums first 8 bars
+place_pattern 0 d_verse 40:0 8
+place_pattern 0 d_hook 48:0 8
+place_pattern 1 b_4 40:0 4
+place_pattern 4 pad_8 40:0 2
+place_pattern 2 p_hookA 44:0 2
+place_pattern 3 g_4 48:0 1
+place_pattern 0 d_fill 55:0
+
+# Hook3 (56-64)
+place_pattern 0 d_hook 56:0 8
+place_pattern 1 b_4 56:0 2
+place_pattern 4 pad_8 56:0 1
+place_pattern 2 p_hookA 56:0 1
+place_pattern 3 g_4 56:0 1
+
+set_render_region 0 64:0
+
+save_project out/2026-02-05_pluggnb_145_v1.json
+export_midi out/2026-02-05_pluggnb_145_v1.mid
+export_mp3 out/2026-02-05_pluggnb_145_v1.mp3 preset=clean fade=0.25 sr=44100 br=192k
