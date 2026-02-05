@@ -1,0 +1,4 @@
+open_project out/2026-02-05_french_house_126_v1.json
+# Remove the lead/stab track (index 3)
+delete_track 3
+export_package 2026-02-05_french_house_126_v3_nolead preset=punchy mix=tools/mix_french_house_126_release_v1.json meter=1
