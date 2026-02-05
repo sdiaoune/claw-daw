@@ -1261,7 +1261,10 @@ class HeadlessRunner:
             self.run_command(mp3_cmd)
 
             if stems:
-                self.run_command(f"export_stems out/{out_prefix}_stems")
+                stem_cmd = f"export_stems out/{out_prefix}_stems"
+                if mix_path:
+                    stem_cmd += f" mix={mix_path}"
+                self.run_command(stem_cmd)
             if busses:
                 self.run_command(f"export_busses out/{out_prefix}_busses")
             if meter:
@@ -1349,10 +1352,22 @@ class HeadlessRunner:
             return
 
         if cmd == "export_stems":
+            # export_stems <out_dir> [mix=tools/mix.json]
             sf = self.ctx.soundfont
             if not sf:
                 raise RuntimeError("soundfont not set for headless export_stems")
-            export_stems(proj, soundfont=sf, out_dir=args[0])
+            out_dir = args[0]
+            mix_path: str | None = None
+            for a in args[1:]:
+                if a.startswith("mix="):
+                    mix_path = a.split("=", 1)[1]
+            mix = None
+            if mix_path:
+                try:
+                    mix = json.loads(Path(mix_path).read_text(encoding="utf-8"))
+                except Exception:
+                    mix = None
+            export_stems(proj, soundfont=sf, out_dir=out_dir, mix=mix)
             return
 
         if cmd == "export_busses":

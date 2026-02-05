@@ -44,6 +44,19 @@ If you suspect a hang, inspect temporary files:
 
 ## Audio quality
 
+### I lowered a track in the mix, but the exported stems are still loud
+
+Symptom:
+- You set a mix spec track `gain_db` (e.g. to lower the lead), the **master MP3** changes, but **exported stems** stay at the old level.
+
+Cause:
+- Historically, `export_stems` rendered stems *pre-mix* (dry per-track renders) and did not apply the mix spec.
+
+Fix / Prevention:
+- Use `export_package ... stems=1 mix=tools/mix.json` (or `export_stems <dir> mix=tools/mix.json`) so stems inherit **track-level** mix processing.
+- If you want stems to be totally dry (no mix), export stems without the `mix=` argument.
+
+
 ### Drums audible in stems but missing in exported MP3/WAV
 
 Symptom:
