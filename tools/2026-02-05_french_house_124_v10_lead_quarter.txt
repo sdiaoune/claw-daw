@@ -1,0 +1,2 @@
+open_project out/2026-02-05_french_house_124_v1.json
+export_package 2026-02-05_french_house_124_v10_lead_quarter preset=punchy mix=tools/mix_french_house_release_v7_lead_quarter.json stems=0 meter=1
