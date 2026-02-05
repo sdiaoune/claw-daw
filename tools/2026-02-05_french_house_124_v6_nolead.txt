@@ -1,0 +1,4 @@
+open_project out/2026-02-05_french_house_124_v1.json
+# remove the Lead track (index 3 in the original project)
+delete_track 3
+export_package 2026-02-05_french_house_124_v6_nolead preset=punchy mix=tools/mix_french_house_release_v4_nolead.json stems=1 meter=1
