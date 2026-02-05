@@ -66,6 +66,11 @@ def slice_project_range(project: Project, start: int, end: int) -> Project:
                                 duration=max(1, new_end - new_start),
                                 pitch=n.pitch,
                                 velocity=n.velocity,
+                                role=getattr(n, "role", None),
+                                chance=getattr(n, "chance", 1.0),
+                                mute=getattr(n, "mute", False),
+                                accent=getattr(n, "accent", 1.0),
+                                glide_ticks=getattr(n, "glide_ticks", 0),
                             )
                         )
         else:
@@ -76,7 +81,19 @@ def slice_project_range(project: Project, start: int, end: int) -> Project:
                     continue
                 new_start = max(st, start) - start
                 new_end = min(en, end) - start
-                nt.notes.append(Note(start=new_start, duration=max(1, new_end - new_start), pitch=n.pitch, velocity=n.velocity))
+                nt.notes.append(
+                    Note(
+                        start=new_start,
+                        duration=max(1, new_end - new_start),
+                        pitch=n.pitch,
+                        velocity=n.velocity,
+                        role=getattr(n, "role", None),
+                        chance=getattr(n, "chance", 1.0),
+                        mute=getattr(n, "mute", False),
+                        accent=getattr(n, "accent", 1.0),
+                        glide_ticks=getattr(n, "glide_ticks", 0),
+                    )
+                )
 
         out.tracks.append(nt)
 
