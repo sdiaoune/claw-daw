@@ -1,0 +1,80 @@
+{
+  "tracks": {
+    "0": {
+      "highpass_hz": 28,
+      "comp": {"threshold_db": -22, "ratio": 3, "attack_ms": 5, "release_ms": 70},
+      "transient": {"attack": 0.22, "sustain": -0.08},
+      "sat": {"type": "tanh", "drive": 0.13, "mix": 0.35}
+    },
+    "1": {
+      "highpass_hz": 22,
+      "eq": [
+        {"f": 50, "q": 1.0, "g": 2.8},
+        {"f": 220, "q": 1.0, "g": -4.2},
+        {"f": 950, "q": 0.9, "g": 2.4}
+      ],
+      "comp": {"threshold_db": -24, "ratio": 3, "attack_ms": 8, "release_ms": 90},
+      "sat": {"type": "tanh", "drive": 0.24, "mix": 0.48},
+      "stereo": {"width": 0.10}
+    },
+    "2": {
+      "highpass_hz": 240,
+      "eq": [
+        {"f": 2500, "q": 1.0, "g": 1.2},
+        {"f": 7000, "q": 0.9, "g": 2.4},
+        {"f": 11000, "q": 0.8, "g": 1.2}
+      ],
+      "comp": {"threshold_db": -28, "ratio": 2.0, "attack_ms": 8, "release_ms": 140},
+      "stereo": {"width": 1.30},
+      "sends": {"reverb": 0.26, "delay": 0.12}
+    },
+    "3": {
+      "highpass_hz": 150,
+      "eq": [
+        {"f": 320, "q": 1.0, "g": -3.0},
+        {"f": 6000, "q": 0.8, "g": 1.1}
+      ],
+      "comp": {"threshold_db": -32, "ratio": 2.0, "attack_ms": 15, "release_ms": 200},
+      "stereo": {"width": 1.35},
+      "sends": {"reverb": 0.34}
+    },
+    "4": {
+      "highpass_hz": 180,
+      "eq": [
+        {"f": 250, "q": 1.1, "g": -2.2},
+        {"f": 3000, "q": 1.0, "g": 1.2},
+        {"f": 9500, "q": 0.9, "g": 1.4}
+      ],
+      "transient": {"attack": 0.12, "sustain": -0.04},
+      "stereo": {"width": 1.15},
+      "sends": {"reverb": 0.16, "delay": 0.10}
+    },
+    "5": {
+      "highpass_hz": 220,
+      "eq": [
+        {"f": 1800, "q": 1.0, "g": 1.0},
+        {"f": 8500, "q": 0.9, "g": 1.1}
+      ],
+      "comp": {"threshold_db": -30, "ratio": 2.0, "attack_ms": 10, "release_ms": 160},
+      "stereo": {"width": 1.15},
+      "sends": {"reverb": 0.16, "delay": 0.10}
+    }
+  },
+  "sidechain": [
+    {"src": 0, "dst": 1, "src_role": "kick", "threshold_db": -26, "ratio": 7, "attack_ms": 4, "release_ms": 120}
+  ],
+  "returns": {
+    "reverb": {"predelay_ms": 0, "decay": 0.45},
+    "delay": {"ms": 240, "decay": 0.22}
+  },
+  "master": {
+    "eq": [
+      {"f": 35, "q": 0.7, "g": -1.0},
+      {"f": 260, "q": 1.0, "g": -1.8},
+      {"f": 3500, "q": 0.8, "g": 1.1},
+      {"f": 9500, "q": 0.8, "g": 1.7}
+    ],
+    "limiter": {"limit": 0.98},
+    "mono_below_hz": 120
+  }
+}

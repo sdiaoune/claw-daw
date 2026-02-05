@@ -1,0 +1,270 @@
+# NEW from-scratch rage/trap beat (spacey/artistic) — bells + punchy glide 808
+# BPM: 152 | Key center: C# minor
+# Structure: Intro 8 | Drop1 16 | Breakdown 8 | Drop2(var) 24 | Outro 8  (total 64 bars ~2:01)
+# Arrangement heuristic source: https://cymatics.fm/blogs/production/how-to-make-trap-music
+
+new_project 2026-02-05_rage_bells_152_v1 152
+set_swing 7
+
+# -----------------------------
+# TRACKS
+add_track Drums 0
+add_track 808 0
+add_track Bell 14
+add_track SpacePad 89
+add_track Pluck 81
+add_track Counter 82
+
+# Drums
+set_sampler 0 drums
+set_drum_kit 0 trap_hard
+set_volume 0 124
+
+# 808
+set_sampler 1 808
+set_808 1 growl
+set_glide 1 200
+set_volume 1 127
+set_pan 1 64
+
+# Bell + textures
+set_volume 2 100
+set_reverb 2 20
+set_pan 2 86
+
+set_volume 3 76
+set_reverb 3 38
+set_pan 3 70
+
+set_volume 4 86
+set_reverb 4 14
+set_pan 4 58
+
+set_volume 5 74
+set_reverb 5 22
+set_pan 5 80
+
+# -----------------------------
+# PATTERNS
+# ticks: bar=1920, 4 bars=7680, 8 bars=15360
+
+# DRUMS (1 bar)
+new_pattern 0 d_drop 1920
+new_pattern 0 d_break 1920
+new_pattern 0 d_fill 1920
+
+# Drop: half-time snare+clap on beat 3; DISTINCT kick syncopation + hat stutter pockets
+add_note_pat 0 d_drop snare 960 150 112
+add_note_pat 0 d_drop clap 960 180 118
+
+# kick rhythm: early double + late push
+add_note_pat 0 d_drop kick 0 210 120
+add_note_pat 0 d_drop kick 300 150 98
+add_note_pat 0 d_drop kick 720 180 112
+add_note_pat 0 d_drop kick 1260 150 104
+add_note_pat 0 d_drop kick 1440 180 118
+add_note_pat 0 d_drop kick 1740 120 108
+
+# hats: 1/16 with intentional gaps (stutter motif)
+add_note_pat 0 d_drop hh 0 90 62
+add_note_pat 0 d_drop hh 120 90 46
+add_note_pat 0 d_drop hh 240 90 58
+add_note_pat 0 d_drop hh 360 90 46
+# gap at 480
+add_note_pat 0 d_drop hh 600 90 56
+add_note_pat 0 d_drop hh 720 90 46
+add_note_pat 0 d_drop hh 840 90 60
+add_note_pat 0 d_drop hh 960 90 66
+add_note_pat 0 d_drop hh 1080 90 46
+add_note_pat 0 d_drop hh 1200 90 60
+# gap at 1320
+add_note_pat 0 d_drop hh 1440 90 64
+add_note_pat 0 d_drop hh 1560 90 46
+add_note_pat 0 d_drop hh 1680 90 62
+add_note_pat 0 d_drop hh 1800 90 46
+
+# open hats for lift
+add_note_pat 0 d_drop oh 840 180 78
+add_note_pat 0 d_drop oh 1680 180 74
+# crash at section starts (chance)
+add_note_pat 0 d_drop crash 0 240 86 chance=0.35
+# perc ghost
+add_note_pat 0 d_drop perc 540 120 84 chance=0.55
+add_note_pat 0 d_drop perc 1500 120 86 chance=0.55
+
+# Breakdown: minimal hats + sparse kick, keep snare ghost for pulse
+add_note_pat 0 d_break hh 0 120 52
+add_note_pat 0 d_break hh 480 120 46
+add_note_pat 0 d_break hh 960 120 52
+add_note_pat 0 d_break hh 1440 120 46
+add_note_pat 0 d_break kick 0 210 108
+add_note_pat 0 d_break kick 1440 180 96
+add_note_pat 0 d_break snare 960 120 78 chance=0.35
+add_note_pat 0 d_break oh 1680 180 66
+
+# Fill: triplet-ish hat roll last beat + snare ramp
+add_note_pat 0 d_fill snare 960 150 112
+add_note_pat 0 d_fill clap 960 180 118
+add_note_pat 0 d_fill kick 0 210 114
+add_note_pat 0 d_fill kick 720 180 106
+# hat roll (80 ticks) on beat 4
+add_note_pat 0 d_fill hh 1440 50 62
+add_note_pat 0 d_fill hh 1520 50 66
+add_note_pat 0 d_fill hh 1600 50 70
+add_note_pat 0 d_fill hh 1680 50 76
+add_note_pat 0 d_fill hh 1760 50 82
+add_note_pat 0 d_fill hh 1840 50 88
+add_note_pat 0 d_fill snare 1680 90 76
+add_note_pat 0 d_fill snare 1800 90 86
+add_note_pat 0 d_fill oh 1680 240 74
+
+# -----------------------------
+# 808 (4 bars) — C# minor progression: C# | A | B | G#
+new_pattern 1 b_drop 7680
+new_pattern 1 b_break 7680
+
+# Roots: C#2=37, A1=33, B1=35, G#1=32; octave pop C#3=49 etc.
+# Drop: syncopated with octave pops + long glide return
+add_note_pat 1 b_drop 37 0 600 126 glide_ticks=200
+add_note_pat 1 b_drop 49 600 240 102 glide_ticks=120
+add_note_pat 1 b_drop 37 960 360 120 glide_ticks=140
+
+add_note_pat 1 b_drop 33 1920 720 124 glide_ticks=180
+add_note_pat 1 b_drop 35 2760 240 104 glide_ticks=120
+
+add_note_pat 1 b_drop 35 3840 600 124 glide_ticks=180
+add_note_pat 1 b_drop 47 4440 240 102 glide_ticks=120
+add_note_pat 1 b_drop 35 4800 360 116 glide_ticks=140
+
+add_note_pat 1 b_drop 32 5760 600 124 glide_ticks=180
+add_note_pat 1 b_drop 37 6480 1200 126 glide_ticks=260
+
+# Breakdown: fewer notes, longer holds
+add_note_pat 1 b_break 37 0 960 118 glide_ticks=180
+add_note_pat 1 b_break 33 1920 840 116 glide_ticks=160
+add_note_pat 1 b_break 35 3840 1200 118 glide_ticks=160
+add_note_pat 1 b_break 32 5760 840 114 glide_ticks=160
+add_note_pat 1 b_break 37 6720 960 120 glide_ticks=280
+
+# -----------------------------
+# BELL hook (4 bars) + variation (4 bars) — DIFFERENT contour (no A-G#-E cell)
+new_pattern 2 bell_hook 7680
+new_pattern 2 bell_hookB 7680
+
+# Notes in C# minor area: C#6=85, E6=88, F#6=90, G#6=92, B5=83, A5=81
+# Hook: descending + leap, with lots of space
+add_note_pat 2 bell_hook 90 240 240 96
+add_note_pat 2 bell_hook 88 600 240 84
+add_note_pat 2 bell_hook 85 960 360 90
+add_note_pat 2 bell_hook 92 1560 240 92
+add_note_pat 2 bell_hook 83 2160 240 86
+add_note_pat 2 bell_hook 85 2880 240 88
+add_note_pat 2 bell_hook 81 3360 240 82
+add_note_pat 2 bell_hook 83 4320 240 84
+add_note_pat 2 bell_hook 88 4800 240 86
+add_note_pat 2 bell_hook 90 5280 360 92
+add_note_pat 2 bell_hook 85 6240 240 88
+add_note_pat 2 bell_hook 92 6720 240 90
+
+# Variation: rhythmic displacement + different ending
+add_note_pat 2 bell_hookB 90 360 240 96
+add_note_pat 2 bell_hookB 88 720 240 84
+add_note_pat 2 bell_hookB 92 1080 240 92
+add_note_pat 2 bell_hookB 85 1440 360 90
+add_note_pat 2 bell_hookB 83 2160 240 86
+add_note_pat 2 bell_hookB 81 2640 240 82
+add_note_pat 2 bell_hookB 85 3120 240 88
+add_note_pat 2 bell_hookB 88 4560 240 86
+add_note_pat 2 bell_hookB 90 5040 240 92
+add_note_pat 2 bell_hookB 92 5520 360 92
+add_note_pat 2 bell_hookB 83 6480 240 86
+add_note_pat 2 bell_hookB 81 6960 360 84
+
+# -----------------------------
+# SPACE PAD (8 bars)
+new_pattern 3 pad_main 15360
+# C#m(add9): C#3=49 E3=52 G#3=56 D#4=63
+add_note_pat 3 pad_main 49 0 3840 34
+add_note_pat 3 pad_main 52 0 3840 30
+add_note_pat 3 pad_main 56 0 3840 32
+add_note_pat 3 pad_main 63 0 3840 30
+# Amaj7: A2=45 C#3=49 E3=52 G#3=56
+add_note_pat 3 pad_main 45 3840 3840 34
+add_note_pat 3 pad_main 49 3840 3840 30
+add_note_pat 3 pad_main 52 3840 3840 32
+add_note_pat 3 pad_main 56 3840 3840 30
+# B(add6): B2=47 D#3=51 F#3=54 G#3=56
+add_note_pat 3 pad_main 47 7680 3840 34
+add_note_pat 3 pad_main 51 7680 3840 30
+add_note_pat 3 pad_main 54 7680 3840 32
+add_note_pat 3 pad_main 56 7680 3840 30
+# G#sus: G#2=44 C#3=49 D#3=51 F#3=54
+add_note_pat 3 pad_main 44 11520 3840 34
+add_note_pat 3 pad_main 49 11520 3840 30
+add_note_pat 3 pad_main 51 11520 3840 32
+add_note_pat 3 pad_main 54 11520 3840 30
+
+# PLUCK sparkle (4 bars)
+new_pattern 4 pl_main 7680
+add_note_pat 4 pl_main 73 240 240 76
+add_note_pat 4 pl_main 76 480 240 72
+add_note_pat 4 pl_main 80 720 240 70
+add_note_pat 4 pl_main 78 960 240 72
+add_note_pat 4 pl_main 73 1200 240 76
+add_note_pat 4 pl_main 85 1440 240 78
+add_note_pat 4 pl_main 80 2160 240 74
+add_note_pat 4 pl_main 76 2400 240 72
+
+# COUNTER (4 bars)
+new_pattern 5 c_main 7680
+add_note_pat 5 c_main 68 480 360 62
+add_note_pat 5 c_main 71 2400 240 60
+add_note_pat 5 c_main 73 3840 240 62
+add_note_pat 5 c_main 71 5280 360 60
+
+# -----------------------------
+# ARRANGEMENT (64 bars)
+# Intro 0-8
+place_pattern 3 pad_main 0 1
+place_pattern 0 d_break 0 8
+place_pattern 2 bell_hook 0 1
+place_pattern 1 b_break 4:0 1
+
+# Drop1 8-24 (16 bars)
+place_pattern 0 d_drop 8:0 16
+place_pattern 1 b_drop 8:0 4
+place_pattern 2 bell_hook 8:0 4
+place_pattern 4 pl_main 8:0 4
+place_pattern 5 c_main 12:0 3
+place_pattern 0 d_fill 15:0
+place_pattern 0 d_fill 23:0
+
+# Breakdown 24-32 (8 bars)
+place_pattern 0 d_break 24:0 8
+place_pattern 1 b_break 24:0 2
+place_pattern 3 pad_main 24:0 1
+place_pattern 2 bell_hookB 24:0 2
+
+# Drop2 (var) 32-56 (24 bars)
+place_pattern 0 d_drop 32:0 24
+place_pattern 1 b_drop 32:0 6
+place_pattern 2 bell_hookB 32:0 4
+place_pattern 2 bell_hook 40:0 2
+place_pattern 2 bell_hookB 48:0 2
+place_pattern 4 pl_main 32:0 6
+place_pattern 5 c_main 36:0 5
+place_pattern 0 d_fill 39:0
+place_pattern 0 d_fill 47:0
+place_pattern 0 d_fill 55:0
+
+# Outro 56-64
+place_pattern 0 d_break 56:0 8
+place_pattern 1 b_break 56:0 2
+place_pattern 3 pad_main 56:0 1
+place_pattern 2 bell_hook 56:0 2
+
+set_render_region 0 64:0
+
+save_project out/2026-02-05_rage_bells_152_v1.json
+export_midi out/2026-02-05_rage_bells_152_v1.mid
+export_mp3 out/2026-02-05_rage_bells_152_v1.mp3 preset=punchy fade=0.20 sr=44100 br=192k
