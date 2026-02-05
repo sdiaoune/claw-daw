@@ -1,0 +1,67 @@
+{
+  "tracks": {
+    "0": {
+      "highpass_hz": 20,
+      "comp": {"threshold_db": -24, "ratio": 3.2, "attack_ms": 6, "release_ms": 70},
+      "transient": {"attack": 0.20, "sustain": -0.05},
+      "sat": {"type": "tanh", "drive": 0.12, "mix": 0.30}
+    },
+    "1": {
+      "highpass_hz": 28,
+      "eq": [
+        {"f": 80, "q": 0.9, "g": 1.2},
+        {"f": 220, "q": 1.0, "g": -1.2},
+        {"f": 900, "q": 1.0, "g": 1.0}
+      ],
+      "comp": {"threshold_db": -28, "ratio": 2.4, "attack_ms": 12, "release_ms": 130},
+      "sat": {"type": "tanh", "drive": 0.16, "mix": 0.30},
+      "stereo": {"width": 0.15}
+    },
+    "2": {
+      "highpass_hz": 160,
+      "eq": [
+        {"f": 300, "q": 1.0, "g": -1.2},
+        {"f": 3200, "q": 0.9, "g": 1.2},
+        {"f": 9500, "q": 0.8, "g": 1.2}
+      ],
+      "comp": {"threshold_db": -32, "ratio": 1.8, "attack_ms": 10, "release_ms": 160},
+      "stereo": {"width": 1.18},
+      "sends": {"reverb": 0.18}
+    },
+    "3": {
+      "gain_db": -6.0,
+      "highpass_hz": 220,
+      "eq": [
+        {"f": 2500, "q": 1.0, "g": 1.0},
+        {"f": 10500, "q": 0.8, "g": 1.2}
+      ],
+      "comp": {"threshold_db": -34, "ratio": 1.7, "attack_ms": 6, "release_ms": 140},
+      "sat": {"type": "tanh", "drive": 0.10, "mix": 0.20},
+      "stereo": {"width": 1.20},
+      "sends": {"reverb": 0.14, "delay": 0.06}
+    },
+    "4": {
+      "highpass_hz": 140,
+      "eq": [
+        {"f": 400, "q": 1.0, "g": -1.6},
+        {"f": 8500, "q": 0.8, "g": 1.0}
+      ],
+      "comp": {"threshold_db": -36, "ratio": 2.0, "attack_ms": 15, "release_ms": 220},
+      "stereo": {"width": 1.25},
+      "sends": {"reverb": 0.26}
+    }
+  },
+  "returns": {
+    "reverb": {"predelay_ms": 0, "decay": 0.55},
+    "delay": {"ms": 240, "decay": 0.18}
+  },
+  "master": {
+    "eq": [
+      {"f": 32, "q": 0.8, "g": 0.5},
+      {"f": 250, "q": 1.0, "g": -1.0},
+      {"f": 9500, "q": 0.8, "g": 1.0}
+    ],
+    "limiter": {"limit": 0.985},
+    "mono_below_hz": 120
+  }
+}
