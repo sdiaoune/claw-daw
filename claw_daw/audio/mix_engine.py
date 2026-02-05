@@ -142,6 +142,9 @@ def _track_fx_chain(spec: dict[str, Any]) -> str:
     stereo = spec.get("stereo") or None
     if stereo:
         width = _flt(stereo.get("width", 1.0), 1.0)
+        # ffmpeg stereotools slev range is [0.015625, 64].
+        # Clamp to avoid hard failures when users request full mono (0.0).
+        width = max(0.015625, min(64.0, float(width)))
         # Width via mid/side gains; keep mid 1.0, scale side.
         if abs(width - 1.0) > 1e-6:
             chain.append(f"stereotools=mlev=1.0:slev={width}")
