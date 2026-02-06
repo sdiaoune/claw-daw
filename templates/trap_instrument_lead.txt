@@ -1,0 +1,59 @@
+# Trap template with native pluck lead (offline instrument)
+new_project template_trap_pluck 150
+set_swing 12
+
+# Sampler tracks
+add_track Drums 0
+add_track 808 0
+set_sampler 0 drums
+set_sampler 1 808
+set_volume 0 118
+set_volume 1 120
+
+# Native instrument lead (offline)
+add_track Lead 0
+set_instrument 2 pluck.karplus preset=dark_pluck tone=0.55 decay=0.30 drive=1.2 width=1.15 seed=7
+set_volume 2 96
+
+# Patterns (4 bars)
+new_pattern 0 d_main 1920
+new_pattern 1 b_main 1920
+new_pattern 2 l_main 1920
+
+# Drums: hats + snare + kicks
+add_note_pat 0 d_main 42 0 120 70
+add_note_pat 0 d_main 42 240 120 58
+add_note_pat 0 d_main 42 480 120 66
+add_note_pat 0 d_main 42 720 120 58
+add_note_pat 0 d_main 42 960 120 70
+add_note_pat 0 d_main 42 1200 120 58
+add_note_pat 0 d_main 42 1440 120 66
+add_note_pat 0 d_main 42 1680 120 58
+add_note_pat 0 d_main 38 960 240 112
+add_note_pat 0 d_main 36 0 240 120
+add_note_pat 0 d_main 36 600 240 108
+add_note_pat 0 d_main 36 1320 240 118
+add_note_pat 0 d_main 36 1560 240 104
+
+# 808: long sub notes with movement
+add_note_pat 1 b_main 36 0 720 118
+add_note_pat 1 b_main 36 720 240 92
+add_note_pat 1 b_main 34 960 480 120
+add_note_pat 1 b_main 41 1440 480 120
+
+# Lead: simple pluck motif
+add_note_pat 2 l_main 72 0 240 92
+add_note_pat 2 l_main 75 240 240 88
+add_note_pat 2 l_main 77 480 240 90
+add_note_pat 2 l_main 75 720 240 86
+add_note_pat 2 l_main 72 960 240 92
+add_note_pat 2 l_main 70 1200 240 86
+add_note_pat 2 l_main 68 1440 240 88
+add_note_pat 2 l_main 70 1680 240 86
+
+# Arrange: ~1 minute
+place_pattern 0 d_main 0 32
+place_pattern 1 b_main 0 32
+place_pattern 2 l_main 0 32
+
+export_mp3 out_template_trap_pluck.mp3 trim=60 preset=demo fade=0.15

@@ -34,6 +34,7 @@ Practical conversions (4/4):
 ### Tracks
 A track is either:
 - a **GM instrument** (MIDI program + optional reverb/chorus/pan/volume)
+- a **native instrument plugin** (offline render-only)
 - or a **sampler** track for drums/808 (see “Sampler support”)
 
 ### Patterns and clips (arrangement mode)
@@ -135,6 +136,28 @@ claw-daw --headless \
 ```
 
 Scripts are plain text files containing one command per line.
+
+---
+
+## Native instrument plugins (offline)
+
+claw-daw includes a few built-in **offline** instrument generators. These render to WAV stems
+before the mix/master pipeline, so they work with all existing sound engineering features.
+
+Commands:
+- `list_instruments`
+- `set_instrument <track_index> <instrument_id> preset=<name> seed=<n> <param>=<value>...`
+
+Example:
+```txt
+list_instruments
+set_instrument 2 pluck.karplus preset=dark_pluck tone=0.55 decay=0.30 drive=1.2 width=1.15 seed=7
+```
+
+Notes:
+- Instrument rendering takes priority over GM and sampler modes for that track.
+- `seed` gives deterministic variation.
+- `params` override preset defaults (per instrument).
 
 ---
 
@@ -365,13 +388,37 @@ Headless script helpers (write to project mix spec):
 
 ## Sampler support (drum one-shots)
 
-Sampler mode is currently **restricted** to built-in sampler types.
+Sampler mode supports built-in drum synths and optional **WAV sample packs**.
 
 Command:
 
 - `set_sampler <track_index> <drums|808|none>`
 - `set_glide <track_index> <ticks|bar:beat>` (808 only)
 - `set_humanize <track_index> timing=<ticks> velocity=<ticks> seed=<int>`
+
+Sample packs (drum one-shots from a folder of WAVs):
+
+- `scan_sample_pack <path> id=<pack_id> include=*.wav`
+- `list_sample_packs`
+- `set_sample_pack <track_index> <pack_id|path> seed=<n> gain_db=<db>`
+- `convert_sample_pack_to_sf2 <pack_id|path> <out.sf2> tool=sfz2sf2`
+
+Example:
+```txt
+scan_sample_pack "/Users/soyadiaoune/Splice/sounds/packs/Serum 2 Melodic House Essentials Volume 1" id=serum2_melodic_house
+set_sample_pack 0 serum2_melodic_house seed=7 gain_db=-1.5
+```
+
+Notes:
+- Sample packs are **WAV-only** in v1.
+- `set_sample_pack` forces the track into `sampler=drums`.
+- SoundFont conversion requires an external converter (e.g., `sfz2sf2`).
+  You can override the converter via `CLAW_DAW_SF2_CONVERTER=/path/to/tool`.
+- Roles are inferred from filenames (kick/snare/hat/clap/perc/etc).
+- Paths with spaces should be quoted in headless scripts.
+- Best results come from role-based drum notes (`kick`, `snare`, `hh`, `oh`, `clap`, etc).
+- Exports that use a render region keep sample pack + instrument metadata intact. If drums disappear
+  in an older build, upgrade and/or clear the render region.
 
 This is meant for:
 - drum hits: kick/snare/hat/percs

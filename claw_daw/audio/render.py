@@ -2,36 +2,13 @@ from __future__ import annotations
 
 import subprocess
 import tempfile
-import wave
 from pathlib import Path
 
 from claw_daw.audio.sampler import render_sampler_track
+from claw_daw.audio.wav import write_wav_stereo
 from claw_daw.io.midi import export_midi
 from claw_daw.model.types import Project
-
-
-def _write_wav_stereo(path: Path, left: list[float], right: list[float], *, sample_rate: int) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    n = max(len(left), len(right))
-    if len(left) < n:
-        left = left + [0.0] * (n - len(left))
-    if len(right) < n:
-        right = right + [0.0] * (n - len(right))
-
-    # hard clip
-    def _i16(x: float) -> int:
-        v = max(-1.0, min(1.0, float(x)))
-        return int(v * 32767.0)
-
-    with wave.open(str(path), "wb") as wf:
-        wf.setnchannels(2)
-        wf.setsampwidth(2)
-        wf.setframerate(int(sample_rate))
-        frames = bytearray()
-        for i in range(n):
-            frames += int.to_bytes(_i16(left[i]), 2, "little", signed=True)
-            frames += int.to_bytes(_i16(right[i]), 2, "little", signed=True)
-        wf.writeframes(bytes(frames))
+from claw_daw.util.notes import apply_note_chance, flatten_track_notes, note_seed_base
 
 
 def render_project_wav(
@@ -48,7 +25,9 @@ def render_project_wav(
     If mix is provided (or project.mix is set), we render per-track stems then mix via ffmpeg
     to enable deterministic sound-engineering FX (EQ, dynamics, sidechain, sends, stereo tools).
 
+    - Native instrument tracks (track.instrument) are rendered in-process.
     - Sampler tracks (track.sampler in {drums,808}) are synthesized in-process.
+      If a sample pack is set on a drums track, we render WAV samples instead of the built-in synth kit.
     - All other tracks are rendered via FluidSynth.
 
     drum_mode:
@@ -68,6 +47,10 @@ def render_project_wav(
         from claw_daw.audio.mix_engine import MixSpec, mix_project_wav
 
         return mix_project_wav(project, soundfont=soundfont, out_wav=out_wav, sample_rate=sample_rate, mix=MixSpec.from_dict(eff_mix))
+
+    has_sample_pack = any(getattr(t, "sample_pack", None) is not None for t in project.tracks)
+    if has_sample_pack and drum_mode == "gm":
+        drum_mode = "sampler"
 
     outp = Path(out_wav).expanduser().resolve()
     outp.parent.mkdir(parents=True, exist_ok=True)
@@ -105,10 +88,20 @@ def render_project_wav(
     with tempfile.TemporaryDirectory(prefix="claw_daw_render_") as td:
         tdir = Path(td)
 
-        # 1) Render non-sampler tracks with FluidSynth.
+        def _active_tracks(p: Project) -> set[int]:
+            soloed = {i for i, t in enumerate(p.tracks) if t.solo}
+            if soloed:
+                return soloed
+            return {i for i, t in enumerate(p.tracks) if not t.mute}
+
+        active = _active_tracks(project)
+
+        # 1) Render non-sampler tracks with FluidSynth (respect mute/solo).
         allowed: set[int] = set()
         for i, t in enumerate(project.tracks):
-            if getattr(t, "sampler", None) is None:
+            if i not in active:
+                continue
+            if getattr(t, "sampler", None) is None and getattr(t, "instrument", None) is None:
                 allowed.add(i)
 
         midi_path = tdir / "proj.mid"
@@ -129,20 +122,46 @@ def render_project_wav(
             subprocess.run(cmd, check=True)
         else:
             # empty placeholder
-            _write_wav_stereo(fs_wav, [0.0] * (sample_rate // 2), [0.0] * (sample_rate // 2), sample_rate=sample_rate)
+            write_wav_stereo(fs_wav, [0.0] * (sample_rate // 2), [0.0] * (sample_rate // 2), sample_rate=sample_rate)
 
         # 2) Render sampler tracks and write individual wavs.
         sampler_wavs: list[Path] = []
         for i, t in enumerate(project.tracks):
+            if i not in active:
+                continue
+            if getattr(t, "instrument", None) is not None:
+                continue
             if getattr(t, "sampler", None) is None:
                 continue
-            res = render_sampler_track(t, project=project, sample_rate=sample_rate)
+            res = render_sampler_track(t, project=project, sample_rate=sample_rate, track_index=i)
             w = tdir / f"sampler_{i}.wav"
-            _write_wav_stereo(w, res.left, res.right, sample_rate=sample_rate)
+            write_wav_stereo(w, res.left, res.right, sample_rate=sample_rate)
             sampler_wavs.append(w)
 
-        # 3) Mix everything with ffmpeg (more robust than our own i16 summing).
-        inputs = [fs_wav] + sampler_wavs
+        # 3) Render native instrument tracks (offline plugins).
+        instrument_wavs: list[Path] = []
+        for i, t in enumerate(project.tracks):
+            if i not in active:
+                continue
+            spec = getattr(t, "instrument", None)
+            if spec is None:
+                continue
+            from claw_daw.instruments.registry import get_instrument
+
+            inst = get_instrument(getattr(spec, "id", "") or "")
+            if inst is None:
+                raise ValueError(f"unknown instrument id: {getattr(spec, 'id', '')}")
+            notes = flatten_track_notes(project, i, t, ppq=project.ppq, swing_percent=project.swing_percent)
+            notes = apply_note_chance(notes, seed_base=note_seed_base(t, i))
+            w = tdir / f"instrument_{i}.wav"
+            if not notes:
+                write_wav_stereo(w, [0.0] * (sample_rate // 2), [0.0] * (sample_rate // 2), sample_rate=sample_rate)
+            else:
+                inst.render(project, i, notes, str(w), sample_rate)
+            instrument_wavs.append(w)
+
+        # 4) Mix everything with ffmpeg (more robust than our own i16 summing).
+        inputs = [fs_wav] + sampler_wavs + instrument_wavs
         if len(inputs) == 1:
             Path(fs_wav).replace(outp)
             return str(outp)

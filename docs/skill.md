@@ -149,6 +149,14 @@ When a user prompts an agent, the agent can use claw-daw for fast “one-shot”
   - `add_note_pat ... <pitch|role> ...` where role can be:
     - `kick|snare|clap|rim|hh|oh|ph|tom_low|tom_mid|tom_high|crash|ride|perc|shaker`
     - (`hh/oh/ph` are aliases for `hat_closed/hat_open/hat_pedal`)
+- **Native instrument plugins (offline render-only)**:
+  - `list_instruments`
+  - `set_instrument <track_index> <instrument_id> preset=<name> seed=<n> <param>=<value>...`
+- **Sample packs (WAV drum one-shots)**:
+  - `scan_sample_pack <path> id=<pack_id> include=*.wav`
+  - `list_sample_packs`
+  - `set_sample_pack <track_index> <pack_id|path> seed=<n> gain_db=<db>`
+  - `convert_sample_pack_to_sf2 <pack_id|path> <out.sf2> tool=sfz2sf2`
 
 ### Drum rendering sanity checklist (prevents “crackling / not-drums” failures)
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from claw_daw.model.types import Project
+from claw_daw.model.types import InstrumentSpec, Project, SamplePackSpec
 from claw_daw.util.drumkit import get_drum_kit, normalize_role
 from claw_daw.util.limits import (
     MAX_CLIPS_PER_TRACK,
@@ -18,7 +18,7 @@ def clamp(v: int, lo: int, hi: int) -> int:
     return max(lo, min(hi, int(v)))
 
 
-CURRENT_SCHEMA_VERSION = 9
+CURRENT_SCHEMA_VERSION = 11
 
 
 def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
@@ -74,6 +74,18 @@ def migrate_project_dict(d: dict[str, Any]) -> dict[str, Any]:
         for t in d.get("tracks", []) or []:
             t.setdefault("bus", "music")
         schema = 9
+
+    # v9 -> v10: optional instrument plugin per track
+    if schema < 10:
+        for t in d.get("tracks", []) or []:
+            t.setdefault("instrument", None)
+        schema = 10
+
+    # v10 -> v11: optional sample pack per track
+    if schema < 11:
+        for t in d.get("tracks", []) or []:
+            t.setdefault("sample_pack", None)
+        schema = 11
 
     d["schema_version"] = CURRENT_SCHEMA_VERSION
     return d
@@ -150,6 +162,58 @@ def validate_and_migrate_project(project: Project) -> Project:
 
         # sampler preset (optional; validated at render time)
         t.sampler_preset = str(getattr(t, "sampler_preset", "default") or "default")
+
+        # instrument plugin (optional)
+        instr = getattr(t, "instrument", None)
+        if instr is None:
+            t.instrument = None
+        elif isinstance(instr, dict):
+            t.instrument = InstrumentSpec.from_dict(instr)
+        elif isinstance(instr, InstrumentSpec):
+            t.instrument = instr
+        else:
+            t.instrument = None
+        if t.instrument is not None:
+            t.instrument.id = str(t.instrument.id).strip()
+            if not t.instrument.id:
+                t.instrument = None
+            else:
+                t.instrument.preset = str(t.instrument.preset or "default").strip() or "default"
+                if not isinstance(t.instrument.params, dict):
+                    t.instrument.params = {}
+                t.instrument.seed = int(t.instrument.seed or 0)
+
+        # sample pack (optional)
+        sp = getattr(t, "sample_pack", None)
+        if sp is None:
+            t.sample_pack = None
+        elif isinstance(sp, dict):
+            t.sample_pack = SamplePackSpec.from_dict(sp)
+        elif isinstance(sp, SamplePackSpec):
+            t.sample_pack = sp
+        else:
+            t.sample_pack = None
+        if t.sample_pack is not None:
+            if t.sample_pack.id is not None:
+                t.sample_pack.id = str(t.sample_pack.id).strip() or None
+            if t.sample_pack.path is not None:
+                t.sample_pack.path = str(t.sample_pack.path).strip() or None
+            t.sample_pack.seed = int(t.sample_pack.seed or 0)
+            try:
+                t.sample_pack.gain_db = float(t.sample_pack.gain_db)
+            except Exception:
+                t.sample_pack.gain_db = 0.0
+            if t.sample_pack.id is None and t.sample_pack.path is None:
+                t.sample_pack = None
+            else:
+                # Ensure sampler mode for sample packs.
+                if t.sampler != "drums":
+                    t.sampler = "drums"
+                # Guardrails on gain.
+                if t.sample_pack.gain_db < -24.0:
+                    t.sample_pack.gain_db = -24.0
+                if t.sample_pack.gain_db > 24.0:
+                    t.sample_pack.gain_db = 24.0
 
         # bus assignment
         t.bus = str(getattr(t, "bus", "music") or "music").strip().lower() or "music"

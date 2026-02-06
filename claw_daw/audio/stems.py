@@ -10,7 +10,7 @@ from claw_daw.model.types import Project
 def export_stems(project: Project, *, soundfont: str, out_dir: str, sample_rate: int = 44100) -> list[str]:
     """Export per-track stems (rough).
 
-    For sampler tracks, stems include the synthesized audio.
+    For sampler and native instrument tracks, stems include the synthesized audio.
     For SoundFont tracks, we re-render the project with only that track allowed.
     """
 

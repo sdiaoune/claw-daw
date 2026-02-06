@@ -42,6 +42,13 @@ Try:
 If you suspect a hang, inspect temporary files:
 - `out/<project>.tmp.track*.wav` are per-track renders used for stems/mixing.
 
+### Drums/samples disappear in full export
+If a drum track uses `set_sample_pack` (or a native instrument) and renders fine alone
+but goes missing in the full mix:
+- Update to the latest build (older versions could drop track metadata when slicing
+  the render region for exports).
+- Clear the render region (`set_render_region none`) and re-export.
+
 ## Audio quality
 
 ### “Instruments sound fake”
