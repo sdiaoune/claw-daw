@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import shlex
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,7 +22,7 @@ from claw_daw.audio.spectrogram import SpectrogramOptions, band_energy_report, r
 from claw_daw.audio.stems import export_stems
 from claw_daw.io.midi import export_midi
 from claw_daw.io.project_json import load_project, save_project
-from claw_daw.model.types import Note, Project, Track
+from claw_daw.model.types import InstrumentSpec, Note, Project, SamplePackSpec, Track
 from claw_daw.util.derived import bars_estimate, project_song_end_tick, song_length_seconds
 from claw_daw.util.gm import parse_program
 from claw_daw.util.drumkit import get_drum_kit, list_drum_kits
@@ -66,6 +67,14 @@ def _tick(proj: Project, s: str) -> int:
     return parse_timecode_ticks(proj, s)
 
 
+def _split_cmd(line: str) -> list[str]:
+    lex = shlex.shlex(line, posix=True)
+    lex.whitespace_split = True
+    lex.commenters = ""
+    lex.escape = ""
+    return list(lex)
+
+
 class HeadlessRunner:
     def __init__(self, *, soundfont: str | None = None, strict: bool = False, dry_run: bool = False) -> None:
         self.ctx = HeadlessContext(soundfont=soundfont)
@@ -86,7 +95,8 @@ class HeadlessRunner:
 
             # include other scripts
             if line.startswith("include "):
-                inc = line.split(" ", 1)[1].strip().strip('"')
+                parts = _split_cmd(line)
+                inc = parts[1] if len(parts) > 1 else ""
                 inc_path = Path(inc)
                 if base is not None and not inc_path.is_absolute():
                     inc_path = base / inc_path
@@ -111,7 +121,7 @@ class HeadlessRunner:
                 continue
 
     def run_command(self, line: str) -> None:
-        parts = line.split()
+        parts = _split_cmd(line)
         cmd, *args = parts
 
         if cmd == "new_project":
@@ -355,10 +365,72 @@ class HeadlessRunner:
             mode = (args[1] if len(args) > 1 else "none").strip().lower()
             if mode in {"none", "off", "0"}:
                 proj.tracks[idx].sampler = None
+                proj.tracks[idx].sample_pack = None
             elif mode in {"drums", "808"}:
                 proj.tracks[idx].sampler = mode
+                proj.tracks[idx].instrument = None
+                if mode != "drums":
+                    proj.tracks[idx].sample_pack = None
             else:
                 raise ValueError("sampler mode must be: drums, 808, none")
+            proj.dirty = True
+            return
+
+        if cmd == "list_instruments":
+            # list_instruments
+            from claw_daw.instruments.registry import list_instruments
+
+            lines: list[str] = []
+            for inst in sorted(list_instruments(), key=lambda x: x.id):
+                presets = sorted(inst.presets().keys())
+                lines.append(f"{inst.id} presets={','.join(presets)}")
+            print("\n".join(lines))
+            return
+
+        if cmd == "set_instrument":
+            # set_instrument <track_index> <instrument_id> preset=<name> seed=<n> <param>=<value>...
+            idx = int(args[0])
+            inst_id = str(args[1]).strip()
+            if inst_id.lower() in {"none", "off"}:
+                proj.tracks[idx].instrument = None
+                proj.dirty = True
+                return
+            from claw_daw.instruments.registry import get_instrument
+
+            if get_instrument(inst_id) is None:
+                raise ValueError(f"unknown instrument id: {inst_id}")
+
+            preset = "default"
+            seed = 0
+            params: dict[str, object] = {}
+            for a in args[2:]:
+                if "=" not in a:
+                    continue
+                k, v = a.split("=", 1)
+                k = k.strip()
+                v = v.strip()
+                if k == "preset":
+                    preset = v
+                    continue
+                if k == "seed":
+                    try:
+                        seed = int(v)
+                    except Exception:
+                        seed = 0
+                    continue
+                # Best-effort numeric parse; fall back to string.
+                try:
+                    if "." in v or "e" in v.lower():
+                        params[k] = float(v)
+                    else:
+                        params[k] = int(v)
+                except Exception:
+                    params[k] = v
+
+            proj.tracks[idx].instrument = InstrumentSpec(id=inst_id, preset=preset, params=params, seed=seed)
+            # Instrument rendering takes priority; clear sampler to avoid ambiguity.
+            proj.tracks[idx].sampler = None
+            proj.tracks[idx].sample_pack = None
             proj.dirty = True
             return
 
@@ -374,6 +446,8 @@ class HeadlessRunner:
             # Convenience: sampler drums preset (synth timbre), not the role->MIDI kit.
             idx = int(args[0])
             proj.tracks[idx].sampler = "drums"
+            proj.tracks[idx].instrument = None
+            proj.tracks[idx].sample_pack = None
             proj.tracks[idx].sampler_preset = str(args[1]).strip()
             proj.dirty = True
             return
@@ -384,6 +458,97 @@ class HeadlessRunner:
             kit = str(args[1]).strip()
             proj.tracks[idx].drum_kit = get_drum_kit(kit).name
             proj.dirty = True
+            return
+
+        if cmd == "list_sample_packs":
+            # list_sample_packs
+            from claw_daw.audio.sample_packs import list_sample_packs
+
+            print("\n".join(list_sample_packs()))
+            return
+
+        if cmd == "scan_sample_pack":
+            # scan_sample_pack <path> id=<pack_id> include=*.wav
+            from claw_daw.audio.sample_packs import scan_sample_pack
+
+            path = args[0]
+            pack_id = None
+            include = "*.wav"
+            for a in args[1:]:
+                if a.startswith("id="):
+                    pack_id = a.split("=", 1)[1].strip()
+                if a.startswith("include="):
+                    include = a.split("=", 1)[1].strip() or "*.wav"
+
+            pack = scan_sample_pack(path, pack_id=pack_id, include=include)
+            roles = ",".join(sorted(pack.roles.keys()))
+            print(f"sample_pack {pack.id} roles={roles} root={pack.root}")
+            return
+
+        if cmd == "set_sample_pack":
+            # set_sample_pack <track_index> <pack_id|path> seed=<n> gain_db=<db>
+            from claw_daw.audio.sample_packs import resolve_sample_pack
+
+            idx = int(args[0])
+            target = args[1]
+            pack_id = None
+            pack_path = None
+            seed = 0
+            gain_db = 0.0
+
+            for a in args[2:]:
+                if a.startswith("seed="):
+                    try:
+                        seed = int(a.split("=", 1)[1])
+                    except Exception:
+                        seed = 0
+                if a.startswith("gain_db="):
+                    try:
+                        gain_db = float(a.split("=", 1)[1])
+                    except Exception:
+                        gain_db = 0.0
+                if a.startswith("id="):
+                    pack_id = a.split("=", 1)[1].strip() or None
+                if a.startswith("path="):
+                    pack_path = a.split("=", 1)[1].strip() or None
+
+            if pack_path is None and pack_id is None:
+                p = Path(target).expanduser()
+                if p.exists():
+                    pack_path = str(p)
+                else:
+                    pack_id = str(target).strip()
+
+            spec = SamplePackSpec(id=pack_id, path=pack_path, seed=seed, gain_db=gain_db)
+            # validate + cache
+            resolve_sample_pack(spec)
+
+            proj.tracks[idx].sample_pack = spec
+            proj.tracks[idx].sampler = "drums"
+            proj.tracks[idx].instrument = None
+            proj.dirty = True
+            return
+
+        if cmd == "convert_sample_pack_to_sf2":
+            # convert_sample_pack_to_sf2 <pack_id|path> <out.sf2> [tool=sfz2sf2]
+            from claw_daw.audio.sample_packs import convert_sample_pack_to_sf2, resolve_sample_pack
+
+            target = args[0]
+            out = Path(args[1])
+            tool = None
+            for a in args[2:]:
+                if a.startswith("tool="):
+                    tool = a.split("=", 1)[1].strip() or None
+
+            p = Path(target).expanduser()
+            if p.exists():
+                spec = SamplePackSpec(path=str(p))
+            else:
+                spec = SamplePackSpec(id=str(target).strip())
+
+            pack = resolve_sample_pack(spec)
+            convert_sample_pack_to_sf2(pack, out_sf2=out, tool=tool)
+            print(f"wrote sf2: {out}")
             return
 
         if cmd == "list_drum_kits":
@@ -397,6 +562,8 @@ class HeadlessRunner:
             # set_808 <track_index> <preset>
             idx = int(args[0])
             proj.tracks[idx].sampler = "808"
+            proj.tracks[idx].instrument = None
+            proj.tracks[idx].sample_pack = None
             proj.tracks[idx].sampler_preset = str(args[1]).strip()
             proj.dirty = True
             return

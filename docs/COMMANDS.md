@@ -70,6 +70,21 @@ claw-daw stylepack trap_2020s --out my_trap --soundfont /usr/share/sounds/sf2/de
 
 ## Sound engineering helpers (headless scripts)
 
+- Native instrument plugins (offline render-only):
+```txt
+list_instruments
+set_instrument 2 pluck.karplus preset=dark_pluck tone=0.55 decay=0.30 drive=1.2 width=1.15 seed=7
+```
+
+- Sample packs (drum one-shots from a folder of WAVs):
+```txt
+scan_sample_pack /path/to/pack id=melodic_house
+list_sample_packs
+set_sample_pack 0 melodic_house seed=7 gain_db=-1.5
+convert_sample_pack_to_sf2 melodic_house out/melodic_house.sf2 tool=sfz2sf2
+```
+Tip: set `CLAW_DAW_SF2_CONVERTER=/path/to/your/tool` to override the converter binary.
+
 - Render bus stems (explicit track bus assignment via `set_bus`, fallback is heuristic grouping):
 ```txt
 set_bus 0 drums

@@ -23,7 +23,20 @@ def humanize_notes(notes: list[Note], *, settings: HumanizeSettings) -> list[Not
     """
 
     if settings.timing_ticks <= 0 and settings.velocity <= 0:
-        return [Note(start=n.start, duration=n.duration, pitch=n.pitch, velocity=n.velocity) for n in notes]
+        return [
+            Note(
+                start=n.start,
+                duration=n.duration,
+                pitch=n.pitch,
+                velocity=n.velocity,
+                role=getattr(n, "role", None),
+                chance=getattr(n, "chance", 1.0),
+                mute=getattr(n, "mute", False),
+                accent=getattr(n, "accent", 1.0),
+                glide_ticks=getattr(n, "glide_ticks", 0),
+            )
+            for n in notes
+        ]
 
     rnd = Random(int(settings.seed))
     out: list[Note] = []
@@ -32,6 +45,18 @@ def humanize_notes(notes: list[Note], *, settings: HumanizeSettings) -> list[Not
         dv = rnd.randint(-int(settings.velocity), int(settings.velocity)) if settings.velocity > 0 else 0
         start = max(0, int(n.start) + dt)
         vel = max(1, min(127, int(n.velocity) + dv))
-        out.append(Note(start=start, duration=int(n.duration), pitch=int(n.pitch), velocity=vel))
+        out.append(
+            Note(
+                start=start,
+                duration=int(n.duration),
+                pitch=int(n.pitch),
+                velocity=vel,
+                role=getattr(n, "role", None),
+                chance=getattr(n, "chance", 1.0),
+                mute=getattr(n, "mute", False),
+                accent=getattr(n, "accent", 1.0),
+                glide_ticks=getattr(n, "glide_ticks", 0),
+            )
+        )
     out.sort(key=lambda x: (x.start, x.pitch))
     return out

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from claw_daw.io.midi import _apply_swing_tick  # internal but stable enough for MVP
+from dataclasses import replace
+
 from claw_daw.model.types import Note, Project, Track
+from claw_daw.util.notes import apply_swing_tick
 
 
 def slice_project_range(project: Project, start: int, end: int) -> Project:
@@ -32,18 +34,9 @@ def slice_project_range(project: Project, start: int, end: int) -> Project:
     )
 
     for t in project.tracks:
-        nt = Track(
-            name=t.name,
-            channel=t.channel,
-            program=t.program,
-            volume=t.volume,
-            pan=t.pan,
-            reverb=t.reverb,
-            chorus=t.chorus,
-            sampler=getattr(t, "sampler", None),
-            mute=t.mute,
-            solo=t.solo,
-        )
+        # Preserve all track metadata by default (including new fields added later),
+        # but reset notes/arrangement to avoid leaking patterns/clips into the slice.
+        nt = replace(t, notes=[], patterns={}, clips=[])
 
         # Prefer arrangement if present.
         if t.clips and t.patterns:
@@ -54,7 +47,7 @@ def slice_project_range(project: Project, start: int, end: int) -> Project:
                 for rep in range(c.repeats):
                     base = c.start + rep * pat.length
                     for n in pat.notes:
-                        st = _apply_swing_tick(base + n.start, project.ppq, project.swing_percent)
+                        st = apply_swing_tick(base + n.start, project.ppq, project.swing_percent)
                         en = st + n.duration
                         if st >= end or en <= start:
                             continue
@@ -75,7 +68,7 @@ def slice_project_range(project: Project, start: int, end: int) -> Project:
                         )
         else:
             for n in t.notes:
-                st = _apply_swing_tick(n.start, project.ppq, project.swing_percent)
+                st = apply_swing_tick(n.start, project.ppq, project.swing_percent)
                 en = st + n.duration
                 if st >= end or en <= start:
                     continue

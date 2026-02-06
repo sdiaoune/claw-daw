@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from random import Random
 
 from claw_daw.model.types import Note, Project, Track
+from claw_daw.audio.sample_packs import render_sample_pack_track
 from claw_daw.util.drumkit import expand_role_notes
 
 
@@ -233,10 +234,13 @@ def _render_808(track: Track, *, project: Project, sample_rate: int, glide_ticks
     return SamplerRenderResult(left=L, right=R, sample_rate=sample_rate)
 
 
-def render_sampler_track(track: Track, *, project: Project, sample_rate: int) -> SamplerRenderResult:
+def render_sampler_track(track: Track, *, project: Project, sample_rate: int, track_index: int = 0) -> SamplerRenderResult:
     preset = str(getattr(track, "sampler_preset", "default") or "default").strip().lower()
 
     if track.sampler == "drums":
+        if getattr(track, "sample_pack", None) is not None:
+            left, right = render_sample_pack_track(track, project=project, track_index=track_index, sample_rate=sample_rate)
+            return SamplerRenderResult(left=left, right=right, sample_rate=sample_rate)
         return _render_drums(track, project=project, sample_rate=sample_rate)
 
     if track.sampler == "808":

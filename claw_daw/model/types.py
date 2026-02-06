@@ -113,6 +113,56 @@ class Note:
 
 
 @dataclass
+class InstrumentSpec:
+    id: str
+    preset: str = "default"
+    params: dict[str, Any] = field(default_factory=dict)
+    seed: int = 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": str(self.id),
+            "preset": str(self.preset),
+            "params": dict(self.params or {}),
+            "seed": int(self.seed),
+        }
+
+    @staticmethod
+    def from_dict(d: dict[str, Any]) -> "InstrumentSpec":
+        return InstrumentSpec(
+            id=str(d.get("id", "")).strip(),
+            preset=str(d.get("preset", "default") or "default"),
+            params=dict(d.get("params", {}) or {}),
+            seed=int(d.get("seed", 0) or 0),
+        )
+
+
+@dataclass
+class SamplePackSpec:
+    id: str | None = None
+    path: str | None = None
+    seed: int = 0
+    gain_db: float = 0.0
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "path": self.path,
+            "seed": int(self.seed),
+            "gain_db": float(self.gain_db),
+        }
+
+    @staticmethod
+    def from_dict(d: dict[str, Any]) -> "SamplePackSpec":
+        return SamplePackSpec(
+            id=(str(d.get("id")).strip() if d.get("id", None) is not None else None),
+            path=(str(d.get("path")).strip() if d.get("path", None) is not None else None),
+            seed=int(d.get("seed", 0) or 0),
+            gain_db=float(d.get("gain_db", 0.0) or 0.0),
+        )
+
+
+@dataclass
 class Track:
     name: str
     channel: int  # 0-15
@@ -125,6 +175,12 @@ class Track:
     # Optional sampler mode (rendered with claw_daw.audio.sampler, bypassing FluidSynth)
     # Supported: None, "drums", "808".
     sampler: str | None = None
+
+    # Optional native instrument plugin (offline render-only).
+    instrument: InstrumentSpec | None = None
+
+    # Optional sample-pack drums (role-based, offline render-only).
+    sample_pack: SamplePackSpec | None = None
 
     # Drum kit name for role-based drum notes (sampler and MIDI export).
     # Built-ins include: trap_hard, house_clean, boombap_dusty.
@@ -170,7 +226,7 @@ class Track:
             raise ValueError(f"chorus out of range: {self.chorus}")
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        d = {
             "name": self.name,
             "channel": self.channel,
             "program": self.program,
@@ -194,6 +250,11 @@ class Track:
             "patterns": {k: v.to_dict() for k, v in self.patterns.items()},
             "clips": [c.to_dict() for c in self.clips],
         }
+        if self.instrument is not None:
+            d["instrument"] = self.instrument.to_dict()
+        if self.sample_pack is not None:
+            d["sample_pack"] = self.sample_pack.to_dict()
+        return d
 
     @staticmethod
     def from_dict(d: dict[str, Any]) -> "Track":
@@ -217,6 +278,12 @@ class Track:
             mute=bool(d.get("mute", False)),
             solo=bool(d.get("solo", False)),
         )
+        instr = d.get("instrument", None)
+        if isinstance(instr, dict):
+            t.instrument = InstrumentSpec.from_dict(instr)
+        sp = d.get("sample_pack", None)
+        if isinstance(sp, dict):
+            t.sample_pack = SamplePackSpec.from_dict(sp)
         t.notes = [Note.from_dict(x) for x in d.get("notes", [])]
         # patterns/clips optional
         pats = d.get("patterns", {}) or {}
@@ -256,7 +323,7 @@ class Project:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "schema_version": 9,
+            "schema_version": 11,
             "name": self.name,
             "tempo_bpm": self.tempo_bpm,
             "ppq": self.ppq,

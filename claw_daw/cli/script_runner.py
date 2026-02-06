@@ -40,6 +40,14 @@ def _sanitize_filename(s: str) -> str:
     return s or "untitled"
 
 
+def _split_cmd(line: str) -> list[str]:
+    lex = shlex.shlex(line, posix=True)
+    lex.whitespace_split = True
+    lex.commenters = ""
+    lex.escape = ""
+    return list(lex)
+
+
 @dataclass
 class RenderOptions:
     soundfont: Path
@@ -85,13 +93,14 @@ def run_script(
 
         # include other scripts
         if line.startswith("include "):
-            inc = line.split(" ", 1)[1].strip()
+            parts = _split_cmd(line)
+            inc = parts[1] if len(parts) > 1 else ""
             inc_path = resolve_path(inc)
             inc_lines = inc_path.read_text(encoding="utf-8").splitlines()
             run_script(inc_lines, base_dir=inc_path.parent)
             continue
 
-        parts = shlex.split(line)
+        parts = _split_cmd(line)
         cmd, args = parts[0], parts[1:]
 
         if cmd == "new_project":

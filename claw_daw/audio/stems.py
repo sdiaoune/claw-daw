@@ -20,7 +20,7 @@ def export_stems(
     """Export per-track stems.
 
     Notes:
-    - For sampler tracks, stems include the synthesized audio.
+    - For sampler and native instrument tracks, stems include the synthesized audio.
     - For SoundFont tracks, we re-render the project with only that track allowed.
     - If a mix spec is provided, we apply **track-level** processing (not master)
       to each stem (e.g. gain_db / eq / hp/lp / comp / sat / stereo).
