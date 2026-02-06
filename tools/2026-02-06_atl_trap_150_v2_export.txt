@@ -1,0 +1,2 @@
+open_project out/2026-02-06_atl_trap_150_v2.json
+export_package 2026-02-06_atl_trap_150_v2 preset=clean mix=tools/2026-02-06_atl_trap_150_v2.mix.json stems=1 busses=1 meter=1

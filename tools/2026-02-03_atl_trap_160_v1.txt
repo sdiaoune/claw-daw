@@ -1,0 +1,31 @@
+new_project 2026-02-03_atl_trap_160_v1 150
+add_track Drums 0
+set_drum_kit 0 trap_hard
+set_volume 0 112
+add_track Bass 0
+set_808 1 round
+set_volume 1 105
+add_track Keys 0
+add_track Lead 81
+apply_palette trap
+set_humanize 0 timing=6 velocity=8 seed=101
+set_humanize 1 timing=4 velocity=8 seed=102
+new_pattern 0 d 2:0
+gen_drums 0 d 2:0 trap seed=101 density=0.80
+place_pattern 0 d 0:0 12
+set_glide 1 0:0:90
+new_pattern 1 b 4:0
+gen_bass_follow 1 b 4:0 roots=45,53,50,52 seed=101 gap_prob=0.08 glide_prob=0.30 cadence_bars=4 turnaround=1
+place_pattern 1 b 0:0 6
+new_pattern 2 k 4:0
+add_note_pat 2 k 62 0:0 4:0 64 chance=0.9
+add_note_pat 2 k 65 0:0 4:0 58 chance=0.9
+add_note_pat 2 k 69 0:0 4:0 63 chance=0.9
+place_pattern 2 k 0:0 6
+new_pattern 3 l 2:0
+add_note_pat 3 l 71 1:2:120 0:0:120 71 chance=0.7
+place_pattern 3 l 0:0 12
+save_project out/2026-02-03_atl_trap_160_v1.json
+export_midi out/2026-02-03_atl_trap_160_v1.mid
+export_preview_mp3 out/2026-02-03_atl_trap_160_v1.preview.mp3 bars=8 start=0:0 preset=clean
+export_mp3 out/2026-02-03_atl_trap_160_v1.mp3 trim=60 preset=clean fade=0.15

@@ -126,8 +126,11 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--seed", default=0, type=int, help="Deterministic seed for generation.")
     pr.add_argument("--iters", default=3, type=int, help="Max attempts/iterations (novelty + optional auto-tune loop).")
     pr.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint against previous iter (lower = more different).")
-    pr.add_argument("--render", action="store_true", help="Also render preview/mp3 using --soundfont.")
+    pr.add_argument("--render", action="store_true", help="Render with deterministic quality workflow using --soundfont.")
     pr.add_argument("--preview-bars", default=8, type=int, help="Preview length in bars (only if --render).")
+    pr.add_argument("--quality-preset", default="edm_streaming", help="Quality gate preset used when --render is enabled.")
+    pr.add_argument("--quality-presets", default="tools/mix_presets.json", help="Path to mix preset definitions.")
+    pr.add_argument("--section-gain", action="store_true", help="Apply section-based velocity shaping before gated export.")
 
     gp = sub.add_parser("pack", help="Generate a headless script using a Genre Pack (v1).")
     gp.add_argument("pack", help="Pack name (trap|house|boom_bap).")
@@ -135,8 +138,13 @@ def build_parser() -> argparse.ArgumentParser:
     gp.add_argument("--seed", default=0, type=int, help="Deterministic seed.")
     gp.add_argument("--attempts", default=6, type=int, help="Max attempts (tries to satisfy novelty constraint).")
     gp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt.")
+    gp.add_argument("--render", action="store_true", help="Also render and run mandatory quality gates.")
+    gp.add_argument("--soundfont", default=None, help="Optional GM SoundFont path for quality render.")
+    gp.add_argument("--quality-preset", default="edm_streaming", help="Quality gate preset used with --render.")
+    gp.add_argument("--quality-presets", default="tools/mix_presets.json", help="Path to mix preset definitions.")
+    gp.add_argument("--section-gain", action="store_true", help="Apply section-based velocity shaping before gated export.")
 
-    sp = sub.add_parser("stylepack", help="Generate/render a beat using a Stylepack (v1) with scoring + iteration.")
+    sp = sub.add_parser("stylepack", help="Generate/render a beat using a Stylepack (v1) with scoring + gated export.")
     sp.add_argument("stylepack", help="Stylepack name (trap_2020s|boom_bap|house).")
     sp.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.* + report).")
     sp.add_argument("--soundfont", required=True, help="Path to GM SoundFont (.sf2) for renders")
@@ -146,6 +154,9 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt")
     sp.add_argument("--score-threshold", default=0.60, type=float, help="Stop early if score >= threshold")
     sp.add_argument("--knob", action="append", default=[], help="Knob override as key=value (repeatable)")
+    sp.add_argument("--quality-preset", default="edm_streaming", help="Quality gate preset for final export.")
+    sp.add_argument("--quality-presets", default="tools/mix_presets.json", help="Path to mix preset definitions.")
+    sp.add_argument("--section-gain", action="store_true", help="Apply section-based velocity shaping before gated export.")
 
     ar = sub.add_parser(
         "arrange-spec",
@@ -164,6 +175,17 @@ def build_parser() -> argparse.ArgumentParser:
     dm.add_argument("action", choices=["compile", "render"], help="compile scripts or render outputs")
     dm.add_argument("--soundfont", default=None, help="Required for render")
 
+    ql = sub.add_parser("quality", help="Run full deterministic mix+gate workflow for an existing project JSON.")
+    ql.add_argument("project_json", help="Path to project JSON (usually out/<name>.json)")
+    ql.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (<name> or out/<name>)")
+    ql.add_argument("--soundfont", default=None, help="Optional GM SoundFont path")
+    ql.add_argument("--preset", default="edm_streaming", help="Quality gate preset")
+    ql.add_argument("--presets", default="tools/mix_presets.json", help="Path to mix preset definitions")
+    ql.add_argument("--mix-out", default=None, help="Where to write mix JSON (defaults to tools/<name>.mix.json)")
+    ql.add_argument("--section-gain", action="store_true", help="Apply section-based velocity shaping before gated export.")
+    ql.add_argument("--preview-trim", type=float, default=30.0, help="Preview length in seconds for fail-fast gate.")
+    ql.add_argument("--no-lufs-guidance", action="store_true", help="Disable per-role LUFS guidance in stem gate.")
+
     return p
 
 
@@ -172,6 +194,24 @@ def main(argv: list[str] | None = None) -> None:
 
     parser = build_parser()
     args = parser.parse_args(argv)
+
+    def _normalize_out_prefix(prefix: str) -> str:
+        s = str(prefix or "").strip().replace("\\", "/")
+        if s.startswith("./"):
+            s = s[2:]
+        if s.startswith("out/"):
+            s = s[4:]
+        return s.strip("/") or s
+
+    def _print_quality_report(report: dict) -> None:
+        print(f"quality: {'PASS' if report.get('ok') else 'FAIL'} preset={report.get('preset')}")
+        for step in list(report.get("steps") or []):
+            label = "PASS" if step.get("ok") else "FAIL"
+            detail = step.get("detail")
+            if detail:
+                print(f"- {step.get('step')}: {label} ({detail})")
+            else:
+                print(f"- {step.get('step')}: {label}")
 
     if getattr(args, "version", False):
         try:
@@ -291,6 +331,8 @@ def main(argv: list[str] | None = None) -> None:
     if args.cmd == "prompt":
         from claw_daw.prompt.pipeline import generate_from_prompt
 
+        out_prefix = _normalize_out_prefix(str(args.out_prefix))
+
         if args.prompt_file:
             prompt_text = Path(args.prompt_file).read_text(encoding="utf-8")
         else:
@@ -301,32 +343,72 @@ def main(argv: list[str] | None = None) -> None:
 
         res = generate_from_prompt(
             prompt_text,
-            out_prefix=str(args.out_prefix),
+            out_prefix=out_prefix,
             max_iters=int(args.iters),
             seed=int(args.seed),
             max_similarity=float(args.max_similarity),
-            soundfont=str(args.soundfont) if getattr(args, "soundfont", None) else None,
-            render=bool(args.render),
+            soundfont=None,
+            render=False,
             preview_bars=int(args.preview_bars),
         )
 
         print(f"wrote: {res.script_path}")
-        if res.preview_path:
-            print(f"preview: {res.preview_path}")
         if res.similarities:
             print("similarities:")
             for i, s in enumerate(res.similarities, start=1):
                 print(f"- iter{i}: {s:.3f}")
+        if args.render:
+            from claw_daw.cli.headless import HeadlessRunner
+            from claw_daw.quality_workflow import QualityWorkflowError, run_quality_workflow
+
+            script_lines = Path(res.script_path).read_text(encoding="utf-8").splitlines()
+            runnable: list[str] = []
+            has_save = False
+            for ln in script_lines:
+                s = ln.strip()
+                if s.startswith("export_"):
+                    continue
+                if s.startswith("save_project "):
+                    has_save = True
+                runnable.append(ln)
+            if not has_save:
+                runnable.append(f"save_project out/{out_prefix}.json")
+
+            r = HeadlessRunner(soundfont=None, strict=True, dry_run=False)
+            r.run_lines(runnable, base_dir=Path(res.script_path).parent)
+
+            from claw_daw.io.project_json import load_project
+
+            proj = load_project(f"out/{out_prefix}.json")
+            preview_trim = max(8.0, (60.0 / max(1.0, float(proj.tempo_bpm))) * 4.0 * float(args.preview_bars))
+
+            try:
+                quality = run_quality_workflow(
+                    project_json=f"out/{out_prefix}.json",
+                    out_prefix=out_prefix,
+                    soundfont=str(args.soundfont) if getattr(args, "soundfont", None) else None,
+                    preset=str(args.quality_preset),
+                    presets_path=str(args.quality_presets),
+                    section_gain=bool(args.section_gain),
+                    preview_trim=float(preview_trim),
+                )
+            except QualityWorkflowError as e:
+                _print_quality_report(e.report)
+                raise SystemExit(f"ERROR: {e}") from e
+
+            _print_quality_report(quality)
         return
 
     if args.cmd == "pack":
         from claw_daw.genre_packs.pipeline import generate_from_genre_pack
         from claw_daw.genre_packs.v1 import list_packs_v1
 
+        out_prefix = _normalize_out_prefix(str(args.out_prefix))
+
         try:
             res = generate_from_genre_pack(
                 str(args.pack),
-                out_prefix=str(args.out_prefix),
+                out_prefix=out_prefix,
                 max_attempts=int(args.attempts),
                 seed=int(args.seed),
                 max_similarity=float(args.max_similarity),
@@ -342,11 +424,47 @@ def main(argv: list[str] | None = None) -> None:
             print("similarities:")
             for i, s in enumerate(res.similarities, start=1):
                 print(f"- attempt{i}: {s:.3f}")
+        if args.render:
+            from claw_daw.cli.headless import HeadlessRunner
+            from claw_daw.quality_workflow import QualityWorkflowError, run_quality_workflow
+
+            script_lines = Path(res.script_path).read_text(encoding="utf-8").splitlines()
+            runnable: list[str] = []
+            has_save = False
+            for ln in script_lines:
+                s = ln.strip()
+                if s.startswith("export_"):
+                    continue
+                if s.startswith("save_project "):
+                    has_save = True
+                runnable.append(ln)
+            if not has_save:
+                runnable.append(f"save_project out/{out_prefix}.json")
+
+            r = HeadlessRunner(soundfont=None, strict=True, dry_run=False)
+            r.run_lines(runnable, base_dir=Path(res.script_path).parent)
+
+            try:
+                quality = run_quality_workflow(
+                    project_json=f"out/{out_prefix}.json",
+                    out_prefix=out_prefix,
+                    soundfont=str(args.soundfont) if getattr(args, "soundfont", None) else None,
+                    preset=str(args.quality_preset),
+                    presets_path=str(args.quality_presets),
+                    section_gain=bool(args.section_gain),
+                )
+            except QualityWorkflowError as e:
+                _print_quality_report(e.report)
+                raise SystemExit(f"ERROR: {e}") from e
+
+            _print_quality_report(quality)
         return
 
     if args.cmd == "stylepack":
         from claw_daw.stylepacks.run import run_stylepack
         from claw_daw.stylepacks.types import BeatSpec
+
+        out_prefix = _normalize_out_prefix(str(args.out_prefix))
 
         knobs = {}
         for kv in list(getattr(args, "knob", []) or []):
@@ -361,7 +479,7 @@ def main(argv: list[str] | None = None) -> None:
             knobs[k] = v
 
         spec = BeatSpec(
-            name=str(args.out_prefix),
+            name=out_prefix,
             stylepack=str(args.stylepack),  # type: ignore[arg-type]
             seed=int(args.seed),
             max_attempts=int(args.attempts),
@@ -371,7 +489,14 @@ def main(argv: list[str] | None = None) -> None:
             max_similarity=float(args.max_similarity),
         )
 
-        rep = run_stylepack(spec, out_prefix=str(args.out_prefix), soundfont=str(args.soundfont))
+        rep = run_stylepack(
+            spec,
+            out_prefix=out_prefix,
+            soundfont=str(args.soundfont),
+            quality_preset=str(args.quality_preset),
+            quality_presets_path=str(args.quality_presets),
+            section_gain=bool(args.section_gain),
+        )
         print(f"report: {rep}")
         return
 
@@ -387,6 +512,27 @@ def main(argv: list[str] | None = None) -> None:
                 raise SystemExit("ERROR: demos render requires --soundfont")
             render_demos(soundfont=str(args.soundfont))
             return
+
+    if args.cmd == "quality":
+        from claw_daw.quality_workflow import QualityWorkflowError, run_quality_workflow
+
+        try:
+            report = run_quality_workflow(
+                project_json=str(args.project_json),
+                out_prefix=str(args.out_prefix),
+                soundfont=str(args.soundfont) if getattr(args, "soundfont", None) else None,
+                preset=str(args.preset),
+                presets_path=str(args.presets),
+                mix_out=str(args.mix_out) if getattr(args, "mix_out", None) else None,
+                section_gain=bool(args.section_gain),
+                preview_trim=float(args.preview_trim),
+                lufs_guidance=not bool(args.no_lufs_guidance),
+            )
+        except QualityWorkflowError as e:
+            _print_quality_report(e.report)
+            raise SystemExit(f"ERROR: {e}") from e
+        _print_quality_report(report)
+        return
 
     parser.print_help()
 

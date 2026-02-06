@@ -1,0 +1,7 @@
+open_project out/2026-02-04_atlanta_dna_140_v1.json
+set_bus 0 drums
+set_bus 1 bass
+set_bus 2 music
+set_bus 3 music
+set_bus 4 music
+export_wav out/2026-02-04_atlanta_dna_140_v3.wav preset=demo fade=0.2 mix=tools/2026-02-04_atlanta_dna_140_v3.mix.json

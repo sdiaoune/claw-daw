@@ -193,12 +193,13 @@ claw-daw prompt --out my_prompt_song --prompt "dark lofi beat, 78bpm, A minor" \
 # writes: tools/my_prompt_song.txt
 ```
 
-Generate + render preview + mp3 (requires --soundfont):
+Generate + render with mandatory quality gates (requires --soundfont):
 
 ```bash
 SF2=$(claw-daw paths --soundfont | head -n 1)
-claw-daw prompt --out my_prompt_song --prompt "house 124bpm" --render --soundfont "$SF2"
-# writes: tools/my_prompt_song.txt + out/my_prompt_song.preview.mp3 + out/my_prompt_song.mp3
+claw-daw prompt --out my_prompt_song --prompt "house 124bpm" \
+  --render --soundfont "$SF2" --quality-preset edm_streaming --section-gain
+# writes: tools/my_prompt_song.txt + out/my_prompt_song.mp3 + out/my_prompt_song.meter.json + stems/busses
 ```
 
 ---
@@ -316,14 +317,18 @@ Styles: `hiphop|lofi|house`
 - `analyze_audio <in_audio> <out.json>`
 - `meter_audio <in_audio> <out.json> spectral=1` (LUFS integrated + short-term, true-peak, crest/DC offset, stereo correlation + balance, spectral tilt)
 - `export_stems <dir>`
-- `export_busses <dir>` (bus stems; if you use `set_bus`, it’s explicit; otherwise heuristic)
+- `export_busses <dir>` (bus stems; explicit `set_bus` first, heuristic fallback for default bus tracks)
 - `export_package <out_prefix> preset=clean mix=tools/mix.json stems=1 busses=1 meter=1`
+- `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain` (one-shot gated workflow)
 
 Notes:
 - `trim` is optional; when set, exports are limited to N seconds.
 - `fade` applies an end fade.
 - `mix=` is optional; when set, claw-daw renders track stems and mixes them with deterministic audio FX (EQ/dynamics/sends/sidechain).
 - Mastering is intentionally light and deterministic.
+- `export_package` meters the mastered WAV for true-peak accuracy (MP3 can overshoot).
+- Mix presets live in `tools/mix_presets.json` (e.g. `edm_streaming`, `edm_club`, `trap_streaming`).
+- If you develop from the repo, set `CLAW_DAW_CLI="python3 -m claw_daw"` so tools call the local CLI.
 
 ---
 

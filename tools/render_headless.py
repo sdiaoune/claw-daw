@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import argparse
 
+from _bootstrap import ensure_repo_on_path
+
+ensure_repo_on_path()
+
 from claw_daw.cli.headless import HeadlessRunner, read_lines_from_path_or_stdin, script_base_dir
 
 

@@ -56,6 +56,22 @@ def test_pack_pipeline_enforces_novelty(tmp_path):
         assert res.similarities[-1] <= 0.985
 
 
+def test_pack_pipeline_compares_second_attempt(tmp_path):
+    tools_dir = tmp_path / "tools"
+    res = generate_from_genre_pack(
+        "trap",
+        out_prefix="trap_test",
+        tools_dir=str(tools_dir),
+        seed=0,
+        max_attempts=2,
+        max_similarity=0.0,
+        write_script=True,
+    )
+    assert res.script_path.exists()
+    # With at least 2 attempts configured and novelty enabled, we should compare attempt 2 vs 1.
+    assert len(res.similarities) == 1
+
+
 def test_pack_similarity_changes_across_attempts():
     pack = get_pack_v1("boom_bap")
     p1 = _project_from_script(pack.generator(5, 0, None))

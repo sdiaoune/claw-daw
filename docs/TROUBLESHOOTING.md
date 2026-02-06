@@ -33,6 +33,25 @@ sudo apt-get install ffmpeg
 
 ## Headless script issues
 
+### Error: Unknown command `scan_sample_pack`
+Cause:
+- You are running an older CLI (e.g., a pipx install) that predates sample-pack commands.
+
+Fix:
+- Use the repo CLI: `python3 -m claw_daw --headless --script tools/<name>.txt`
+- Or set `CLAW_DAW_CLI="python3 -m claw_daw"` so tools like `preview_gate.py` use the local CLI.
+
+### preview_gate passes, master gate fails (true-peak)
+Cause:
+- Preview was generated with a different CLI or a short segment that misses true-peak spikes.
+- MP3 encoding can create inter-sample peaks higher than the limiter ceiling.
+
+Fix / Prevention:
+- Ensure preview and export use the same CLI (`CLAW_DAW_CLI=...`).
+- Use the latest `clean` mastering preset (lower limiter headroom).
+- Preview and export now meter the **master WAV** by default to avoid MP3 overs.
+- If it still fails, increase headroom slightly in the mix spec (reduce `gain_db`).
+
 ### My script runs but hangs
 Some exports may take a while depending on track count and render length.
 Try:

@@ -1,0 +1,29 @@
+new_project 2026-02-03_house_splice_124_v1 124
+add_track Drums 0
+set_drum_kit 0 house_clean
+set_volume 0 112
+add_track Bass 38
+set_volume 1 105
+add_track Keys 16
+apply_palette house
+set_humanize 0 timing=2 velocity=6 seed=33
+set_humanize 1 timing=0 velocity=6 seed=34
+new_pattern 0 d 2:0
+gen_drums 0 d 2:0 house seed=33 density=0.82
+place_pattern 0 d 0:0 16
+new_pattern 1 b 4:0
+set_glide 1 0:0:30
+gen_bass_follow 1 b 4:0 roots=45,53,50,52 seed=33 gap_prob=0.10 glide_prob=0.10 cadence_bars=4 turnaround=1
+place_pattern 1 b 0:0 8
+new_pattern 2 k 2:0
+add_note_pat 2 k 69 0:2 0:0:180 67
+add_note_pat 2 k 72 0:2 0:0:180 69
+add_note_pat 2 k 76 0:2 0:0:180 70
+add_note_pat 2 k 69 1:2 0:0:180 77
+add_note_pat 2 k 72 1:2 0:0:180 78
+add_note_pat 2 k 76 1:2 0:0:180 67
+place_pattern 2 k 0:0 16
+save_project out/2026-02-03_house_splice_124_v1.json
+export_midi out/2026-02-03_house_splice_124_v1.mid
+export_preview_mp3 out/2026-02-03_house_splice_124_v1.preview.mp3 bars=8 start=0:0 preset=demo
+export_mp3 out/2026-02-03_house_splice_124_v1.mp3 trim=60 preset=demo fade=0.15

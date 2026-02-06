@@ -1,0 +1,36 @@
+{
+  "tracks": {
+    "0": {
+      "comp": {"threshold_db": -20, "ratio": 3, "attack_ms": 5, "release_ms": 80},
+      "eq": [{"f": 250, "q": 1.0, "g": -2.5}],
+      "transient": {"attack": 0.15, "sustain": -0.05}
+    },
+    "1": {
+      "eq": [{"f": 250, "q": 1.0, "g": -3.0}],
+      "comp": {"threshold_db": -24, "ratio": 4, "attack_ms": 8, "release_ms": 120},
+      "sat": {"type": "tanh", "drive": 1.15}
+    },
+    "2": {"highpass_hz": 150, "sends": {"reverb": 0.15, "delay": 0.08}},
+    "3": {"highpass_hz": 180, "sends": {"reverb": 0.18, "delay": 0.10}},
+    "4": {"highpass_hz": 200, "sends": {"reverb": 0.12, "delay": 0.10}},
+    "5": {"highpass_hz": 220, "sends": {"reverb": 0.20}}
+  },
+  "sidechain": [
+    {"src": 0, "dst": 1, "threshold_db": -24, "ratio": 6, "attack_ms": 5, "release_ms": 120}
+  ],
+  "returns": {
+    "reverb": {"predelay_ms": 0, "decay": 0.35},
+    "delay": {"ms": 240, "decay": 0.25}
+  },
+  "busses": {
+    "drums": {"comp": {"threshold_db": -18, "ratio": 2, "attack_ms": 15, "release_ms": 90}},
+    "bass": {"comp": {"threshold_db": -26, "ratio": 2, "attack_ms": 20, "release_ms": 140}, "mono_below_hz": 140},
+    "music": {"comp": {"threshold_db": -30, "ratio": 1.6, "attack_ms": 25, "release_ms": 160}}
+  },
+  "master": {
+    "eq": [{"f": 9000, "q": 0.7, "g": 1.5}],
+    "limiter": {"limit": 0.98},
+    "transient": {"attack": 0.10, "sustain": -0.05},
+    "mono_below_hz": 130
+  }
+}

@@ -59,6 +59,18 @@ def _default_export_path(project: Project, ext: str, *, out_dir: str = "out") ->
     return str(Path(out_dir) / f"{name}.{ext}")
 
 
+def _normalize_out_prefix(prefix: str) -> str:
+    s = str(prefix or "").strip().replace("\\", "/")
+    if s.startswith("./"):
+        s = s[2:]
+    if s.startswith("out/"):
+        s = s[4:]
+    s = s.strip("/")
+    if not s:
+        raise ValueError("export_package requires a non-empty out prefix")
+    return s
+
+
 def _ticks_per_bar(project: Project) -> int:
     return int(project.ppq) * 4
 
@@ -1402,7 +1414,7 @@ class HeadlessRunner:
             # Convenience for agents: write json+mid+mp3 (+ optional stems/busses + metering).
             if self.dry_run:
                 return
-            out_prefix = args[0]
+            out_prefix = _normalize_out_prefix(args[0])
             preset = "clean"
             mix_path: str | None = None
             stems = False
@@ -1422,10 +1434,19 @@ class HeadlessRunner:
 
             self.run_command(f"save_project out/{out_prefix}.json")
             self.run_command(f"export_midi out/{out_prefix}.mid")
-            mp3_cmd = f"export_mp3 out/{out_prefix}.mp3 preset={preset}"
+            # Render a mastered WAV once, then encode MP3 from it to avoid double renders.
+            wav_cmd = f"export_wav out/{out_prefix}.wav preset={preset}"
             if mix_path:
-                mp3_cmd += f" mix={mix_path}"
-            self.run_command(mp3_cmd)
+                wav_cmd += f" mix={mix_path}"
+            self.run_command(wav_cmd)
+            encode_audio(
+                f"out/{out_prefix}.wav",
+                f"out/{out_prefix}.mp3",
+                trim_seconds=None,
+                sample_rate=44100,
+                codec="mp3",
+                bitrate="192k",
+            )
 
             if stems:
                 stem_cmd = f"export_stems out/{out_prefix}_stems"
@@ -1435,7 +1456,8 @@ class HeadlessRunner:
             if busses:
                 self.run_command(f"export_busses out/{out_prefix}_busses")
             if meter:
-                self.run_command(f"meter_audio out/{out_prefix}.mp3 out/{out_prefix}.meter.json")
+                # Meter the mastered WAV (avoids MP3 inter-sample peak overs).
+                self.run_command(f"meter_audio out/{out_prefix}.wav out/{out_prefix}.meter.json")
             return
 
         if cmd == "export_mp3":

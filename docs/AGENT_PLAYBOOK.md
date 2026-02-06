@@ -138,6 +138,7 @@ A reliable agent workflow is boring on purpose:
   - Acceptance tests before final export
   - Mix spec + metering when requested (`mix=...`, `meter_audio`)
 - [ ] **Export artifacts**: JSON + MIDI + MP3 (and stems if requested)
+- [ ] **Run gated workflow before shipping**: `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain`
 - [ ] **Meter the final audio** (optional but recommended for agent QA): `meter_audio out/<name>.mp3 out/<name>.meter.json`
 - [ ] **Repro notes**: claw-daw version + SoundFont path + any seeds
 - [ ] **Revision rule**: never overwrite—bump `_v2/_v3` and include a changelog

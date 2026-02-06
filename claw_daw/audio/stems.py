@@ -9,6 +9,28 @@ from claw_daw.audio.render import render_project_wav
 from claw_daw.model.types import Project
 
 
+def _infer_bus_from_name(name: str) -> str:
+    n = str(name or "").strip().lower()
+    if "drum" in n or "perc" in n:
+        return "drums"
+    if "bass" in n or "808" in n:
+        return "bass"
+    return "music"
+
+
+def _group_tracks_by_bus(project: Project) -> dict[str, list[int]]:
+    """Group tracks by bus assignment, with heuristic fallback for default bus."""
+
+    groups: dict[str, list[int]] = {}
+    for i, t in enumerate(project.tracks):
+        bus = str(getattr(t, "bus", "") or "").strip().lower()
+        # "music" is the model default; use heuristic grouping unless explicitly set otherwise.
+        if not bus or bus == "music":
+            bus = _infer_bus_from_name(getattr(t, "name", ""))
+        groups.setdefault(bus or "music", []).append(i)
+    return groups
+
+
 def export_stems(
     project: Project,
     *,
@@ -78,33 +100,23 @@ def export_stems(
 
 
 def export_busses(project: Project, *, soundfont: str, out_dir: str, sample_rate: int = 44100) -> list[str]:
-    """Export simple busses (Drums, Bass, Music) as WAV stems.
+    """Export bus stems as WAV files.
 
     This is a convenience feature for agents.
 
-    Bus assignment rules (heuristic):
-    - drums: track name contains 'drum' or 'perc'
-    - bass: track name contains 'bass' or '808'
-    - music: everything else
-
-    For deterministic grouping, rename tracks accordingly.
+    Bus assignment rules:
+    - explicit: `track.bus` from `set_bus`
+    - fallback: name heuristic for default/empty bus values
     """
 
     od = Path(out_dir).expanduser()
     od.mkdir(parents=True, exist_ok=True)
 
-    groups: dict[str, list[int]] = {"drums": [], "bass": [], "music": []}
-    for i, t in enumerate(project.tracks):
-        n = t.name.lower()
-        if "drum" in n or "perc" in n:
-            groups["drums"].append(i)
-        elif "bass" in n or "808" in n:
-            groups["bass"].append(i)
-        else:
-            groups["music"].append(i)
+    groups = _group_tracks_by_bus(project)
 
     outs: list[str] = []
-    for bus, idxs in groups.items():
+    for bus in sorted(groups.keys()):
+        idxs = groups[bus]
         if not idxs:
             continue
         p2 = Project.from_dict(project.to_dict())

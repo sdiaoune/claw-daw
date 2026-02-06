@@ -18,7 +18,8 @@ MASTER_PRESETS: dict[str, MasterPreset] = {
     # Safe default: light highpass + gentle compression + limiter.
     "clean": MasterPreset(
         name="clean",
-        afilter="highpass=f=30,acompressor=threshold=-18dB:ratio=2:attack=5:release=50,alimiter=limit=0.95",
+        # Streaming-safe: target -14 LUFS with true-peak <= -1.0 dBTP.
+        afilter="highpass=f=30,loudnorm=I=-14:TP=-2.0:LRA=11",
     ),
     # "demo" is intentionally a bit louder/brighter.
     "demo": MasterPreset(

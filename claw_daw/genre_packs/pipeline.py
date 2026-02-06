@@ -65,14 +65,18 @@ def generate_from_genre_pack(
         # Acceptance tests (must pass)
         pack.accept(proj)
 
-        if prev is None or max_similarity is None:
+        # First accepted attempt becomes the reference.
+        if prev is None:
+            prev = proj
             chosen_script = script
-            break
+            if max_similarity is None:
+                break
+            continue
 
         sim = project_similarity(prev, proj)
         similarities.append(sim)
+        chosen_script = script
         if sim <= float(max_similarity):
-            chosen_script = script
             break
 
         prev = proj

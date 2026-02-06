@@ -1,0 +1,80 @@
+{
+  "tracks": {
+    "0": {
+      "gain_db": 0.5,
+      "eq": [
+        {"f": 200, "q": 1.0, "g": -2.0},
+        {"f": 8500, "q": 0.8, "g": 2.0}
+      ],
+      "comp": {"threshold_db": -20, "ratio": 3.0, "attack_ms": 5, "release_ms": 90},
+      "sat": {"type": "tanh", "drive": 1.1},
+      "transient": {"attack": 0.18, "sustain": -0.06},
+      "stereo": {"width": 1.05},
+      "sends": {"reverb": 0.08, "delay": 0.04}
+    },
+    "1": {
+      "gain_db": -0.5,
+      "highpass_hz": 25,
+      "lowpass_hz": 9000,
+      "comp": {"threshold_db": -22, "ratio": 4.0, "attack_ms": 5, "release_ms": 90},
+      "sat": {"type": "tanh", "drive": 1.25},
+      "stereo": {"width": 0.7}
+    },
+    "2": {
+      "gain_db": -1.5,
+      "highpass_hz": 120,
+      "lowpass_hz": 12000,
+      "eq": [
+        {"f": 2500, "q": 1.2, "g": -1.5},
+        {"f": 5500, "q": 0.9, "g": 1.2}
+      ],
+      "comp": {"threshold_db": -24, "ratio": 2.0, "attack_ms": 8, "release_ms": 120},
+      "stereo": {"width": 1.2},
+      "sends": {"reverb": 0.16, "delay": 0.10}
+    },
+    "3": {
+      "gain_db": -2.5,
+      "highpass_hz": 180,
+      "lowpass_hz": 14000,
+      "eq": [
+        {"f": 3500, "q": 1.0, "g": -1.0},
+        {"f": 9500, "q": 0.8, "g": 1.5}
+      ],
+      "comp": {"threshold_db": -24, "ratio": 2.0, "attack_ms": 5, "release_ms": 100},
+      "stereo": {"width": 1.35},
+      "sends": {"reverb": 0.18, "delay": 0.14}
+    },
+    "4": {
+      "gain_db": -4.0,
+      "highpass_hz": 220,
+      "lowpass_hz": 9000,
+      "eq": [
+        {"f": 600, "q": 1.0, "g": -1.5}
+      ],
+      "comp": {"threshold_db": -26, "ratio": 1.8, "attack_ms": 10, "release_ms": 180},
+      "stereo": {"width": 1.4},
+      "sends": {"reverb": 0.22}
+    }
+  },
+  "sidechain": [
+    {"src": 0, "src_role": "kick", "dst": 1, "threshold_db": -22, "ratio": 6.0, "attack_ms": 5, "release_ms": 120}
+  ],
+  "returns": {
+    "reverb": {"predelay_ms": 12, "decay": 0.45},
+    "delay": {"ms": 240, "decay": 0.28}
+  },
+  "busses": {
+    "drums": {"comp": {"threshold_db": -22, "ratio": 2.6, "attack_ms": 4, "release_ms": 90}},
+    "bass": {"comp": {"threshold_db": -24, "ratio": 2.4, "attack_ms": 6, "release_ms": 110}, "mono_below_hz": 120},
+    "music": {"comp": {"threshold_db": -26, "ratio": 2.0, "attack_ms": 8, "release_ms": 120}}
+  },
+  "master": {
+    "eq": [
+      {"f": 70, "q": 0.7, "g": 0.6},
+      {"f": 300, "q": 0.8, "g": -0.8},
+      {"f": 9000, "q": 0.7, "g": 1.2}
+    ],
+    "comp": {"threshold_db": -20, "ratio": 2.0, "attack_ms": 3, "release_ms": 80},
+    "mono_below_hz": 120
+  }
+}

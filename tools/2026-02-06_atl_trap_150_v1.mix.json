@@ -1,0 +1,150 @@
+{
+  "busses": {
+    "bass": {
+      "comp": {
+        "attack_ms": 20,
+        "ratio": 2,
+        "release_ms": 140,
+        "threshold_db": -26
+      },
+      "mono_below_hz": 140
+    },
+    "drums": {
+      "comp": {
+        "attack_ms": 15,
+        "ratio": 2,
+        "release_ms": 90,
+        "threshold_db": -18
+      }
+    },
+    "music": {
+      "comp": {
+        "attack_ms": 25,
+        "ratio": 1.6,
+        "release_ms": 160,
+        "threshold_db": -30
+      }
+    }
+  },
+  "master": {
+    "eq": [
+      {
+        "f": 9000,
+        "g": 1.5,
+        "q": 0.7
+      }
+    ],
+    "limiter": {
+      "limit": 0.74
+    },
+    "mono_below_hz": 130,
+    "transient": {
+      "attack": 0.1,
+      "sustain": -0.05
+    }
+  },
+  "returns": {
+    "delay": {
+      "decay": 0.25,
+      "ms": 240
+    },
+    "reverb": {
+      "decay": 0.35,
+      "predelay_ms": 0
+    }
+  },
+  "sidechain": [
+    {
+      "attack_ms": 5,
+      "dst": 1,
+      "ratio": 6,
+      "release_ms": 120,
+      "src": 0,
+      "src_role": "kick",
+      "threshold_db": -24
+    },
+    {
+      "attack_ms": 5,
+      "dst": 3,
+      "ratio": 6,
+      "release_ms": 120,
+      "src": 0,
+      "src_role": "kick",
+      "threshold_db": -24
+    },
+    {
+      "attack_ms": 5,
+      "dst": 4,
+      "ratio": 6,
+      "release_ms": 120,
+      "src": 0,
+      "src_role": "kick",
+      "threshold_db": -24
+    }
+  ],
+  "tracks": {
+    "0": {
+      "comp": {
+        "attack_ms": 5,
+        "ratio": 3,
+        "release_ms": 80,
+        "threshold_db": -20
+      },
+      "eq": [
+        {
+          "f": 250,
+          "g": -2.5,
+          "q": 1.0
+        }
+      ],
+      "gain_db": 12.9,
+      "transient": {
+        "attack": 0.15,
+        "sustain": -0.05
+      }
+    },
+    "1": {
+      "comp": {
+        "attack_ms": 8,
+        "ratio": 4,
+        "release_ms": 120,
+        "threshold_db": -24
+      },
+      "eq": [
+        {
+          "f": 250,
+          "g": -3.0,
+          "q": 1.0
+        }
+      ],
+      "gain_db": 12.9,
+      "sat": {
+        "drive": 1.15,
+        "type": "tanh"
+      }
+    },
+    "2": {
+      "gain_db": 13.9,
+      "highpass_hz": 150,
+      "sends": {
+        "delay": 0.08,
+        "reverb": 0.15
+      }
+    },
+    "3": {
+      "gain_db": 13.9,
+      "highpass_hz": 180,
+      "sends": {
+        "delay": 0.1,
+        "reverb": 0.18
+      }
+    },
+    "4": {
+      "gain_db": 13.9,
+      "highpass_hz": 220,
+      "sends": {
+        "reverb": 0.2
+      }
+    }
+  }
+}

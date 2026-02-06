@@ -1,0 +1,1 @@
+highpass=f=30,acompressor=threshold=-18dB:ratio=2:attack=5:release=50,alimiter=limit=0.80

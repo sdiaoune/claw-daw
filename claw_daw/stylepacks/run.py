@@ -7,6 +7,7 @@ from claw_daw.cli.headless import HeadlessRunner
 from claw_daw.genre_packs.acceptance import AcceptanceFailure
 from claw_daw.genre_packs.v1 import get_pack_v1
 from claw_daw.prompt.similarity import project_similarity
+from claw_daw.quality_workflow import QualityWorkflowError, run_quality_workflow
 from claw_daw.stylepacks.compile import compile_to_script, normalize_beatspec
 from claw_daw.stylepacks.io import beatspec_to_dict, save_report_json
 from claw_daw.audio.sanity import MixSanity, analyze_mix_sanity
@@ -114,8 +115,11 @@ def run_stylepack(
     base_dir: str | Path = ".",
     tools_dir: str = "tools",
     out_dir: str = "out",
+    quality_preset: str = "edm_streaming",
+    quality_presets_path: str = "tools/mix_presets.json",
+    section_gain: bool = False,
 ) -> str:
-    """Generate + render + score + iterate; write out/<name>.report.json."""
+    """Generate + score + iterate, then run gated quality export; write report."""
 
     base = Path(base_dir)
     outp = Path(out_dir)
@@ -212,15 +216,22 @@ def run_stylepack(
         cur_spec = _autofix_for_mix_sanity(cur_spec, sanity, attempt)
         cur_spec = _tweak_knobs_for_retry(cur_spec, attempt)
 
-    # mark chosen
+    qualified_idx: int | None = None
     if best_idx is not None and 0 <= best_idx < len(attempts):
-        attempts[best_idx] = AttemptReport(**{**asdict(attempts[best_idx]), "chosen": True})  # type: ignore[arg-type]
+        a = attempts[best_idx]
+        if a.acceptance_ok and a.score is not None and a.score >= float(spec.score_threshold):
+            qualified_idx = best_idx
+
+    # mark chosen only when the attempt clears acceptance + score threshold
+    if qualified_idx is not None:
+        attempts[qualified_idx] = AttemptReport(**{**asdict(attempts[qualified_idx]), "chosen": True})  # type: ignore[arg-type]
 
     # Final render: rerun the chosen attempt script including full MP3 export.
     # Note: we render from the chosen attempt knobs directly so that any
     # auto-fixes (e.g. mastering preset overrides) are faithfully reproduced.
-    if best_idx is not None:
-        final_knobs = dict(attempts[best_idx].knobs) if 0 <= best_idx < len(attempts) else dict(spec.knobs)
+    quality_report: dict | None = None
+    if qualified_idx is not None:
+        final_knobs = dict(attempts[qualified_idx].knobs) if 0 <= qualified_idx < len(attempts) else dict(spec.knobs)
         final_spec = BeatSpec(
             name=spec.name,
             stylepack=spec.stylepack,
@@ -235,17 +246,65 @@ def run_stylepack(
         )
 
         final_script = compile_to_script(final_spec, out_prefix=out_prefix, tools_dir=tools_dir)
-        r = HeadlessRunner(soundfont=str(Path(soundfont).expanduser().resolve()), strict=True, dry_run=False)
         final_lines = Path(final_script).read_text(encoding="utf-8").splitlines()
-        r.run_lines(final_lines, base_dir=base)
+        runnable: list[str] = []
+        has_save = False
+        for ln in final_lines:
+            s = ln.strip()
+            if s.startswith("export_"):
+                continue
+            if s.startswith("save_project "):
+                has_save = True
+            runnable.append(ln)
+        if not has_save:
+            runnable.append(f"save_project out/{out_prefix}.json")
+
+        r = HeadlessRunner(soundfont=None, strict=True, dry_run=False)
+        r.run_lines(runnable, base_dir=base)
+
+        try:
+            quality_report = run_quality_workflow(
+                project_json=str(Path(out_dir) / f"{out_prefix}.json"),
+                out_prefix=out_prefix,
+                soundfont=soundfont,
+                preset=quality_preset,
+                presets_path=quality_presets_path,
+                out_dir=out_dir,
+                tools_dir=tools_dir,
+                section_gain=section_gain,
+            )
+        except QualityWorkflowError as e:
+            quality_report = e.report
+            report = {
+                "ok": False,
+                "name": out_prefix,
+                "stylepack": sp.name,
+                "pack": pack.name,
+                "beatspec": beatspec_to_dict(spec),
+                "attempts": [asdict(a) for a in attempts],
+                "best_attempt": best_idx,
+                "chosen_attempt": qualified_idx,
+                "quality": quality_report,
+            }
+            report_path = save_report_json(Path(out_dir) / f"{out_prefix}.report.json", report)
+            raise RuntimeError(f"stylepack quality workflow failed (see report: {report_path})") from e
 
     report = {
+        "ok": qualified_idx is not None,
         "name": out_prefix,
         "stylepack": sp.name,
         "pack": pack.name,
         "beatspec": beatspec_to_dict(spec),
         "attempts": [asdict(a) for a in attempts],
         "best_attempt": best_idx,
+        "chosen_attempt": qualified_idx,
+        "quality": quality_report,
     }
 
-    return save_report_json(Path(out_dir) / f"{out_prefix}.report.json", report)
+    report_path = save_report_json(Path(out_dir) / f"{out_prefix}.report.json", report)
+    if qualified_idx is None:
+        raise RuntimeError(
+            "stylepack failed quality threshold: "
+            f"score>={spec.score_threshold} and acceptance required (see report: {report_path})"
+        )
+    return report_path

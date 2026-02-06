@@ -14,6 +14,7 @@ Offline, deterministic, terminal-first MIDI DAW.
 - **Deterministic output**: same script + same seed + same version + same SoundFont → same render
 - **Exports**: `WAV / MP3 / M4A / MIDI` + project `JSON`
 - **Sound engineering (mix spec, opt-in)**: deterministic per-track EQ/dynamics, sidechain, sends/returns, and audio metering
+- **Quality workflow**: `claw-daw quality ...` runs mix prep + preview/full gates + stem/bus checks
 - **Agent ergonomics**:
   - bar:beat timecodes (`2:0`, `1:3:120`)
   - note expressions (`chance`, `accent`, `mute`, `glide_ticks`)
@@ -87,14 +88,16 @@ claw-daw --soundfont "$SF2" prompt \
   --out my_prompt_song \
   --prompt "modern trap, 140bpm, E minor, spacey" \
   --iters 8 --max-similarity 0.85 \
-  --render --preview-bars 8
+  --render --quality-preset edm_streaming --section-gain
 
 # outputs:
 # tools/my_prompt_song.txt
-# out/my_prompt_song.preview.mp3
 # out/my_prompt_song.mp3
 # out/my_prompt_song.mid
 # out/my_prompt_song.json
+# out/my_prompt_song.meter.json
+# out/my_prompt_song_stems/*.wav
+# out/my_prompt_song_busses/*.wav
 ```
 
 ## Minimal script example (from scratch)

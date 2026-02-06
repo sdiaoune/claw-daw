@@ -68,6 +68,21 @@ claw-daw stylepack trap_2020s --out my_trap --soundfont /usr/share/sounds/sf2/de
   --knob drum_density=0.84 --knob lead_density=0.55
 ```
 
+## Generate a genre-pack script + gated render
+```bash
+claw-daw pack trap --out my_trap --seed 2026 --attempts 6 --max-similarity 0.90 \
+  --render --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
+  --quality-preset edm_streaming --section-gain
+```
+
+## Run the full deterministic quality workflow on an existing project
+```bash
+claw-daw quality out/my_song.json --out my_song \
+  --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
+  --preset edm_streaming --section-gain
+```
+This runs mix prepare -> mix spec validate -> preview gate -> full export -> master gate -> stem/bus gate.
+
 ## Sound engineering helpers (headless scripts)
 
 - Native instrument plugins (offline render-only):
@@ -84,6 +99,8 @@ set_sample_pack 0 melodic_house seed=7 gain_db=-1.5
 convert_sample_pack_to_sf2 melodic_house out/melodic_house.sf2 tool=sfz2sf2
 ```
 Tip: set `CLAW_DAW_SF2_CONVERTER=/path/to/your/tool` to override the converter binary.
+If `scan_sample_pack` is an unknown command, you are running an older CLI. Use the repo CLI:
+`python3 -m claw_daw --headless --script tools/<name>.txt` (or set `CLAW_DAW_CLI="python3 -m claw_daw"`).
 
 - Render bus stems (explicit track bus assignment via `set_bus`, fallback is heuristic grouping):
 ```txt

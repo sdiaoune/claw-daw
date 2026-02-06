@@ -78,6 +78,10 @@ We write `out/<name>.report.json` containing:
 - spectral balance report + score
 - chosen “best” attempt
 
+Finalization is fail-closed: after choosing an attempt, stylepack runs the deterministic
+quality workflow (mix prep/validation, preview gate, full export, master gate, stem/bus gate).
+If those gates fail, the stylepack command fails and the report captures the failure details.
+
 ## Non-goals (for this stage)
 - Full mix/mastering engine
 - Deep ML-based reference matching

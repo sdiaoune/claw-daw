@@ -1,0 +1,266 @@
+# Atlanta-style trap (RELOOPED - ATLANTA DNA - Beta Pack) — no stylepack
+new_project 2026-02-04_atlanta_dna_140_v1 140
+set_swing 10
+
+# Scan sample pack (WAV one-shots)
+scan_sample_pack "/Users/soyadiaoune/Downloads/RELOOPED - ATLANTA DNA - Beta Pack" id=atlanta_dna_beta
+
+# Tracks
+add_track Drums 0
+add_track 808 0
+add_track Melody 0
+add_track Counter 0
+add_track Pad 0
+
+# Drum sample pack
+set_sample_pack 0 atlanta_dna_beta seed=9 gain_db=-1.0
+set_volume 0 120
+
+# 808
+set_sampler 1 808
+set_808 1 dist
+set_glide 1 0:0:120
+set_volume 1 112
+
+# Instruments
+set_instrument 2 pluck.karplus preset=dark_pluck tone=0.45 decay=0.32 drive=1.1 width=0.7 seed=17
+set_instrument 3 synth.basic preset=bright_lead tone=0.75 drive=1.25 width=0.9 seed=23
+set_instrument 4 synth.basic preset=soft_pad tone=0.45 drive=1.05 width=1.1 seed=31
+
+set_volume 2 92
+set_volume 3 84
+set_volume 4 70
+set_pan 2 56
+set_pan 3 78
+
+# Patterns
+new_pattern 0 d_main 3840
+new_pattern 0 d_break 3840
+new_pattern 0 d_fill 1920
+
+new_pattern 1 b_main 7680
+new_pattern 2 m_main 7680
+new_pattern 3 c_main 7680
+new_pattern 4 pad_main 15360
+
+# --- Drums (roles) ---
+# Main groove (2 bars)
+add_note_pat 0 d_main kick 0 120 118
+add_note_pat 0 d_main kick 720 120 110
+add_note_pat 0 d_main kick 960 120 114
+add_note_pat 0 d_main kick 1680 120 108
+add_note_pat 0 d_main snare 960 120 108
+add_note_pat 0 d_main clap 960 120 104
+add_note_pat 0 d_main oh 1680 180 88
+
+add_note_pat 0 d_main kick 1920 120 118
+add_note_pat 0 d_main kick 2400 120 108
+add_note_pat 0 d_main kick 2640 120 112
+add_note_pat 0 d_main kick 2880 120 114
+add_note_pat 0 d_main kick 3360 120 104
+add_note_pat 0 d_main kick 3600 120 110
+add_note_pat 0 d_main snare 2880 120 108
+add_note_pat 0 d_main clap 2880 120 104
+add_note_pat 0 d_main oh 3600 180 86
+
+# 1/16 hats + roll
+add_note_pat 0 d_main hh 0 60 70
+add_note_pat 0 d_main hh 120 60 68
+add_note_pat 0 d_main hh 240 60 70
+add_note_pat 0 d_main hh 360 60 68
+add_note_pat 0 d_main hh 480 60 70
+add_note_pat 0 d_main hh 600 60 68
+add_note_pat 0 d_main hh 720 60 70
+add_note_pat 0 d_main hh 840 60 68
+add_note_pat 0 d_main hh 960 60 70
+add_note_pat 0 d_main hh 1080 60 68
+add_note_pat 0 d_main hh 1200 60 70
+add_note_pat 0 d_main hh 1320 60 68
+add_note_pat 0 d_main hh 1440 60 70
+add_note_pat 0 d_main hh 1560 60 68
+add_note_pat 0 d_main hh 1680 60 70
+add_note_pat 0 d_main hh 1800 60 68
+
+add_note_pat 0 d_main hh 1920 60 70
+add_note_pat 0 d_main hh 2040 60 68
+add_note_pat 0 d_main hh 2160 60 70
+add_note_pat 0 d_main hh 2280 60 68
+add_note_pat 0 d_main hh 2400 60 70
+add_note_pat 0 d_main hh 2520 60 68
+add_note_pat 0 d_main hh 2640 60 70
+add_note_pat 0 d_main hh 2760 60 68
+add_note_pat 0 d_main hh 2880 60 70
+add_note_pat 0 d_main hh 3000 60 68
+add_note_pat 0 d_main hh 3120 60 70
+add_note_pat 0 d_main hh 3240 60 68
+add_note_pat 0 d_main hh 3360 60 70
+add_note_pat 0 d_main hh 3480 60 68
+add_note_pat 0 d_main hh 3600 60 70
+add_note_pat 0 d_main hh 3720 60 68
+
+# Roll (32nd burst)
+add_note_pat 0 d_main hh 3000 60 80
+add_note_pat 0 d_main hh 3060 60 78
+add_note_pat 0 d_main hh 3120 60 80
+add_note_pat 0 d_main hh 3180 60 78
+add_note_pat 0 d_main hh 3240 60 80
+add_note_pat 0 d_main hh 3300 60 78
+
+# Perc accents
+add_note_pat 0 d_main perc 600 120 72
+add_note_pat 0 d_main perc 1320 120 70
+add_note_pat 0 d_main perc 2520 120 72
+add_note_pat 0 d_main perc 3120 120 70
+add_note_pat 0 d_main shaker 1560 120 62
+add_note_pat 0 d_main shaker 3480 120 62
+
+# Break groove (2 bars)
+add_note_pat 0 d_break kick 0 120 112
+add_note_pat 0 d_break kick 960 120 112
+add_note_pat 0 d_break snare 960 120 106
+add_note_pat 0 d_break clap 960 120 100
+add_note_pat 0 d_break oh 1680 180 82
+add_note_pat 0 d_break hh 240 60 60
+add_note_pat 0 d_break hh 720 60 60
+add_note_pat 0 d_break hh 1200 60 60
+add_note_pat 0 d_break hh 1680 60 60
+add_note_pat 0 d_break kick 1920 120 112
+add_note_pat 0 d_break kick 2880 120 112
+add_note_pat 0 d_break snare 2880 120 106
+add_note_pat 0 d_break clap 2880 120 100
+add_note_pat 0 d_break hh 2160 60 60
+add_note_pat 0 d_break hh 2640 60 60
+add_note_pat 0 d_break hh 3120 60 60
+add_note_pat 0 d_break hh 3600 60 60
+
+# Fill (1 bar)
+add_note_pat 0 d_fill snare 1200 60 70
+add_note_pat 0 d_fill snare 1320 60 78
+add_note_pat 0 d_fill snare 1440 60 86
+add_note_pat 0 d_fill snare 1560 60 92
+add_note_pat 0 d_fill snare 1680 60 100
+add_note_pat 0 d_fill snare 1800 60 108
+add_note_pat 0 d_fill oh 1680 180 90
+
+# --- 808 (F minor-ish, 4 bars) ---
+add_note_pat 1 b_main 29 0 480 110
+add_note_pat 1 b_main 29 960 480 108
+add_note_pat 1 b_main 27 1440 240 106
+add_note_pat 1 b_main 25 1680 240 104
+
+add_note_pat 1 b_main 29 1920 480 110
+add_note_pat 1 b_main 29 2400 240 108
+add_note_pat 1 b_main 32 2640 240 110 glide_ticks=0:0:120
+add_note_pat 1 b_main 29 2880 240 106
+add_note_pat 1 b_main 25 3360 480 104
+
+add_note_pat 1 b_main 27 3840 480 108
+add_note_pat 1 b_main 27 4560 240 106
+add_note_pat 1 b_main 29 4800 240 108
+add_note_pat 1 b_main 32 5040 240 110 glide_ticks=0:0:120
+add_note_pat 1 b_main 29 5280 240 106
+add_note_pat 1 b_main 25 5520 480 104
+
+add_note_pat 1 b_main 29 5760 480 110
+add_note_pat 1 b_main 29 6240 240 108
+add_note_pat 1 b_main 27 6480 240 106
+add_note_pat 1 b_main 25 6720 240 104
+add_note_pat 1 b_main 29 6960 480 108
+
+# --- Melody (4 bars) ---
+add_note_pat 2 m_main 65 240 240 84
+add_note_pat 2 m_main 68 720 240 82
+add_note_pat 2 m_main 72 1200 240 84
+add_note_pat 2 m_main 75 1680 240 80
+
+add_note_pat 2 m_main 63 2160 240 84
+add_note_pat 2 m_main 65 2640 240 82
+add_note_pat 2 m_main 68 3120 240 84
+add_note_pat 2 m_main 72 3600 240 80
+
+add_note_pat 2 m_main 61 4080 240 84
+add_note_pat 2 m_main 63 4560 240 82
+add_note_pat 2 m_main 65 5040 240 84
+add_note_pat 2 m_main 68 5520 240 80
+
+add_note_pat 2 m_main 63 6000 240 84
+add_note_pat 2 m_main 65 6480 240 82
+add_note_pat 2 m_main 68 6960 240 84
+add_note_pat 2 m_main 72 7440 240 80
+
+# --- Counter lead (4 bars) ---
+add_note_pat 3 c_main 77 480 240 74
+add_note_pat 3 c_main 75 960 240 72
+add_note_pat 3 c_main 72 1440 240 74
+add_note_pat 3 c_main 75 1920 240 72
+add_note_pat 3 c_main 77 2400 240 74
+add_note_pat 3 c_main 80 2880 240 76
+add_note_pat 3 c_main 77 3360 240 74
+add_note_pat 3 c_main 75 3840 240 72
+add_note_pat 3 c_main 72 4320 240 72
+add_note_pat 3 c_main 75 4800 240 74
+add_note_pat 3 c_main 77 5280 240 76
+add_note_pat 3 c_main 80 5760 240 76
+add_note_pat 3 c_main 77 6240 240 74
+add_note_pat 3 c_main 75 6720 240 72
+add_note_pat 3 c_main 72 7200 240 72
+
+# --- Pad (8 bars) ---
+# Fm (F Ab C)
+add_note_pat 4 pad_main 53 0 3840 58
+add_note_pat 4 pad_main 56 0 3840 58
+add_note_pat 4 pad_main 60 0 3840 58
+# Eb (Eb G Bb)
+add_note_pat 4 pad_main 51 3840 1920 56
+add_note_pat 4 pad_main 55 3840 1920 56
+add_note_pat 4 pad_main 58 3840 1920 56
+# Db (Db F Ab)
+add_note_pat 4 pad_main 49 5760 1920 56
+add_note_pat 4 pad_main 53 5760 1920 56
+add_note_pat 4 pad_main 56 5760 1920 56
+# Fm again
+add_note_pat 4 pad_main 53 7680 3840 58
+add_note_pat 4 pad_main 56 7680 3840 58
+add_note_pat 4 pad_main 60 7680 3840 58
+
+# --- Arrangement (96 bars) ---
+# Intro 0-7
+place_pattern 0 d_break 0:0 4
+place_pattern 4 pad_main 0:0 1
+
+# Verse 8-31
+place_pattern 0 d_main 8:0 12
+place_pattern 1 b_main 8:0 6
+place_pattern 2 m_main 8:0 6
+place_pattern 4 pad_main 8:0 2
+
+# Hook 32-47
+place_pattern 0 d_main 32:0 8
+place_pattern 1 b_main 32:0 4
+place_pattern 2 m_main 32:0 4
+place_pattern 3 c_main 32:0 4
+place_pattern 4 pad_main 32:0 2
+place_pattern 0 d_fill 47:0 1
+
+# Verse 48-71
+place_pattern 0 d_main 48:0 12
+place_pattern 1 b_main 48:0 6
+place_pattern 2 m_main 48:0 6
+place_pattern 4 pad_main 48:0 2
+
+# Bridge 72-79
+place_pattern 0 d_break 72:0 4
+place_pattern 4 pad_main 72:0 1
+
+# Hook 80-95
+place_pattern 0 d_main 80:0 8
+place_pattern 1 b_main 80:0 4
+place_pattern 2 m_main 80:0 4
+place_pattern 3 c_main 80:0 4
+place_pattern 4 pad_main 80:0 2
+place_pattern 0 d_fill 95:0 1
+
+# Exports
+save_project out/2026-02-04_atlanta_dna_140_v1.json
+export_midi out/2026-02-04_atlanta_dna_140_v1.mid
+export_mp3 out/2026-02-04_atlanta_dna_140_v1.mp3 preset=demo fade=0.2

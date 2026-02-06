@@ -26,7 +26,8 @@ set_glide 1 0:0:90
 
 3) **Genre Packs (from-scratch generation)**
 ```bash
-claw-daw pack trap --out 2026-02-03_trap_140_v1 --seed 7 --attempts 6 --max-similarity 0.9 --render
+claw-daw pack trap --out 2026-02-03_trap_140_v1 --seed 7 --attempts 6 --max-similarity 0.9 \
+  --render --soundfont /usr/share/sounds/sf2/default-GM.sf2 --quality-preset edm_streaming
 # tools/2026-02-03_trap_140_v1.txt
 # out/2026-02-03_trap_140_v1.{mp3,mid,json}
 ```
@@ -228,10 +229,16 @@ Commands:
 - `export_m4a [path] preset=...`
 - `export_stems <dir>`
 
+One-shot gated workflow:
+```bash
+claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain
+```
+
 Mastering presets:
 - `demo` (-16 LUFS-ish)
 - `clean` (quieter, less aggressive)
-- `loud` (hotter)
+- `lofi` (band-limited texture)
+- `punchy` (more transient-forward)
 
 ---
 

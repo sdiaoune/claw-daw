@@ -1,0 +1,221 @@
+# Deep House (Splice Serum 2 Melodic House Essentials Vol 1) — no stylepack
+new_project deephouse_splice_122_v3 122
+set_swing 8
+
+# Scan sample pack (WAV one-shots)
+scan_sample_pack "/Users/soyadiaoune/Splice/sounds/packs/Serum 2 Melodic House Essentials Volume 1" id=serum2_melodic_house
+
+# Tracks
+add_track Drums 0
+add_track Bass 0
+add_track Chords 0
+add_track Pluck 0
+add_track Pad 0
+
+# Drum sample pack
+set_sample_pack 0 serum2_melodic_house seed=7 gain_db=-1.5
+set_volume 0 118
+
+# Native instruments
+set_instrument 1 synth.basic preset=sub tone=0.28 drive=1.1 width=0.2 seed=11
+set_instrument 2 synth.basic preset=soft_pad tone=0.55 drive=1.05 width=1.1 seed=13
+set_instrument 3 pluck.karplus preset=guitarish tone=0.7 decay=0.38 drive=1.1 width=0.7 seed=17
+set_instrument 4 noise.pad preset=air_pad tone=0.55 width=1.0 seed=19
+
+set_volume 1 104
+set_volume 2 90
+set_volume 3 96
+set_volume 4 78
+set_pan 2 58
+set_pan 3 74
+
+# Patterns
+new_pattern 0 d_main 1920
+new_pattern 0 d_intro 1920
+new_pattern 0 d_break 1920
+new_pattern 0 d_fill 1920
+
+new_pattern 1 b_main 7680
+new_pattern 2 ch_main 7680
+new_pattern 3 pl_main 7680
+new_pattern 4 pad_main 15360
+
+# --- Drums (roles) ---
+# Main groove
+add_note_pat 0 d_main kick 0 120 118
+add_note_pat 0 d_main kick 480 120 118
+add_note_pat 0 d_main kick 960 120 118
+add_note_pat 0 d_main kick 1440 120 118
+add_note_pat 0 d_main clap 480 120 108
+add_note_pat 0 d_main clap 1440 120 108
+add_note_pat 0 d_main hh 240 120 76
+add_note_pat 0 d_main hh 720 120 76
+add_note_pat 0 d_main hh 1200 120 76
+add_note_pat 0 d_main hh 1680 120 76
+add_note_pat 0 d_main hh 0 60 58
+add_note_pat 0 d_main hh 960 60 58
+add_note_pat 0 d_main oh 1200 180 84
+add_note_pat 0 d_main shaker 120 60 48
+add_note_pat 0 d_main shaker 360 60 48
+add_note_pat 0 d_main shaker 600 60 48
+add_note_pat 0 d_main shaker 840 60 48
+add_note_pat 0 d_main shaker 1080 60 48
+add_note_pat 0 d_main shaker 1320 60 48
+add_note_pat 0 d_main shaker 1560 60 48
+add_note_pat 0 d_main shaker 1800 60 48
+
+# Intro groove (no clap)
+add_note_pat 0 d_intro kick 0 120 118
+add_note_pat 0 d_intro kick 480 120 118
+add_note_pat 0 d_intro kick 960 120 118
+add_note_pat 0 d_intro kick 1440 120 118
+add_note_pat 0 d_intro hh 240 120 70
+add_note_pat 0 d_intro hh 720 120 70
+add_note_pat 0 d_intro hh 1200 120 70
+add_note_pat 0 d_intro hh 1680 120 70
+add_note_pat 0 d_intro oh 1200 180 80
+
+# Break groove (kick + light hat)
+add_note_pat 0 d_break kick 0 120 114
+add_note_pat 0 d_break kick 960 120 114
+add_note_pat 0 d_break hh 240 120 62
+add_note_pat 0 d_break hh 1200 120 62
+add_note_pat 0 d_break shaker 360 60 44
+add_note_pat 0 d_break shaker 840 60 44
+add_note_pat 0 d_break shaker 1320 60 44
+add_note_pat 0 d_break shaker 1800 60 44
+
+# Fill (snare roll + open hat)
+add_note_pat 0 d_fill snare 1200 60 70
+add_note_pat 0 d_fill snare 1320 60 78
+add_note_pat 0 d_fill snare 1440 60 86
+add_note_pat 0 d_fill snare 1560 60 92
+add_note_pat 0 d_fill snare 1680 60 100
+add_note_pat 0 d_fill snare 1800 60 108
+add_note_pat 0 d_fill oh 1200 180 90
+
+# --- Bass (A minor-ish) ---
+# 4-bar pattern
+add_note_pat 1 b_main 45 240 240 102
+add_note_pat 1 b_main 45 720 240 98
+add_note_pat 1 b_main 43 1200 240 96
+add_note_pat 1 b_main 45 1680 240 100
+
+add_note_pat 1 b_main 43 2160 240 102
+add_note_pat 1 b_main 43 2640 240 98
+add_note_pat 1 b_main 41 3120 240 96
+add_note_pat 1 b_main 43 3600 240 100
+
+add_note_pat 1 b_main 41 4080 240 102
+add_note_pat 1 b_main 41 4560 240 98
+add_note_pat 1 b_main 40 5040 240 96
+add_note_pat 1 b_main 41 5520 240 100
+
+add_note_pat 1 b_main 43 6000 240 102
+add_note_pat 1 b_main 43 6480 240 98
+add_note_pat 1 b_main 41 6960 240 96
+add_note_pat 1 b_main 43 7440 240 100
+
+# --- Chords (stabs, 4 bars) ---
+# Bar 1: Am7 (A C E G)
+add_note_pat 2 ch_main 57 480 240 70
+add_note_pat 2 ch_main 60 480 240 70
+add_note_pat 2 ch_main 64 480 240 70
+add_note_pat 2 ch_main 67 480 240 70
+add_note_pat 2 ch_main 57 1440 240 70
+add_note_pat 2 ch_main 60 1440 240 70
+add_note_pat 2 ch_main 64 1440 240 70
+add_note_pat 2 ch_main 67 1440 240 70
+
+# Bar 2: Gmaj7 (G B D F#)
+add_note_pat 2 ch_main 55 2400 240 70
+add_note_pat 2 ch_main 59 2400 240 70
+add_note_pat 2 ch_main 62 2400 240 70
+add_note_pat 2 ch_main 66 2400 240 70
+add_note_pat 2 ch_main 55 3360 240 70
+add_note_pat 2 ch_main 59 3360 240 70
+add_note_pat 2 ch_main 62 3360 240 70
+add_note_pat 2 ch_main 66 3360 240 70
+
+# Bar 3: Fmaj7 (F A C E)
+add_note_pat 2 ch_main 53 4320 240 70
+add_note_pat 2 ch_main 57 4320 240 70
+add_note_pat 2 ch_main 60 4320 240 70
+add_note_pat 2 ch_main 64 4320 240 70
+add_note_pat 2 ch_main 53 5280 240 70
+add_note_pat 2 ch_main 57 5280 240 70
+add_note_pat 2 ch_main 60 5280 240 70
+add_note_pat 2 ch_main 64 5280 240 70
+
+# Bar 4: Gmaj7 (G B D F#)
+add_note_pat 2 ch_main 55 6240 240 70
+add_note_pat 2 ch_main 59 6240 240 70
+add_note_pat 2 ch_main 62 6240 240 70
+add_note_pat 2 ch_main 66 6240 240 70
+add_note_pat 2 ch_main 55 7200 240 70
+add_note_pat 2 ch_main 59 7200 240 70
+add_note_pat 2 ch_main 62 7200 240 70
+add_note_pat 2 ch_main 66 7200 240 70
+
+# --- Pluck motif (4 bars) ---
+# Bar 1
+add_note_pat 3 pl_main 72 240 240 86
+add_note_pat 3 pl_main 74 720 240 84
+add_note_pat 3 pl_main 76 1200 240 86
+add_note_pat 3 pl_main 74 1680 240 82
+# Bar 2
+add_note_pat 3 pl_main 71 2160 240 86
+add_note_pat 3 pl_main 72 2640 240 84
+add_note_pat 3 pl_main 74 3120 240 86
+add_note_pat 3 pl_main 72 3600 240 82
+# Bar 3
+add_note_pat 3 pl_main 69 4080 240 86
+add_note_pat 3 pl_main 71 4560 240 84
+add_note_pat 3 pl_main 72 5040 240 86
+add_note_pat 3 pl_main 71 5520 240 82
+# Bar 4
+add_note_pat 3 pl_main 71 6000 240 86
+add_note_pat 3 pl_main 72 6480 240 84
+add_note_pat 3 pl_main 74 6960 240 86
+add_note_pat 3 pl_main 76 7440 240 82
+
+# --- Pad (8 bars) ---
+add_note_pat 4 pad_main 69 0 3840 60
+add_note_pat 4 pad_main 67 3840 3840 60
+add_note_pat 4 pad_main 65 7680 3840 60
+add_note_pat 4 pad_main 67 11520 3840 60
+
+# --- Arrangement (64 bars) ---
+# Intro 0-7
+place_pattern 0 d_intro 0:0 8
+place_pattern 2 ch_main 0:0 2
+place_pattern 4 pad_main 0:0 1
+
+# Main 8-23
+place_pattern 0 d_main 8:0 16
+place_pattern 1 b_main 8:0 4
+place_pattern 2 ch_main 8:0 4
+place_pattern 3 pl_main 8:0 4
+
+# Break 24-31
+place_pattern 0 d_break 24:0 8
+place_pattern 2 ch_main 24:0 2
+place_pattern 4 pad_main 24:0 1
+
+# Main 32-55 + fills
+place_pattern 0 d_main 32:0 24
+place_pattern 0 d_fill 39:0 1
+place_pattern 0 d_fill 47:0 1
+place_pattern 1 b_main 32:0 6
+place_pattern 2 ch_main 32:0 6
+place_pattern 3 pl_main 32:0 6
+
+# Outro 56-63
+place_pattern 0 d_intro 56:0 8
+place_pattern 2 ch_main 56:0 2
+place_pattern 4 pad_main 56:0 1
+
+# Exports
+save_project out/2026-02-04_deephouse_splice_122_v3.json
+export_midi out/2026-02-04_deephouse_splice_122_v3.mid
+export_mp3 out/2026-02-04_deephouse_splice_122_v3.mp3 preset=demo fade=0.2
