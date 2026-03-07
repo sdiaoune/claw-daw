@@ -567,100 +567,6 @@
       box-shadow: 0 0 16px rgba(107, 216, 255, 0.52);
     }
 
-    .hero-art {
-      position: relative;
-      min-height: 84px;
-      margin-top: 20px;
-    }
-
-    .hero-squiggle,
-    .hero-orb,
-    .hero-note,
-    .hero-star {
-      position: absolute;
-      pointer-events: none;
-    }
-
-    .hero-squiggle {
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 42px;
-      background:
-        radial-gradient(circle at 8% 50%, rgba(255, 119, 214, 0.74) 0 3px, transparent 3.5px),
-        radial-gradient(circle at 93% 18%, rgba(107, 216, 255, 0.78) 0 3px, transparent 3.5px),
-        linear-gradient(90deg, transparent 0 6%, rgba(255, 119, 214, 0.72) 14%, rgba(107, 216, 255, 0.82) 50%, rgba(255, 107, 87, 0.78) 86%, transparent 94%);
-      clip-path: path("M 0 32 C 35 2, 65 2, 95 30 S 160 58, 200 34 S 270 2, 320 28 S 390 58, 460 26 S 530 0, 620 22");
-      opacity: 0.78;
-      filter: drop-shadow(0 0 12px rgba(107, 216, 255, 0.4));
-    }
-
-    .hero-orb {
-      right: 10px;
-      bottom: 12px;
-      width: 92px;
-      height: 92px;
-      border-radius: 999px;
-      background:
-        radial-gradient(circle at 35% 32%, rgba(255, 255, 255, 0.32), transparent 20%),
-        linear-gradient(145deg, rgba(255, 107, 87, 0.9), rgba(255, 119, 214, 0.74) 52%, rgba(107, 216, 255, 0.72));
-      box-shadow:
-        inset 0 -10px 18px rgba(17, 10, 42, 0.26),
-        0 0 34px rgba(255, 119, 214, 0.24);
-    }
-
-    .hero-orb::before {
-      content: "";
-      position: absolute;
-      inset: 16px;
-      border-radius: 999px;
-      border: 3px solid rgba(255, 255, 255, 0.28);
-      border-top-color: transparent;
-      border-left-color: transparent;
-    }
-
-    .hero-note {
-      top: 0;
-      right: 6px;
-      width: 24px;
-      height: 32px;
-    }
-
-    .hero-note::before,
-    .hero-note::after {
-      content: "";
-      position: absolute;
-      background: linear-gradient(180deg, var(--pink), var(--accent-soft));
-      box-shadow: 0 0 18px rgba(255, 119, 214, 0.3);
-    }
-
-    .hero-note::before {
-      right: 8px;
-      width: 5px;
-      height: 24px;
-      border-radius: 999px;
-    }
-
-    .hero-note::after {
-      left: 0;
-      bottom: 0;
-      width: 15px;
-      height: 15px;
-      border-radius: 999px;
-    }
-
-    .hero-star {
-      left: 56%;
-      top: 10px;
-      width: 34px;
-      height: 34px;
-      background:
-        linear-gradient(90deg, transparent 46%, rgba(107, 216, 255, 0.92) 46% 54%, transparent 54%),
-        linear-gradient(180deg, transparent 46%, rgba(255, 119, 214, 0.92) 46% 54%, transparent 54%);
-      transform: rotate(22deg);
-      filter: drop-shadow(0 0 16px rgba(107, 216, 255, 0.34));
-    }
-
     .demo-card {
       position: relative;
     }
@@ -731,75 +637,6 @@
       display: grid;
       gap: 12px;
       margin-top: 14px;
-    }
-
-    .audio-visual {
-      height: 44px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background:
-        linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
-        radial-gradient(circle at 12% 55%, rgba(255, 202, 107, 0.65) 0 2px, transparent 2.5px),
-        radial-gradient(circle at 84% 55%, rgba(107, 216, 255, 0.65) 0 2px, transparent 2.5px);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .audio-bars {
-      position: absolute;
-      inset: 8px 18px;
-      display: grid;
-      grid-auto-flow: column;
-      grid-auto-columns: 1fr;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .audio-bars span {
-      border-radius: 999px;
-      background: linear-gradient(180deg, rgba(255, 107, 87, 0.96), rgba(107, 216, 255, 0.84));
-      box-shadow: 0 0 10px rgba(255, 119, 214, 0.18);
-    }
-
-    .audio-bars span:nth-child(1),
-    .audio-bars span:nth-child(10),
-    .audio-bars span:nth-child(19) {
-      height: 8px;
-    }
-
-    .audio-bars span:nth-child(2),
-    .audio-bars span:nth-child(9),
-    .audio-bars span:nth-child(18) {
-      height: 16px;
-    }
-
-    .audio-bars span:nth-child(3),
-    .audio-bars span:nth-child(8),
-    .audio-bars span:nth-child(17) {
-      height: 22px;
-    }
-
-    .audio-bars span:nth-child(4),
-    .audio-bars span:nth-child(7),
-    .audio-bars span:nth-child(16) {
-      height: 30px;
-    }
-
-    .audio-bars span:nth-child(5),
-    .audio-bars span:nth-child(6),
-    .audio-bars span:nth-child(12),
-    .audio-bars span:nth-child(15) {
-      height: 36px;
-    }
-
-    .audio-bars span:nth-child(11),
-    .audio-bars span:nth-child(14),
-    .audio-bars span:nth-child(20) {
-      height: 14px;
-    }
-
-    .audio-bars span:nth-child(13) {
-      height: 42px;
     }
 
     .section {
@@ -1184,12 +1021,6 @@
               <span>Built for agent workflows</span>
             </div>
 
-            <div class="hero-art" aria-hidden="true">
-              <div class="hero-note"></div>
-              <div class="hero-star"></div>
-              <div class="hero-orb"></div>
-              <div class="hero-squiggle"></div>
-            </div>
           </div>
 
           <aside class="panel demo-card">
@@ -1222,14 +1053,6 @@
 
             <div class="demo-player">
               <div class="audio-shell">
-                <div class="audio-visual" aria-hidden="true">
-                  <div class="audio-bars">
-                    <span></span><span></span><span></span><span></span><span></span>
-                    <span></span><span></span><span></span><span></span><span></span>
-                    <span></span><span></span><span></span><span></span><span></span>
-                    <span></span><span></span><span></span><span></span><span></span>
-                  </div>
-                </div>
                 <audio controls loop preload="metadata">
                   <source src="assets/rpg_garden_field_loop.mp3" type="audio/mpeg" />
                 </audio>
