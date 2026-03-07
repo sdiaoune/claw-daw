@@ -202,6 +202,10 @@ claw-daw prompt --out my_prompt_song --prompt "house 124bpm" \
 # writes: tools/my_prompt_song.txt + out/my_prompt_song.mp3 + out/my_prompt_song.meter.json + stems/busses
 ```
 
+Seed behavior:
+- Omit `--seed` on `claw-daw prompt`, `claw-daw pack`, or `claw-daw stylepack` to auto-pick a fresh seed for that run.
+- Pass `--seed N` to replay the same generation deterministically.
+
 ---
 
 ## Command reference (practical)

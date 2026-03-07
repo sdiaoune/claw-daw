@@ -7,12 +7,14 @@ from claw_daw.cli.headless import HeadlessRunner
 from claw_daw.genre_packs.v1 import get_pack_v1
 from claw_daw.model.types import Project
 from claw_daw.prompt.similarity import project_similarity
+from claw_daw.util.seeding import resolve_generation_seed
 
 
 @dataclass(frozen=True)
 class PackGenerationResult:
     pack: str
     out_prefix: str
+    seed_used: int
     script_path: Path
     attempts: int
     similarities: list[float]
@@ -29,7 +31,7 @@ def generate_from_genre_pack(
     *,
     out_prefix: str,
     tools_dir: str = "tools",
-    seed: int = 0,
+    seed: int | None = None,
     max_attempts: int = 6,
     max_similarity: float | None = 0.92,
     write_script: bool = True,
@@ -48,6 +50,7 @@ def generate_from_genre_pack(
     """
 
     pack = get_pack_v1(pack_name)
+    seed_used = resolve_generation_seed(seed)
 
     tool_dir_path = Path(tools_dir)
     tool_dir_path.mkdir(parents=True, exist_ok=True)
@@ -59,7 +62,7 @@ def generate_from_genre_pack(
     chosen_script: str | None = None
 
     for attempt in range(max(1, int(max_attempts))):
-        script = pack.generator(int(seed), int(attempt), out_prefix)
+        script = pack.generator(int(seed_used), int(attempt), out_prefix)
         proj = _run_script_to_project(script.splitlines(), base_dir=Path.cwd())
 
         # Acceptance tests (must pass)
@@ -91,6 +94,7 @@ def generate_from_genre_pack(
     return PackGenerationResult(
         pack=str(pack_name),
         out_prefix=str(out_prefix),
+        seed_used=seed_used,
         script_path=script_path,
         attempts=max(1, int(max_attempts)),
         similarities=similarities,

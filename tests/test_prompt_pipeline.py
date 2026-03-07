@@ -56,6 +56,7 @@ def test_generate_from_prompt_writes_script_and_enforces_novelty(tmp_path):
         write_script=True,
         render=False,
     )
+    assert res.seed_used == 0
     assert res.script_path.exists()
     txt = res.script_path.read_text(encoding="utf-8")
     assert "new_project" in txt

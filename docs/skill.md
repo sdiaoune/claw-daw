@@ -119,10 +119,14 @@ When tasked to make a beat/song with claw-daw, agents should follow this workflo
 - **From scratch (DEFAULT / full artistic freedom):**
   - write `tools/<name>.txt` with patterns + clips
 - **Genre pack (ONLY if explicitly requested):**
-  - `claw-daw pack <trap|house|boom_bap> --out <name> --seed <n> --attempts 6`
+  - `claw-daw pack <trap|house|boom_bap> --out <name> [--seed <n>] --attempts 6`
 - **Stylepack (ONLY if explicitly requested):**
   - Use when the user explicitly asks for “stylepack”, “scored iteration”, or `out/<name>.report.json`.
-  - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> --attempts 6`
+  - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> [--seed <n>] --attempts 6`
+
+Seed behavior for generators:
+- Omit `--seed` on `claw-daw prompt`, `claw-daw pack`, or `claw-daw stylepack` to auto-pick a fresh seed for that run.
+- Pass `--seed <n>` to replay the same generation deterministically.
 
 4) **Apply palette + groove macros (recommended quality lift)**
 - `apply_palette <style>` to set better GM programs + mixer defaults per role
@@ -194,11 +198,11 @@ If bass notes exist but you can’t hear bass, check:
   - `set_808 <track_index> <preset>`
   - `set_glide <track_index> <ticks|bar:beat>`
 - **Genre Packs v1** (from-scratch, no templates):
-  - `claw-daw pack <trap|house|boom_bap> --out <name> --seed <n> --attempts <n> --max-similarity <0..1>`
+  - `claw-daw pack <trap|house|boom_bap> --out <name> [--seed <n>] --attempts <n> --max-similarity <0..1>`
 - **Novelty control** for prompt→script iteration:
-  - `claw-daw prompt ... --iters N --max-similarity 0.85–0.95`
+  - `claw-daw prompt ... [--seed <n>] --iters N --max-similarity 0.85–0.95`
 - **Stylepacks v1 (opt-in / explicit request)**: BeatSpec → compile → render → score → iterate → report
-  - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> --attempts 6 --score-threshold 0.60`
+  - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> [--seed <n>] --attempts 6 --score-threshold 0.60`
   - writes `out/<name>.report.json`
 - **Mix sanity gate (audio-level)** is included in stylepacks scoring and will retry deterministically when it detects obvious issues.
 - **Sound engineering (opt-in mix spec during export)**:

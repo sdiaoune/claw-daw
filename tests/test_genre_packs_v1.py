@@ -49,6 +49,7 @@ def test_pack_pipeline_enforces_novelty(tmp_path):
         max_similarity=0.985,
         write_script=True,
     )
+    assert res.seed_used == 0
     assert res.script_path.exists()
 
     # If it did multiple attempts, similarity list should reflect <= threshold at stop.
@@ -67,6 +68,7 @@ def test_pack_pipeline_compares_second_attempt(tmp_path):
         max_similarity=0.0,
         write_script=True,
     )
+    assert res.seed_used == 0
     assert res.script_path.exists()
     # With at least 2 attempts configured and novelty enabled, we should compare attempt 2 vs 1.
     assert len(res.similarities) == 1

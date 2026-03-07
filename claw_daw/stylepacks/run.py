@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from pathlib import Path
 
 from claw_daw.cli.headless import HeadlessRunner
@@ -126,10 +126,12 @@ def run_stylepack(
     outp.mkdir(parents=True, exist_ok=True)
 
     spec = normalize_beatspec(spec)
+    base_seed = int(spec.seed)
     sp = get_stylepack(spec.stylepack)
     pack = get_pack_v1(sp.pack)
 
     attempts: list[AttemptReport] = []
+    attempt_specs: list[BeatSpec] = []
 
     prev_proj = None
     best_idx = None
@@ -138,8 +140,12 @@ def run_stylepack(
     cur_spec = spec
 
     for attempt in range(int(spec.max_attempts)):
+        attempt_seed = base_seed + attempt
+        attempt_spec = replace(cur_spec, seed=attempt_seed, max_attempts=1)
+        attempt_specs.append(attempt_spec)
+
         # compile (writes tools/<out_prefix>.txt)
-        script_path = compile_to_script(cur_spec, out_prefix=out_prefix, tools_dir=tools_dir)
+        script_path = compile_to_script(attempt_spec, out_prefix=out_prefix, tools_dir=tools_dir)
 
         # render (fast path for scoring): preview only
         r = HeadlessRunner(soundfont=str(Path(soundfont).expanduser().resolve()), strict=True, dry_run=False)
@@ -191,8 +197,8 @@ def run_stylepack(
         attempts.append(
             AttemptReport(
                 attempt=attempt,
-                seed=int(cur_spec.seed) + attempt,
-                knobs=dict(cur_spec.knobs),
+                seed=attempt_seed,
+                knobs=dict(attempt_spec.knobs),
                 acceptance_ok=acceptance_ok,
                 acceptance_errors=acceptance_errors,
                 similarity_to_prev=sim,
@@ -231,20 +237,7 @@ def run_stylepack(
     # auto-fixes (e.g. mastering preset overrides) are faithfully reproduced.
     quality_report: dict | None = None
     if qualified_idx is not None:
-        final_knobs = dict(attempts[qualified_idx].knobs) if 0 <= qualified_idx < len(attempts) else dict(spec.knobs)
-        final_spec = BeatSpec(
-            name=spec.name,
-            stylepack=spec.stylepack,
-            seed=spec.seed,
-            max_attempts=spec.max_attempts,
-            length_bars=spec.length_bars,
-            bpm=spec.bpm,
-            swing_percent=spec.swing_percent,
-            knobs=final_knobs,
-            score_threshold=spec.score_threshold,
-            max_similarity=spec.max_similarity,
-        )
-
+        final_spec = attempt_specs[qualified_idx]
         final_script = compile_to_script(final_spec, out_prefix=out_prefix, tools_dir=tools_dir)
         final_lines = Path(final_script).read_text(encoding="utf-8").splitlines()
         runnable: list[str] = []
@@ -280,6 +273,7 @@ def run_stylepack(
                 "name": out_prefix,
                 "stylepack": sp.name,
                 "pack": pack.name,
+                "seed_used": base_seed,
                 "beatspec": beatspec_to_dict(spec),
                 "attempts": [asdict(a) for a in attempts],
                 "best_attempt": best_idx,
@@ -294,6 +288,7 @@ def run_stylepack(
         "name": out_prefix,
         "stylepack": sp.name,
         "pack": pack.name,
+        "seed_used": base_seed,
         "beatspec": beatspec_to_dict(spec),
         "attempts": [asdict(a) for a in attempts],
         "best_attempt": best_idx,

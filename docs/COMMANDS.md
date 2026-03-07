@@ -61,6 +61,7 @@ ruff check .
 ## Generate a stylepack beat directly (opt-in)
 Use this only when you explicitly want scored iteration + `out/<name>.report.json`.
 The default “full artistic freedom” workflow is to write/edit a headless script in `tools/<name>.txt`.
+If you omit `--seed`, `prompt`, `pack`, and `stylepack` auto-pick a fresh seed for that run and print or report it.
 
 ```bash
 claw-daw stylepack trap_2020s --out my_trap --soundfont /usr/share/sounds/sf2/default-GM.sf2 \

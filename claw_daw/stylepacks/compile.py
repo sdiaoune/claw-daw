@@ -79,13 +79,14 @@ def compile_to_script(
     sp = get_stylepack(spec.stylepack)
     pack = get_pack_v1(sp.pack)
 
-    # Generate a base script with novelty control.
+    # Generate a single deterministic base script; outer stylepack retries own iteration.
     base = generate_from_genre_pack(
         pack.name,
         out_prefix=out_prefix,
+        tools_dir=tools_dir,
         seed=int(spec.seed),
-        max_attempts=int(spec.max_attempts),
-        max_similarity=float(spec.max_similarity),
+        max_attempts=1,
+        max_similarity=None,
         write_script=True,
     )
 

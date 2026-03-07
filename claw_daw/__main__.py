@@ -7,6 +7,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from claw_daw.util.seeding import resolve_generation_seed
 from claw_daw.util.soundfont import default_soundfont_paths, find_default_soundfont
 
 
@@ -123,7 +124,7 @@ def build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--prompt", default=None, help="Prompt text (or use --prompt-file).")
     pr.add_argument("--prompt-file", default=None, help="Path to a text file containing the prompt.")
     pr.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.*).")
-    pr.add_argument("--seed", default=0, type=int, help="Deterministic seed for generation.")
+    pr.add_argument("--seed", default=None, type=int, help="Optional deterministic seed for generation (omit to auto-pick).")
     pr.add_argument("--iters", default=3, type=int, help="Max attempts/iterations (novelty + optional auto-tune loop).")
     pr.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint against previous iter (lower = more different).")
     pr.add_argument("--render", action="store_true", help="Render with deterministic quality workflow using --soundfont.")
@@ -135,7 +136,7 @@ def build_parser() -> argparse.ArgumentParser:
     gp = sub.add_parser("pack", help="Generate a headless script using a Genre Pack (v1).")
     gp.add_argument("pack", help="Pack name (trap|house|boom_bap).")
     gp.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.*).")
-    gp.add_argument("--seed", default=0, type=int, help="Deterministic seed.")
+    gp.add_argument("--seed", default=None, type=int, help="Optional deterministic seed (omit to auto-pick).")
     gp.add_argument("--attempts", default=6, type=int, help="Max attempts (tries to satisfy novelty constraint).")
     gp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt.")
     gp.add_argument("--render", action="store_true", help="Also render and run mandatory quality gates.")
@@ -148,7 +149,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("stylepack", help="Stylepack name (trap_2020s|boom_bap|house).")
     sp.add_argument("--out", required=True, dest="out_prefix", help="Output prefix (writes tools/<out>.txt and out/<out>.* + report).")
     sp.add_argument("--soundfont", required=True, help="Path to GM SoundFont (.sf2) for renders")
-    sp.add_argument("--seed", default=0, type=int, help="Deterministic seed")
+    sp.add_argument("--seed", default=None, type=int, help="Optional deterministic seed (omit to auto-pick)")
     sp.add_argument("--attempts", default=6, type=int, help="Max attempts (score loop)")
     sp.add_argument("--bars", default=32, type=int, help="Target length in bars")
     sp.add_argument("--max-similarity", default=0.92, type=float, help="Novelty constraint vs previous attempt")
@@ -354,7 +355,7 @@ def main(argv: list[str] | None = None) -> None:
             prompt_text,
             out_prefix=out_prefix,
             max_iters=int(args.iters),
-            seed=int(args.seed),
+            seed=(None if args.seed is None else int(args.seed)),
             max_similarity=float(args.max_similarity),
             soundfont=None,
             render=False,
@@ -362,6 +363,7 @@ def main(argv: list[str] | None = None) -> None:
         )
 
         print(f"wrote: {res.script_path}")
+        print(f"seed: {res.seed_used}")
         if res.similarities:
             print("similarities:")
             for i, s in enumerate(res.similarities, start=1):
@@ -419,7 +421,7 @@ def main(argv: list[str] | None = None) -> None:
                 str(args.pack),
                 out_prefix=out_prefix,
                 max_attempts=int(args.attempts),
-                seed=int(args.seed),
+                seed=(None if args.seed is None else int(args.seed)),
                 max_similarity=float(args.max_similarity),
             )
         except KeyError as e:
@@ -429,6 +431,7 @@ def main(argv: list[str] | None = None) -> None:
             raise SystemExit(f"ERROR: {e}\nAvailable packs: {', '.join(list_packs_v1())}")
 
         print(f"wrote: {res.script_path}")
+        print(f"seed: {res.seed_used}")
         if res.similarities:
             print("similarities:")
             for i, s in enumerate(res.similarities, start=1):
@@ -490,7 +493,7 @@ def main(argv: list[str] | None = None) -> None:
         spec = BeatSpec(
             name=out_prefix,
             stylepack=str(args.stylepack),  # type: ignore[arg-type]
-            seed=int(args.seed),
+            seed=resolve_generation_seed(args.seed),
             max_attempts=int(args.attempts),
             length_bars=int(args.bars),
             knobs=knobs,

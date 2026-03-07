@@ -100,6 +100,8 @@ claw-daw --soundfont "$SF2" prompt \
 # out/my_prompt_song_busses/*.wav
 ```
 
+Omit `--seed` on `prompt`, `pack`, or `stylepack` to auto-pick a fresh seed for that run. Pass `--seed N` to replay the same result exactly.
+
 ## Minimal script example (from scratch)
 
 ```txt

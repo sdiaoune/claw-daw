@@ -9,12 +9,14 @@ from claw_daw.prompt.parse import parse_prompt
 from claw_daw.prompt.script import brief_to_script
 from claw_daw.prompt.similarity import project_similarity
 from claw_daw.audio.spectrogram import band_energy_report
+from claw_daw.util.seeding import resolve_generation_seed
 
 
 @dataclass(frozen=True)
 class GenerationResult:
     brief_title: str
     out_prefix: str
+    seed_used: int
     script_path: Path
     iterations: int
     similarities: list[float]
@@ -35,7 +37,7 @@ def generate_from_prompt(
     out_prefix: str,
     tools_dir: str = "tools",
     max_iters: int = 3,
-    seed: int = 0,
+    seed: int | None = None,
     max_similarity: float | None = None,
     write_script: bool = True,
     # Closed-loop options
@@ -57,6 +59,7 @@ def generate_from_prompt(
     brief = parse_prompt(prompt, title=out_prefix)
     if max_similarity is not None:
         brief.novelty = type(brief.novelty)(max_similarity=float(max_similarity))
+    seed_used = resolve_generation_seed(seed)
 
     tool_dir_path = Path(tools_dir)
     tool_dir_path.mkdir(parents=True, exist_ok=True)
@@ -71,12 +74,12 @@ def generate_from_prompt(
     mastering_preset: str | None = None
 
     chosen_script = None
-    chosen_seed = seed
+    chosen_seed = seed_used
 
     preview_path: Path | None = None
 
     for i in range(max(1, int(max_iters))):
-        cur_seed = int(seed) + i
+        cur_seed = int(seed_used) + i
         gen = brief_to_script(
             brief,
             seed=cur_seed,
@@ -149,6 +152,7 @@ def generate_from_prompt(
     return GenerationResult(
         brief_title=brief.title,
         out_prefix=out_prefix,
+        seed_used=seed_used,
         script_path=script_path,
         iterations=max(1, int(max_iters)),
         similarities=similarities,
