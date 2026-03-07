@@ -1,6 +1,6 @@
 ---
 name: claw-daw
-version: 0.2.0
+version: 0.2.1
 description: Offline, deterministic, terminal-first MIDI DAW (TUI + headless scripts)
 homepage: https://www.clawdaw.com/
 metadata: {"clawdaw":{"category":"music","emoji":"🦞"}}
@@ -17,6 +17,14 @@ The user is prompting the *agent*, not claw-daw.
 - **Homepage:** https://www.clawdaw.com/
 - **Docs:** https://www.clawdaw.com/USER_GUIDE.md
 - **GitHub:** https://github.com/sdiaoune/claw-daw
+
+## Skill Changelog
+
+### 0.2.1 (2026-02-06)
+- Synced quality workflow guidance with repo refactor (`claw-daw quality ...`).
+- Updated `export_package` examples to use `<name>` prefix form.
+- Added gated render guidance for `claw-daw pack ... --render`.
+- Updated stylepack flow wording to include gated final export.
 
 ## Quick install (one-go)
 
@@ -138,7 +146,17 @@ Seed behavior for generators:
 - Always export: MP3 + MIDI + JSON
 - If using stylepacks: ensure `out/<name>.report.json` is produced
 
-6) **Quality gates before sending**
+6) **Mix + QA (MANDATORY, streaming default)**
+- Prepare buses + mix spec: `python3 tools/mix_prepare.py out/<name>.json --preset edm_streaming --mix-out tools/<name>.mix.json`
+- Optional section energy: `python3 tools/section_gain.py out/<name>.json`
+- Validate mix spec: `python3 tools/mix_spec_validate.py out/<name>.json tools/<name>.mix.json`
+- Preview gate: `python3 tools/preview_gate.py out/<name>.json tools/<name>.mix.json <name> --preset edm_streaming`
+- Full export + metering: `export_package <name> preset=clean mix=tools/<name>.mix.json stems=1 busses=1 meter=1`
+- Master gate: `python3 tools/mix_gate.py out/<name>.meter.json --preset edm_streaming`
+- Stem gate: `python3 tools/mix_gate_stems.py out/<name>_stems --bus-dir out/<name>_busses --preset edm_streaming --lufs-guidance`
+- One-shot equivalent (repo CLI): `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain`
+
+7) **Quality gates before sending**
 - Check: genre acceptance tests + avoid overwriting + listen to preview
 
 ---
@@ -198,16 +216,17 @@ If bass notes exist but you can’t hear bass, check:
   - `set_808 <track_index> <preset>`
   - `set_glide <track_index> <ticks|bar:beat>`
 - **Genre Packs v1** (from-scratch, no templates):
-  - `claw-daw pack <trap|house|boom_bap> --out <name> [--seed <n>] --attempts <n> --max-similarity <0..1>`
+  - script only: `claw-daw pack <trap|house|boom_bap> --out <name> [--seed <n>] --attempts <n> --max-similarity <0..1>`
+  - gated render: `claw-daw pack <trap|house|boom_bap> --out <name> [--seed <n>] --attempts <n> --max-similarity <0..1> --render --soundfont <sf2> --quality-preset edm_streaming --section-gain`
 - **Novelty control** for prompt→script iteration:
   - `claw-daw prompt ... [--seed <n>] --iters N --max-similarity 0.85–0.95`
-- **Stylepacks v1 (opt-in / explicit request)**: BeatSpec → compile → render → score → iterate → report
+- **Stylepacks v1 (opt-in / explicit request)**: BeatSpec → compile → score → iterate → gated export → report
   - `claw-daw stylepack <trap_2020s|boom_bap|house> --out <name> --soundfont <sf2> [--seed <n>] --attempts 6 --score-threshold 0.60`
   - writes `out/<name>.report.json`
 - **Mix sanity gate (audio-level)** is included in stylepacks scoring and will retry deterministically when it detects obvious issues.
-- **Sound engineering (opt-in mix spec during export)**:
-  - `export_mp3 out/<name>.mp3 preset=demo mix=tools/mix.json`
-  - `export_wav out/<name>.wav preset=demo mix=tools/mix.json`
+- **Sound engineering (MANDATORY for agents)**:
+  - `export_package <name> preset=clean mix=tools/<name>.mix.json stems=1 busses=1 meter=1`
+  - Presets + gates: `tools/mix_presets.json`, `tools/mix_gate.py`, `tools/mix_gate_stems.py`
 - **Metering (post-export QA)**:
   - `meter_audio out/<name>.mp3 out/<name>.meter.json` (LUFS integrated+short-term, true-peak, crest/DC offset, stereo correlation+balance, spectral tilt)
 - **Bus stems (quick deliverables)**:
@@ -221,6 +240,7 @@ If bass notes exist but you can’t hear bass, check:
 - **Section-aware arrangement compiler**:
   - `claw-daw arrange-spec <spec.yaml> --in <project.json> --out <project_out.json>`
 - **Acceptance tests** (agent workflow): per-genre mini-gates in https://www.clawdaw.com/AGENT_PLAYBOOK.md
+- **Quality workflow command:** `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain`
 
 ## Song Structure Research (required for genre/era requests)
 

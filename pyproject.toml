@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "claw-daw"
-version = "0.2.0"
+version = "0.2.1"
 description = "Offline, deterministic, terminal-first MIDI DAW for agents"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -48,11 +48,19 @@ testpaths = ["tests"]
 line-length = 100
 
 [tool.hatch.build.targets.wheel]
-include = ["claw_daw/**"]
+include = [
+  "claw_daw/**",
+  "docs/skill.md",
+  "docs/skill.json",
+  "docs/heartbeat.md",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [
   "claw_daw/**",
+  "docs/skill.md",
+  "docs/skill.json",
+  "docs/heartbeat.md",
   "README.md",
   "LICENSE",
   "CHANGELOG.md",
