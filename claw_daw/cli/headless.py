@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import shlex
 import sys
@@ -20,6 +21,7 @@ from claw_daw.audio.mastering import MASTER_PRESETS, master_wav
 from claw_daw.audio.render import render_project_wav
 from claw_daw.audio.spectrogram import SpectrogramOptions, band_energy_report, render_spectrogram_png
 from claw_daw.audio.stems import export_stems
+from claw_daw.io.fl_studio import export_fl_studio_project
 from claw_daw.io.midi import export_midi
 from claw_daw.io.project_json import load_project, save_project
 from claw_daw.model.types import InstrumentSpec, Note, Project, SamplePackSpec, Track
@@ -1351,8 +1353,6 @@ class HeadlessRunner:
                         raise RuntimeError("mix= requires PyYAML for .yaml/.yml") from e
                     mix_spec = yaml.safe_load(raw) or {}
                 else:
-                    import json
-
                     mix_spec = json.loads(raw or "{}")
 
             render_project_wav(render_proj, soundfont=sf, out_wav=tmp_out, sample_rate=sr, mix=mix_spec)
@@ -1410,7 +1410,7 @@ class HeadlessRunner:
             return
 
         if cmd == "export_package":
-            # export_package <out_prefix> [preset=clean] [mix=tools/mix.json] [stems=0|1] [busses=0|1] [meter=0|1]
+            # export_package <out_prefix> [preset=clean] [mix=tools/mix.json] [stems=0|1] [busses=0|1] [meter=0|1] [flp=0|1]
             # Convenience for agents: write json+mid+mp3 (+ optional stems/busses + metering).
             if self.dry_run:
                 return
@@ -1420,6 +1420,8 @@ class HeadlessRunner:
             stems = False
             busses = False
             meter = False
+            flp = False
+            quality_preset = "edm_streaming"
             for a in args[1:]:
                 if a.startswith("preset="):
                     preset = a.split("=", 1)[1]
@@ -1431,6 +1433,10 @@ class HeadlessRunner:
                     busses = a.split("=", 1)[1] not in {"0", "false", "no"}
                 if a.startswith("meter="):
                     meter = a.split("=", 1)[1] not in {"0", "false", "no"}
+                if a.startswith("flp="):
+                    flp = a.split("=", 1)[1] not in {"0", "false", "no"}
+                if a.startswith("quality_preset="):
+                    quality_preset = a.split("=", 1)[1]
 
             self.run_command(f"save_project out/{out_prefix}.json")
             self.run_command(f"export_midi out/{out_prefix}.mid")
@@ -1458,6 +1464,46 @@ class HeadlessRunner:
             if meter:
                 # Meter the mastered WAV (avoids MP3 inter-sample peak overs).
                 self.run_command(f"meter_audio out/{out_prefix}.wav out/{out_prefix}.meter.json")
+            if flp:
+                export_fl_studio_project(
+                    proj,
+                    out_path=f"out/{out_prefix}.flp",
+                    soundfont=str(self.ctx.soundfont or ""),
+                    mix_path=mix_path,
+                    preset=preset,
+                    quality_preset=quality_preset,
+                )
+            return
+
+        if cmd == "export_flp":
+            # export_flp <out.flp|out_prefix> [preset=clean] [mix=tools/mix.json] [quality_preset=edm_streaming]
+            if self.dry_run:
+                return
+            if not self.ctx.soundfont:
+                raise RuntimeError("soundfont not set for headless export_flp")
+
+            has_explicit_out = bool(args) and "=" not in args[0]
+            out_flp = args[0] if has_explicit_out else _default_export_path(proj, "flp")
+            preset = "clean"
+            mix_path: str | None = None
+            quality_preset = "edm_streaming"
+            opt_args = args[1:] if has_explicit_out else args
+            for a in opt_args:
+                if a.startswith("preset="):
+                    preset = a.split("=", 1)[1]
+                if a.startswith("mix="):
+                    mix_path = a.split("=", 1)[1]
+                if a.startswith("quality_preset="):
+                    quality_preset = a.split("=", 1)[1]
+
+            export_fl_studio_project(
+                proj,
+                out_path=out_flp,
+                soundfont=str(self.ctx.soundfont),
+                mix_path=mix_path,
+                preset=preset,
+                quality_preset=quality_preset,
+            )
             return
 
         if cmd == "export_mp3":
@@ -1552,10 +1598,16 @@ class HeadlessRunner:
                     mix_path = a.split("=", 1)[1]
             mix = None
             if mix_path:
-                try:
-                    mix = json.loads(Path(mix_path).read_text(encoding="utf-8"))
-                except Exception:
-                    mix = None
+                mp = Path(mix_path).expanduser()
+                raw = mp.read_text(encoding="utf-8")
+                if mp.suffix.lower() in {".yaml", ".yml"}:
+                    try:
+                        import yaml  # type: ignore
+                    except Exception as e:
+                        raise RuntimeError("export_stems mix=... requires PyYAML for .yaml/.yml") from e
+                    mix = yaml.safe_load(raw) or {}
+                else:
+                    mix = json.loads(raw or "{}")
             export_stems(proj, soundfont=sf, out_dir=out_dir, mix=mix)
             return
 
@@ -1575,8 +1627,6 @@ class HeadlessRunner:
             # stereo correlation, and (optionally) coarse spectral band stats.
             if self.dry_run:
                 return
-            import json
-
             from claw_daw.audio.metering import analyze_metering
 
             include_spectral = True
@@ -1637,7 +1687,6 @@ class HeadlessRunner:
                 return
             inp = args[0]
             out_json = args[1]
-            import json
 
             rep = band_energy_report(inp)
             Path(out_json).parent.mkdir(parents=True, exist_ok=True)

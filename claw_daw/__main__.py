@@ -186,6 +186,15 @@ def build_parser() -> argparse.ArgumentParser:
     ql.add_argument("--preview-trim", type=float, default=30.0, help="Preview length in seconds for fail-fast gate.")
     ql.add_argument("--no-lufs-guidance", action="store_true", help="Disable per-role LUFS guidance in stem gate.")
 
+    flp = sub.add_parser("flp", help="Export a project or script to FL Studio (.flp) plus deterministic audio assets.")
+    flp.add_argument("input", help="Path to a project JSON (.json) or headless script (.txt)")
+    flp.add_argument("--out", required=True, dest="out_path", help="Output path or prefix for the .flp project")
+    flp.add_argument("--soundfont", required=True, help="Path to GM SoundFont (.sf2) for asset renders")
+    flp.add_argument("--mix", default=None, help="Optional mix spec JSON/YAML used for stems + master reference")
+    flp.add_argument("--preset", default="clean", help="Mastering preset for the exported master reference WAV")
+    flp.add_argument("--quality-preset", default="edm_streaming", help="Reserved FL export quality preset label")
+    flp.add_argument("--app", default=None, help="Optional FL Studio app path (macOS)")
+
     return p
 
 
@@ -532,6 +541,39 @@ def main(argv: list[str] | None = None) -> None:
             _print_quality_report(e.report)
             raise SystemExit(f"ERROR: {e}") from e
         _print_quality_report(report)
+        return
+
+    if args.cmd == "flp":
+        from claw_daw.cli.headless import HeadlessRunner
+        from claw_daw.io.fl_studio import export_fl_studio_project
+        from claw_daw.io.project_json import load_project
+
+        inp = Path(str(args.input)).expanduser().resolve()
+        if inp.suffix.lower() == ".json":
+            proj = load_project(inp)
+        else:
+            lines = inp.read_text(encoding="utf-8").splitlines()
+            runnable: list[str] = []
+            for ln in lines:
+                s = ln.strip()
+                if s.startswith("export_") or s.startswith("save_project "):
+                    continue
+                runnable.append(ln)
+            r = HeadlessRunner(soundfont=None, strict=True, dry_run=False)
+            r.run_lines(runnable, base_dir=inp.parent)
+            proj = r.require_project()
+
+        res = export_fl_studio_project(
+            proj,
+            out_path=str(args.out_path),
+            soundfont=str(args.soundfont),
+            mix_path=str(args.mix) if getattr(args, "mix", None) else None,
+            preset=str(args.preset),
+            quality_preset=str(args.quality_preset),
+            app_path=str(args.app) if getattr(args, "app", None) else None,
+        )
+        print(f"flp: {res.flp_path}")
+        print(f"assets: {res.assets_dir}")
         return
 
     parser.print_help()

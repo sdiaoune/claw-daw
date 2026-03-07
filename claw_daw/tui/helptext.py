@@ -54,10 +54,12 @@ Arrangement / Patterns:
 Export:
   export_midi <path>
   export_wav <path>
+  export_flp <path|prefix>
   export_stems <dir>
 
 Notes:
   - Time units are ticks (default PPQ=480). 480 ticks = 1 beat, 1920 ticks = 1 bar in 4/4.
   - Audio playback/export requires: a GM SoundFont (.sf2) + the `fluidsynth` binary.
   - MP3/M4A encoding and mastering presets require `ffmpeg`.
+  - FL Studio export currently requires macOS + a local FL Studio install + Accessibility access for osascript automation.
 """

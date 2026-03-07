@@ -1,0 +1,374 @@
+# Modern EDM festival / melodic club track (~2:48 @126 BPM)
+# Section map (bars):
+# Intro 0-7 | Build 1 8-15 | Drop 1 16-31 | Breakdown 32-39
+# Build 2 40-47 | Drop 2 48-71 | Outro 72-87
+
+new_project 2026-02-06_edm_melodic_club_126_v1 126
+set_swing 9
+
+# Sample pack (drums)
+scan_sample_pack "/Users/soyadiaoune/Splice/sounds/packs/Serum 2 Melodic House Essentials Volume 1" id=serum2_melodic_house_20260206 include=*.wav
+
+# Tracks
+add_track Drums 0
+add_track Bass 0
+add_track Keys 0
+add_track Pad 0
+add_track Lead 0
+add_track Arp 0
+
+# Helper palette + explicit sound design
+apply_palette house
+set_sample_pack 0 serum2_melodic_house_20260206 seed=126 gain_db=-1.8
+set_instrument 1 synth.basic preset=sub tone=0.32 drive=1.08 width=0.15 seed=126
+set_instrument 2 pluck.karplus preset=guitarish tone=0.62 decay=0.30 drive=1.08 width=0.65 seed=127
+set_instrument 3 noise.pad preset=air_pad tone=0.52 width=1.15 seed=128
+set_instrument 4 synth.basic preset=bright_lead tone=0.73 drive=1.16 width=0.85 seed=129
+set_instrument 5 pluck.karplus preset=dark_pluck tone=0.66 decay=0.24 drive=1.10 width=0.55 seed=130
+
+# Mix defaults
+set_volume 0 108
+set_volume 1 88
+set_volume 2 72
+set_volume 3 72
+set_volume 4 68
+set_volume 5 56
+set_pan 2 58
+set_pan 3 68
+set_pan 4 64
+set_pan 5 76
+set_reverb 2 16
+set_reverb 3 26
+set_reverb 4 14
+set_reverb 5 10
+set_chorus 3 12
+set_chorus 5 8
+
+set_humanize 0 timing=2 velocity=6 seed=401
+set_humanize 1 timing=1 velocity=5 seed=402
+set_humanize 2 timing=2 velocity=5 seed=403
+set_humanize 4 timing=1 velocity=4 seed=404
+set_humanize 5 timing=2 velocity=6 seed=405
+
+# Bus + mix helpers
+set_bus 0 drums
+set_bus 1 bass
+set_bus 2 music
+set_bus 3 music
+set_bus 4 music
+set_bus 5 music
+
+# Patterns
+new_pattern 0 d_intro 2:0
+new_pattern 0 d_break 2:0
+new_pattern 0 d_base 2:0
+new_pattern 1 b_main 4:0
+new_pattern 1 b_drop 4:0
+new_pattern 1 b_break 4:0
+new_pattern 2 k_stab 4:0
+new_pattern 2 k_open 4:0
+new_pattern 3 p_warm 4:0
+new_pattern 4 ld_a 4:0
+new_pattern 4 ld_b 4:0
+new_pattern 5 a_motion 2:0
+
+# Drums (roles mapped from sample pack)
+# Intro groove
+add_note_pat 0 d_intro kick 0 120 72
+add_note_pat 0 d_intro kick 480 120 72
+add_note_pat 0 d_intro kick 960 120 72
+add_note_pat 0 d_intro kick 1440 120 72
+add_note_pat 0 d_intro kick 1920 120 72
+add_note_pat 0 d_intro kick 2400 120 72
+add_note_pat 0 d_intro kick 2880 120 72
+add_note_pat 0 d_intro kick 3360 120 72
+add_note_pat 0 d_intro hh 240 90 44
+add_note_pat 0 d_intro hh 720 90 44
+add_note_pat 0 d_intro hh 1200 90 44
+add_note_pat 0 d_intro hh 1680 90 44
+add_note_pat 0 d_intro hh 2160 90 44
+add_note_pat 0 d_intro hh 2640 90 44
+add_note_pat 0 d_intro hh 3120 90 44
+add_note_pat 0 d_intro hh 3600 90 44
+add_note_pat 0 d_intro hh 120 60 40
+add_note_pat 0 d_intro hh 600 60 40
+add_note_pat 0 d_intro hh 1080 60 40
+add_note_pat 0 d_intro hh 1560 60 40
+add_note_pat 0 d_intro hh 2040 60 40
+add_note_pat 0 d_intro hh 2520 60 40
+add_note_pat 0 d_intro hh 3000 60 40
+add_note_pat 0 d_intro hh 3480 60 40
+add_note_pat 0 d_intro oh 1680 180 54
+add_note_pat 0 d_intro oh 3600 180 54
+
+# Breakdown groove
+add_note_pat 0 d_break kick 0 120 72
+add_note_pat 0 d_break kick 480 120 72
+add_note_pat 0 d_break kick 960 120 72
+add_note_pat 0 d_break kick 1440 120 72
+add_note_pat 0 d_break kick 1920 120 72
+add_note_pat 0 d_break kick 2400 120 72
+add_note_pat 0 d_break kick 2880 120 72
+add_note_pat 0 d_break kick 3360 120 72
+add_note_pat 0 d_break clap 1440 120 62
+add_note_pat 0 d_break clap 3360 120 62
+add_note_pat 0 d_break hh 240 90 36
+add_note_pat 0 d_break hh 1200 90 36
+add_note_pat 0 d_break hh 2160 90 36
+add_note_pat 0 d_break hh 3120 90 36
+add_note_pat 0 d_break oh 1680 180 46
+add_note_pat 0 d_break oh 3600 180 46
+add_note_pat 0 d_break hh 720 90 38
+add_note_pat 0 d_break hh 1680 90 38
+add_note_pat 0 d_break hh 2640 90 38
+add_note_pat 0 d_break hh 3600 90 38
+
+# Base full-energy groove
+add_note_pat 0 d_base kick 0 120 74
+add_note_pat 0 d_base kick 480 120 74
+add_note_pat 0 d_base kick 960 120 74
+add_note_pat 0 d_base kick 1440 120 74
+add_note_pat 0 d_base kick 1920 120 74
+add_note_pat 0 d_base kick 2400 120 74
+add_note_pat 0 d_base kick 2880 120 74
+add_note_pat 0 d_base kick 3360 120 74
+add_note_pat 0 d_base clap 480 120 62
+add_note_pat 0 d_base clap 1440 120 62
+add_note_pat 0 d_base clap 2400 120 62
+add_note_pat 0 d_base clap 3360 120 62
+add_note_pat 0 d_base snare 480 100 78
+add_note_pat 0 d_base snare 1440 100 78
+add_note_pat 0 d_base snare 2400 100 78
+add_note_pat 0 d_base snare 3360 100 78
+add_note_pat 0 d_base hh 240 90 48
+add_note_pat 0 d_base hh 720 90 48
+add_note_pat 0 d_base hh 1200 90 48
+add_note_pat 0 d_base hh 1680 90 48
+add_note_pat 0 d_base hh 2160 90 48
+add_note_pat 0 d_base hh 2640 90 48
+add_note_pat 0 d_base hh 3120 90 48
+add_note_pat 0 d_base hh 3600 90 48
+add_note_pat 0 d_base hh 120 60 42
+add_note_pat 0 d_base hh 600 60 42
+add_note_pat 0 d_base hh 1080 60 42
+add_note_pat 0 d_base hh 1560 60 42
+add_note_pat 0 d_base hh 2040 60 42
+add_note_pat 0 d_base hh 2520 60 42
+add_note_pat 0 d_base hh 3000 60 42
+add_note_pat 0 d_base hh 3480 60 42
+add_note_pat 0 d_base oh 1680 180 56
+add_note_pat 0 d_base oh 3600 180 56
+
+# Macro helper: creates festdr_v4, festdr_v8, festdr_fill_hatroll, festdr_fill_kickturn
+gen_drum_macros 0 d_base out_prefix=festdr seed=126 make=both
+select_notes 0 festdr_v4 pitch=42
+apply_selected 0 festdr_v4 op=vel_scale factor=0.60
+select_notes 0 festdr_v8 pitch=42
+apply_selected 0 festdr_v8 op=vel_scale factor=0.60
+select_notes 0 festdr_fill_hatroll pitch=42
+apply_selected 0 festdr_fill_hatroll op=vel_scale factor=0.60
+
+# Bass helper patterns
+gen_bass_follow 1 b_main 4:0 roots=45,48,52,43 seed=126 gap_prob=0.10 glide_prob=0.18 cadence_bars=4 turnaround=1 vel=86 vel_jitter=6 note_len=0:0:320
+gen_bass_follow 1 b_drop 4:0 roots=45,48,52,43 seed=187 gap_prob=0.04 glide_prob=0.28 cadence_bars=4 turnaround=1 vel=92 vel_jitter=6 note_len=0:0:360
+
+# Breakdown bass (sparse anchors)
+add_note_pat 1 b_break 45 0 360 74
+add_note_pat 1 b_break 45 960 240 70
+add_note_pat 1 b_break 48 1920 360 74
+add_note_pat 1 b_break 48 2880 240 70
+add_note_pat 1 b_break 52 3840 360 74
+add_note_pat 1 b_break 52 4800 240 70
+add_note_pat 1 b_break 43 5760 360 74
+add_note_pat 1 b_break 43 6720 240 70
+
+# Keys stabs (Am - C - Em - G)
+add_note_pat 2 k_stab 57 240 180 72
+add_note_pat 2 k_stab 60 240 180 72
+add_note_pat 2 k_stab 64 240 180 72
+add_note_pat 2 k_stab 57 1200 180 72
+add_note_pat 2 k_stab 60 1200 180 72
+add_note_pat 2 k_stab 64 1200 180 72
+
+add_note_pat 2 k_stab 60 2160 180 72
+add_note_pat 2 k_stab 64 2160 180 72
+add_note_pat 2 k_stab 67 2160 180 72
+add_note_pat 2 k_stab 60 3120 180 72
+add_note_pat 2 k_stab 64 3120 180 72
+add_note_pat 2 k_stab 67 3120 180 72
+
+add_note_pat 2 k_stab 64 4080 180 72
+add_note_pat 2 k_stab 67 4080 180 72
+add_note_pat 2 k_stab 71 4080 180 72
+add_note_pat 2 k_stab 64 5040 180 72
+add_note_pat 2 k_stab 67 5040 180 72
+add_note_pat 2 k_stab 71 5040 180 72
+
+add_note_pat 2 k_stab 55 6000 180 72
+add_note_pat 2 k_stab 59 6000 180 72
+add_note_pat 2 k_stab 62 6000 180 72
+add_note_pat 2 k_stab 55 6960 180 72
+add_note_pat 2 k_stab 59 6960 180 72
+add_note_pat 2 k_stab 62 6960 180 72
+
+# Open keys for intro/break/outro
+add_note_pat 2 k_open 57 0 960 62
+add_note_pat 2 k_open 60 0 960 62
+add_note_pat 2 k_open 64 0 960 62
+add_note_pat 2 k_open 60 1920 960 62
+add_note_pat 2 k_open 64 1920 960 62
+add_note_pat 2 k_open 67 1920 960 62
+add_note_pat 2 k_open 64 3840 960 62
+add_note_pat 2 k_open 67 3840 960 62
+add_note_pat 2 k_open 71 3840 960 62
+add_note_pat 2 k_open 55 5760 960 62
+add_note_pat 2 k_open 59 5760 960 62
+add_note_pat 2 k_open 62 5760 960 62
+
+# Warm pad (4 bars)
+add_note_pat 3 p_warm 57 0 1920 58
+add_note_pat 3 p_warm 60 0 1920 58
+add_note_pat 3 p_warm 64 0 1920 58
+add_note_pat 3 p_warm 60 1920 1920 58
+add_note_pat 3 p_warm 64 1920 1920 58
+add_note_pat 3 p_warm 67 1920 1920 58
+add_note_pat 3 p_warm 64 3840 1920 58
+add_note_pat 3 p_warm 67 3840 1920 58
+add_note_pat 3 p_warm 71 3840 1920 58
+add_note_pat 3 p_warm 55 5760 1920 58
+add_note_pat 3 p_warm 59 5760 1920 58
+add_note_pat 3 p_warm 62 5760 1920 58
+
+# Lead hooks
+add_note_pat 4 ld_a 69 0 240 78
+add_note_pat 4 ld_a 72 240 240 78
+add_note_pat 4 ld_a 76 480 360 80
+add_note_pat 4 ld_a 74 960 240 76
+add_note_pat 4 ld_a 72 1200 240 74
+add_note_pat 4 ld_a 69 1440 360 76
+add_note_pat 4 ld_a 72 1920 240 78
+add_note_pat 4 ld_a 74 2160 240 78
+add_note_pat 4 ld_a 76 2400 360 80
+add_note_pat 4 ld_a 79 2880 360 82
+add_note_pat 4 ld_a 76 3360 360 78
+add_note_pat 4 ld_a 74 3840 240 78
+add_note_pat 4 ld_a 72 4080 240 76
+add_note_pat 4 ld_a 69 4320 360 76
+add_note_pat 4 ld_a 72 4800 240 78
+add_note_pat 4 ld_a 76 5040 360 80
+add_note_pat 4 ld_a 74 5520 240 78
+add_note_pat 4 ld_a 72 5760 240 76
+add_note_pat 4 ld_a 71 6240 240 76
+add_note_pat 4 ld_a 74 6480 240 78
+add_note_pat 4 ld_a 76 6720 360 80
+add_note_pat 4 ld_a 79 7200 360 82
+
+add_note_pat 4 ld_b 72 0 240 80
+add_note_pat 4 ld_b 76 240 240 82
+add_note_pat 4 ld_b 79 480 360 84
+add_note_pat 4 ld_b 81 960 240 86
+add_note_pat 4 ld_b 79 1200 240 82
+add_note_pat 4 ld_b 76 1440 360 80
+add_note_pat 4 ld_b 74 1920 240 80
+add_note_pat 4 ld_b 76 2160 240 82
+add_note_pat 4 ld_b 79 2400 360 84
+add_note_pat 4 ld_b 83 2880 360 86
+add_note_pat 4 ld_b 81 3360 360 84
+add_note_pat 4 ld_b 76 3840 240 80
+add_note_pat 4 ld_b 79 4080 240 82
+add_note_pat 4 ld_b 81 4320 360 84
+add_note_pat 4 ld_b 79 4800 240 82
+add_note_pat 4 ld_b 76 5040 360 80
+add_note_pat 4 ld_b 74 5520 240 80
+add_note_pat 4 ld_b 72 5760 240 78
+add_note_pat 4 ld_b 76 6240 240 82
+add_note_pat 4 ld_b 79 6480 240 84
+add_note_pat 4 ld_b 81 6720 360 86
+add_note_pat 4 ld_b 83 7200 360 88
+
+# Arp motion
+add_note_pat 5 a_motion 69 0 120 60
+add_note_pat 5 a_motion 72 240 120 60
+add_note_pat 5 a_motion 76 480 120 62
+add_note_pat 5 a_motion 79 720 120 64
+add_note_pat 5 a_motion 76 960 120 62
+add_note_pat 5 a_motion 72 1200 120 60
+add_note_pat 5 a_motion 69 1440 120 60
+add_note_pat 5 a_motion 72 1680 120 60
+add_note_pat 5 a_motion 67 1920 120 60
+add_note_pat 5 a_motion 71 2160 120 62
+add_note_pat 5 a_motion 74 2400 120 64
+add_note_pat 5 a_motion 79 2640 120 66
+add_note_pat 5 a_motion 74 2880 120 64
+add_note_pat 5 a_motion 71 3120 120 62
+add_note_pat 5 a_motion 67 3360 120 60
+add_note_pat 5 a_motion 71 3600 120 62
+
+# Level trims for stem/bus headroom and LUFS guidance
+pattern_vel 1 b_main 0.62
+pattern_vel 1 b_drop 0.62
+pattern_vel 1 b_break 0.62
+pattern_vel 2 k_stab 0.30
+pattern_vel 2 k_open 0.30
+pattern_vel 4 ld_a 0.45
+pattern_vel 4 ld_b 0.45
+pattern_vel 5 a_motion 0.45
+
+# Arrangement (88 bars total)
+# Intro 0-7
+place_pattern 0 d_intro 0:0 4
+place_pattern 3 p_warm 0:0 2
+place_pattern 2 k_open 4:0 1
+
+# Build 1 8-15
+place_pattern 0 d_break 8:0 4
+place_pattern 1 b_main 8:0 2
+place_pattern 2 k_stab 8:0 2
+place_pattern 3 p_warm 8:0 2
+
+# Drop 1 16-31
+place_pattern 0 festdr_v8 16:0 2
+place_pattern 1 b_drop 16:0 4
+place_pattern 2 k_stab 16:0 4
+place_pattern 3 p_warm 16:0 4
+place_pattern 4 ld_a 16:0 4
+place_pattern 5 a_motion 16:0 8
+place_pattern 0 festdr_fill_kickturn 23:0 1
+place_pattern 0 festdr_fill_kickturn 31:0 1
+
+# Breakdown 32-39
+place_pattern 0 d_break 32:0 4
+place_pattern 1 b_break 32:0 2
+place_pattern 2 k_open 32:0 2
+place_pattern 3 p_warm 32:0 2
+
+# Build 2 40-47
+place_pattern 0 festdr_v4 40:0 2
+place_pattern 1 b_main 40:0 2
+place_pattern 2 k_stab 40:0 2
+place_pattern 3 p_warm 40:0 2
+place_pattern 5 a_motion 40:0 4
+place_pattern 0 festdr_fill_hatroll 47:0 1
+
+# Drop 2 48-71
+place_pattern 0 festdr_v8 48:0 3
+place_pattern 1 b_drop 48:0 6
+place_pattern 2 k_stab 48:0 6
+place_pattern 3 p_warm 48:0 6
+place_pattern 4 ld_b 48:0 6
+place_pattern 5 a_motion 48:0 12
+place_pattern 0 festdr_fill_kickturn 63:0 1
+place_pattern 0 festdr_fill_kickturn 71:0 1
+
+# Outro 72-87
+place_pattern 0 d_intro 72:0 8
+place_pattern 1 b_break 72:0 2
+place_pattern 2 k_open 72:0 4
+place_pattern 3 p_warm 72:0 4
+place_pattern 5 a_motion 72:0 2
+
+# Deliverables
+save_project out/2026-02-06_edm_melodic_club_126_v1.json
+export_midi out/2026-02-06_edm_melodic_club_126_v1.mid
+export_preview_mp3 out/2026-02-06_edm_melodic_club_126_v1.preview.mp3 bars=16 start=16:0 preset=clean
+export_mp3 out/2026-02-06_edm_melodic_club_126_v1.mp3 preset=clean fade=0.25

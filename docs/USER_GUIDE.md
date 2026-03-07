@@ -313,12 +313,13 @@ Styles: `hiphop|lofi|house`
 - `export_wav [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 mix=tools/mix.json` (use `-` to stream WAV to stdout)
 - `export_mp3 [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream MP3 to stdout)
 - `export_m4a [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
+- `export_flp <path|prefix> preset=clean mix=tools/mix.json quality_preset=edm_streaming` (macOS only; creates `<name>.flp` plus `<name>.flp.assets/`)
 - `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=demo|clean|lofi sr=44100 br=192k`
 - `analyze_audio <in_audio> <out.json>`
 - `meter_audio <in_audio> <out.json> spectral=1` (LUFS integrated + short-term, true-peak, crest/DC offset, stereo correlation + balance, spectral tilt)
 - `export_stems <dir>`
 - `export_busses <dir>` (bus stems; explicit `set_bus` first, heuristic fallback for default bus tracks)
-- `export_package <out_prefix> preset=clean mix=tools/mix.json stems=1 busses=1 meter=1`
+- `export_package <out_prefix> preset=clean mix=tools/mix.json stems=1 busses=1 meter=1 flp=1`
 - `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain` (one-shot gated workflow)
 
 Notes:
@@ -327,6 +328,8 @@ Notes:
 - `mix=` is optional; when set, claw-daw renders track stems and mixes them with deterministic audio FX (EQ/dynamics/sends/sidechain).
 - Mastering is intentionally light and deterministic.
 - `export_package` meters the mastered WAV for true-peak accuracy (MP3 can overshoot).
+- `export_flp` writes `track_XX_<name>.wav` stems plus `master_ref.wav` in a sibling assets folder, then asks the local FL Studio app to save a `.flp` from the exported MIDI.
+- `export_flp` currently requires macOS + FL Studio + Accessibility access for `osascript`/System Events.
 - Mix presets live in `tools/mix_presets.json` (e.g. `edm_streaming`, `edm_club`, `trap_streaming`).
 - If you develop from the repo, set `CLAW_DAW_CLI="python3 -m claw_daw"` so tools call the local CLI.
 

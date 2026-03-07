@@ -119,7 +119,10 @@ meter_audio out/my_song.mp3 out/my_song.meter.json
 ```txt
 export_wav out/my_song.wav preset=demo mix=tools/mix.json
 export_mp3 out/my_song.mp3 preset=demo mix=tools/mix.json
+export_flp out/my_song mix=tools/mix.json preset=clean
 ```
+
+`export_flp` is macOS-only and requires a local FL Studio install plus Accessibility access for `osascript`.
 
 - Inline mix-spec helpers (writes to project JSON’s `mix` field):
 ```txt

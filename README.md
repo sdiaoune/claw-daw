@@ -126,6 +126,8 @@ place_pattern 1 b1 0:0 16
 save_project out/minimal_demo.json
 export_midi out/minimal_demo.mid
 export_mp3 out/minimal_demo.mp3 preset=clean
+# macOS only: create a FL Studio project + sibling assets folder
+# export_flp out/minimal_demo
 ```
 
 ## MIDI out (hardware / virtual ports)
@@ -146,6 +148,7 @@ claw-daw play out/minimal_demo.json --midi-out "YOUR PORT NAME"
 - 100% offline core (no network APIs).
 - Reproducibility depends on pinning: claw-daw version + SoundFont + seed/script.
 - Project format is JSON (current schema v7; migrations included).
+- FL Studio export writes a real `.flp` via the local FL Studio app on macOS and requires Accessibility access for `osascript`.
 
 ## License
 
