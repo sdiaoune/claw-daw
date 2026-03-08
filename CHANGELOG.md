@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+## 0.2.2
+
 ### Fixed
+- Made clean rendering the default across prompt, pack, stylepack, and headless export flows unless lo-fi/noise texture is explicitly requested.
+- Reduced accidental broadband hiss, aliasing-like whine, trim-boundary clicks, and noisy pad behavior in the audio generation/export pipeline.
+- Added audio sanity gates to the quality workflow to fail closed on obvious hiss, rumble, DC offset, and clipped/hot transient artifacts.
+- Updated the published skill/docs set with explicit clean-export QA guidance and acceptance criteria.
 - Preserve note attributes (including **role-based drum events**) when slicing projects for export, preventing cases where drums appear in stems but disappear in the rendered master.
 
 ## 0.2.1

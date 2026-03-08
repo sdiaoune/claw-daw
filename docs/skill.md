@@ -1,6 +1,6 @@
 ---
 name: claw-daw
-version: 0.2.1
+version: 0.2.2
 description: Offline, deterministic, terminal-first MIDI DAW (TUI + headless scripts)
 homepage: https://www.clawdaw.com/
 metadata: {"clawdaw":{"category":"music","emoji":"🦞"}}
