@@ -31,6 +31,9 @@
     content="A hacker-friendly music workstation that exports audio, MIDI, and JSON locally."
   />
   <meta name="theme-color" content="#130a33" />
+  <script>
+    document.documentElement.classList.add("js");
+  </script>
 
   <script type="application/ld+json">
   {
@@ -98,6 +101,7 @@
     html {
       background: var(--bg-deep);
       scroll-behavior: smooth;
+      scroll-padding-top: 18px;
     }
 
     body {
@@ -182,6 +186,7 @@
         radial-gradient(circle at 15% 62%, rgba(255, 255, 255, 0.85) 0 1px, transparent 1.3px),
         radial-gradient(circle at 66% 74%, rgba(255, 202, 107, 0.9) 0 1.4px, transparent 1.6px);
       pointer-events: none;
+      animation: starDrift 28s linear infinite alternate;
     }
 
     .page::after {
@@ -196,6 +201,7 @@
         radial-gradient(circle at 80% 70%, rgba(255, 119, 214, 0.18), transparent 26%);
       filter: blur(22px);
       pointer-events: none;
+      animation: nebulaFloat 18s ease-in-out infinite alternate;
     }
 
     .shell {
@@ -292,11 +298,20 @@
       font-size: 1rem;
       font-weight: 800;
       white-space: nowrap;
+      transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
     }
 
     .nav a:hover {
       color: var(--text);
       background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav a.is-active {
+      color: var(--cream);
+      background: linear-gradient(135deg, rgba(255, 107, 87, 0.26), rgba(255, 119, 214, 0.2) 56%, rgba(107, 216, 255, 0.18));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 0 18px rgba(255, 119, 214, 0.14);
     }
 
     .nav .nav-github {
@@ -329,6 +344,7 @@
         0 0 0 1px rgba(255, 255, 255, 0.02),
         0 26px 80px rgba(0, 0, 0, 0.34);
       backdrop-filter: blur(18px);
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background 220ms ease;
     }
 
     .panel::before,
@@ -357,6 +373,11 @@
       height: 160px;
       background: radial-gradient(circle, rgba(107, 216, 255, 0.12), transparent 62%);
       pointer-events: none;
+      animation: auraPulse 11s ease-in-out infinite;
+    }
+
+    .panel {
+      animation: panelGlow 8.5s ease-in-out infinite;
     }
 
     .panel,
@@ -474,14 +495,15 @@
       color: var(--cream);
       font-size: 0.96rem;
       font-weight: 800;
-      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
     }
 
     .btn:hover,
     .copy-btn:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
       border-color: var(--line-strong);
       background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 28px rgba(15, 10, 37, 0.3);
     }
 
     .btn.primary {
@@ -507,6 +529,7 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: rgba(10, 8, 32, 0.32);
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background 220ms ease;
     }
 
     .install-strip {
@@ -603,6 +626,8 @@
       box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.06),
         0 0 24px rgba(255, 119, 214, 0.18);
+      animation: mascotFloat 7.5s ease-in-out infinite;
+      transition: transform 220ms ease, box-shadow 220ms ease;
     }
 
     .mascot-wrap svg {
@@ -639,6 +664,103 @@
       margin-top: 14px;
     }
 
+    .audio-proof {
+      display: grid;
+      gap: 10px;
+    }
+
+    .audio-proof-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.65;
+    }
+
+    .waveform {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(32, minmax(0, 1fr));
+      align-items: end;
+      gap: 4px;
+      min-height: 84px;
+      padding: 16px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(14, 10, 39, 0.16)),
+        radial-gradient(circle at 15% 50%, rgba(255, 119, 214, 0.08), transparent 32%),
+        radial-gradient(circle at 82% 35%, rgba(107, 216, 255, 0.08), transparent 34%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        0 16px 36px rgba(6, 5, 20, 0.18);
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .waveform:focus-visible {
+      outline: none;
+      border-color: rgba(107, 216, 255, 0.5);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 0 3px rgba(107, 216, 255, 0.18),
+        0 16px 36px rgba(6, 5, 20, 0.22);
+    }
+
+    .waveform-bar {
+      position: relative;
+      display: block;
+      min-height: 14px;
+      height: calc(10px + var(--amp, 0.5) * 42px);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      transform-origin: center bottom;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    .waveform-bar::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255, 141, 157, 0.96), rgba(107, 216, 255, 0.84));
+      opacity: 0.3;
+      transition: opacity 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .waveform-bar.is-played::before {
+      opacity: 0.95;
+      box-shadow: 0 0 16px rgba(255, 119, 214, 0.18);
+    }
+
+    .waveform-bar.is-active {
+      transform: scaleY(1.05);
+    }
+
+    .waveform-bar.is-active::before {
+      opacity: 1;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.16),
+        0 0 18px rgba(107, 216, 255, 0.26);
+    }
+
+    .audio-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--cream);
+      font-size: 0.86rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .audio-meta span:last-child {
+      color: var(--muted);
+    }
+
     .section {
       margin-top: 28px;
     }
@@ -658,17 +780,6 @@
     .card {
       display: grid;
       gap: 10px;
-      transform: translateY(14px);
-      opacity: 0;
-      animation: reveal 720ms ease forwards;
-    }
-
-    .card:nth-child(2) {
-      animation-delay: 110ms;
-    }
-
-    .card:nth-child(3) {
-      animation-delay: 180ms;
     }
 
     .card h3 {
@@ -728,6 +839,63 @@
       padding: 20px;
     }
 
+    .terminal-display {
+      position: relative;
+      padding: 20px;
+      min-height: 214px;
+    }
+
+    .terminal-display pre {
+      padding: 0;
+    }
+
+    .terminal-source {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .terminal-live {
+      min-height: 174px;
+      color: #f5f8ff;
+    }
+
+    .terminal-line {
+      display: block;
+      min-height: 1.65em;
+    }
+
+    .terminal-line.output {
+      color: var(--sky-soft);
+      text-shadow: 0 0 18px rgba(107, 216, 255, 0.1);
+    }
+
+    .terminal-line.comment {
+      color: #e2b7ff;
+    }
+
+    .terminal-line.command {
+      color: var(--cream);
+    }
+
+    .terminal-caret {
+      display: inline-block;
+      width: 0.62ch;
+      height: 1.08em;
+      margin-left: 0.08ch;
+      transform: translateY(0.14em);
+      border-radius: 2px;
+      background: linear-gradient(180deg, var(--sky-soft), var(--pink));
+      animation: caretBlink 1s step-end infinite;
+      vertical-align: baseline;
+    }
+
     .terminal-footer {
       padding: 0 20px 20px;
     }
@@ -758,6 +926,7 @@
       font-size: 0.84rem;
       font-weight: 800;
       cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, color 160ms ease;
     }
 
     .tab-btn[aria-selected="true"] {
@@ -781,12 +950,13 @@
       border-radius: var(--radius-sm);
       border: 1px solid rgba(255, 255, 255, 0.08);
       background: rgba(14, 10, 39, 0.32);
-      transition: transform 180ms ease, border-color 180ms ease;
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     }
 
     .doc-link:hover {
       transform: translateY(-2px);
       border-color: var(--line-strong);
+      box-shadow: 0 14px 34px rgba(6, 5, 20, 0.18);
     }
 
     .doc-link strong {
@@ -823,6 +993,7 @@
       pointer-events: none;
       opacity: 0.94;
       filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.26));
+      animation: mascotFloat 8.8s ease-in-out infinite;
     }
 
     .hero-sticker {
@@ -846,15 +1017,122 @@
       height: 100%;
     }
 
-    @keyframes reveal {
+    .js [data-reveal] {
+      opacity: 0;
+      transform: translate3d(0, 24px, 0) scale(0.985);
+      transition:
+        opacity 620ms ease,
+        transform 620ms cubic-bezier(0.2, 0.7, 0.2, 1);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .js [data-reveal].is-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+
+    @keyframes starDrift {
       from {
-        opacity: 0;
-        transform: translateY(14px);
+        transform: translate3d(0, 0, 0);
       }
       to {
-        opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(-18px, 18px, 0);
       }
+    }
+
+    @keyframes nebulaFloat {
+      from {
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      to {
+        transform: translate3d(10px, -10px, 0) scale(1.04);
+      }
+    }
+
+    @keyframes auraPulse {
+      0%,
+      100% {
+        opacity: 0.16;
+        transform: scale(0.96);
+      }
+      50% {
+        opacity: 0.28;
+        transform: scale(1.03);
+      }
+    }
+
+    @keyframes panelGlow {
+      0%,
+      100% {
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          0 0 0 1px rgba(255, 255, 255, 0.02),
+          0 26px 80px rgba(0, 0, 0, 0.34);
+      }
+      50% {
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          0 0 0 1px rgba(255, 255, 255, 0.03),
+          0 24px 76px rgba(0, 0, 0, 0.34),
+          0 0 26px rgba(255, 119, 214, 0.08);
+      }
+    }
+
+    @keyframes mascotFloat {
+      0%,
+      100% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+      }
+      50% {
+        transform: translate3d(0, -6px, 0) rotate(-1.5deg);
+      }
+    }
+
+    @keyframes caretBlink {
+      0%,
+      49% {
+        opacity: 1;
+      }
+      50%,
+      100% {
+        opacity: 0;
+      }
+    }
+
+    @media (hover: hover) {
+      .panel:hover,
+      .card:hover,
+      .terminal-card:hover,
+      .install-strip:hover,
+      .prompt-box:hover,
+      .note-box:hover,
+      .demo-player:hover,
+      .token-box:hover {
+        transform: translateY(-3px);
+        border-color: rgba(255, 255, 255, 0.14);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.06),
+          0 24px 54px rgba(6, 5, 20, 0.2);
+      }
+
+      .nav a:hover {
+        transform: translateY(-1px);
+      }
+
+      .mascot-wrap:hover {
+        transform: translateY(-4px) scale(1.01);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.08),
+          0 0 28px rgba(255, 119, 214, 0.2);
+      }
+    }
+
+    .btn:active,
+    .copy-btn:active,
+    .nav a:active,
+    .tab-btn:active,
+    .waveform:active {
+      transform: scale(0.985);
     }
 
     @media (min-width: 700px) {
@@ -875,6 +1153,10 @@
       .btn,
       .copy-btn {
         width: auto;
+      }
+
+      .audio-meta {
+        font-size: 0.9rem;
       }
 
       .install-strip {
@@ -948,6 +1230,31 @@
         height: 102px;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      .page::before,
+      .page::after,
+      .panel,
+      .panel::after,
+      .card::after,
+      .terminal-card::after,
+      .mascot-wrap,
+      .hero-sticker,
+      .token-sticker,
+      .terminal-caret {
+        animation: none !important;
+      }
+
+      .js [data-reveal] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -978,11 +1285,11 @@
 
         <div class="nav-wrap">
           <nav class="nav" aria-label="Primary">
-            <a href="#demo">Demo</a>
-            <a href="#install">Install</a>
-            <a href="#agents">For agents</a>
-            <a href="#token">Token</a>
-            <a href="#docs">Docs</a>
+            <a href="#demo" data-nav-link="demo">Demo</a>
+            <a href="#install" data-nav-link="install">Install</a>
+            <a href="#agents" data-nav-link="agents">For agents</a>
+            <a href="#token" data-nav-link="token">Token</a>
+            <a href="#docs" data-nav-link="docs">Docs</a>
             <a class="nav-github" href="https://github.com/sdiaoune/claw-daw" target="_blank" rel="noopener noreferrer">GitHub</a>
           </nav>
         </div>
@@ -990,7 +1297,7 @@
 
       <main id="main">
         <section class="hero-stack">
-          <div class="panel">
+          <div class="panel" data-reveal>
             <div class="eyebrow">Offline • Scriptable • Deterministic</div>
             <h1>The CLI music workstation for humans and <span class="hero-accent">AI agents.</span></h1>
             <p class="lede">
@@ -1023,7 +1330,7 @@
 
           </div>
 
-          <aside class="panel demo-card">
+          <aside class="panel demo-card" data-reveal style="--reveal-delay: 90ms;">
             <div class="demo-head">
               <div style="min-width:0">
                 <div class="pill">Demo output</div>
@@ -1048,12 +1355,30 @@
             </div>
 
             <p class="demo-copy">
-              A cozy, Pokemon-leaning overworld track made in claw-daw. It is brief, loopable, and it has that playable vibe.
+              Generated from one short brief: a garden-field RPG loop with a Pokemon-leaning overworld feel and a seamless repeat.
             </p>
 
             <div class="demo-player">
               <div class="audio-shell">
-                <audio controls loop preload="metadata">
+                <div class="audio-proof">
+                  <p class="audio-proof-note">Scrub the loop to hear how the phrase resets cleanly instead of fading into a sloppy restart.</p>
+                  <div
+                    class="waveform"
+                    data-waveform
+                    role="slider"
+                    tabindex="0"
+                    aria-label="Seek within the RPG garden field loop demo"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                    aria-valuetext="0:00 of 0:00"
+                  ></div>
+                  <div class="audio-meta" aria-live="off">
+                    <span data-current-time>0:00</span>
+                    <span data-duration>0:00</span>
+                  </div>
+                </div>
+                <audio controls loop preload="metadata" data-demo-audio>
                   <source src="assets/rpg_garden_field_loop.mp3" type="audio/mpeg" />
                 </audio>
               </div>
@@ -1065,7 +1390,7 @@
             </div>
 
             <div class="prompt-box">
-              <span class="label">Prompt used for this example</span>
+              <span class="label">Prompt that generated this loop</span>
               <p>
                 "Make a new track for an RPG game I'm building. The setting is a garden field. Kinda has a Pokemon vibe to it and have it
                 loop seemlessly."
@@ -1074,15 +1399,17 @@
           </aside>
         </section>
 
-        <section id="demo" class="section">
-          <div class="terminal-card">
+        <section id="demo" class="section" data-nav-section="demo">
+          <div class="terminal-card" data-reveal>
             <div class="terminal-head">
               <span class="terminal-dot dot-1"></span>
               <span class="terminal-dot dot-2"></span>
               <span class="terminal-dot dot-3"></span>
               local render
             </div>
-            <pre><code id="demo-terminal">$ claw-daw make-rpg-field-loop.sh
+            <div class="terminal-display" data-terminal-live>
+              <pre class="terminal-live" aria-hidden="true" data-terminal-output></pre>
+              <pre class="terminal-source"><code id="demo-terminal">$ claw-daw make-rpg-field-loop.sh
 
 $ claw-daw --headless --soundfont "$SF2" --script tools/garden_field.txt
 → out/garden_field_loop.mp3
@@ -1091,6 +1418,7 @@ $ claw-daw --headless --soundfont "$SF2" --script tools/garden_field.txt
 
 # revise, rerender, compare
 $ claw-daw diff_projects out/prev.json out/garden_field_loop.json</code></pre>
+            </div>
             <div class="terminal-footer">
               <div class="button-row">
                 <button class="copy-btn" type="button" data-copy-target="demo-terminal">Copy example</button>
@@ -1112,7 +1440,7 @@ $ claw-daw diff_projects out/prev.json out/garden_field_loop.json</code></pre>
           </div>
         </section>
 
-        <section class="section">
+        <section class="section" data-reveal>
           <div class="section-head">
             <div>
               <h2>Why claw-daw works</h2>
@@ -1153,7 +1481,7 @@ $ claw-daw diff_projects out/prev.json out/garden_field_loop.json</code></pre>
           </div>
         </section>
 
-        <section id="agents" class="section">
+        <section id="agents" class="section" data-reveal data-nav-section="agents">
           <div class="section-head">
             <div>
               <h2>The differentiator: it works for agents</h2>
@@ -1211,7 +1539,7 @@ claw-daw --headless --soundfont "$SF2" --script tools/first_render.txt</code></p
           </div>
         </section>
 
-        <section id="install" class="section">
+        <section id="install" class="section" data-reveal data-nav-section="install">
           <div class="section-head">
             <div>
               <h2>Install claw-daw</h2>
@@ -1274,7 +1602,7 @@ pipx install claw-daw</code></pre>
           </div>
         </section>
 
-        <section id="docs" class="section">
+        <section id="docs" class="section" data-reveal data-nav-section="docs">
           <div class="section-head">
             <div>
               <h2>Docs</h2>
@@ -1304,7 +1632,7 @@ pipx install claw-daw</code></pre>
           </div>
         </section>
 
-        <section id="token" class="section">
+        <section id="token" class="section" data-reveal data-nav-section="token">
           <div class="panel">
             <div class="token-top">
               <div>
@@ -1362,6 +1690,14 @@ pipx install claw-daw</code></pre>
 
   <script>
     (function () {
+      var reduceMotionQuery = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : { matches: false };
+      var waveformSamples = [
+        0.22, 0.36, 0.44, 0.58, 0.72, 0.82, 0.78, 0.64,
+        0.48, 0.34, 0.28, 0.4, 0.56, 0.7, 0.8, 0.74,
+        0.6, 0.46, 0.38, 0.32, 0.42, 0.58, 0.76, 0.84,
+        0.8, 0.68, 0.52, 0.36, 0.28, 0.34, 0.46, 0.6
+      ];
+
       function setActiveTab(tab) {
         var root = tab.closest("[data-active-install]");
         if (!root) return;
@@ -1395,6 +1731,233 @@ pipx install claw-daw</code></pre>
             return false;
           }
         }
+      }
+
+      function formatTime(seconds) {
+        if (!isFinite(seconds) || seconds < 0) return "0:00";
+        var whole = Math.round(seconds);
+        var minutes = Math.floor(whole / 60);
+        var remainder = whole % 60;
+        return minutes + ":" + String(remainder).padStart(2, "0");
+      }
+
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function renderTerminalMarkup(text, showCaret) {
+        var lines = text.split("\n");
+        var markup = lines.map(function (line) {
+          var classes = "terminal-line";
+          if (!line.trim()) return '<span class="' + classes + '">&nbsp;</span>';
+          if (line.indexOf("→") === 0) {
+            classes += " output";
+          } else if (line.indexOf("#") === 0) {
+            classes += " comment";
+          } else {
+            classes += " command";
+          }
+          return '<span class="' + classes + '">' + escapeHtml(line) + "</span>";
+        }).join("");
+
+        if (showCaret) {
+          markup += '<span class="terminal-caret" aria-hidden="true"></span>';
+        }
+
+        return markup;
+      }
+
+      function setupWaveform() {
+        var waveform = document.querySelector("[data-waveform]");
+        var audio = document.querySelector("[data-demo-audio]");
+        var currentTimeEl = document.querySelector("[data-current-time]");
+        var durationEl = document.querySelector("[data-duration]");
+        if (!waveform || !audio) return;
+
+        var bars = waveformSamples.map(function (sample) {
+          var bar = document.createElement("span");
+          bar.className = "waveform-bar";
+          bar.style.setProperty("--amp", String(sample));
+          waveform.appendChild(bar);
+          return bar;
+        });
+
+        function applyProgress() {
+          var duration = isFinite(audio.duration) ? audio.duration : 0;
+          var currentTime = isFinite(audio.currentTime) ? audio.currentTime : 0;
+          var ratio = duration > 0 ? Math.max(0, Math.min(1, currentTime / duration)) : 0;
+          var playedCount = Math.round(ratio * bars.length);
+          var activeIndex = playedCount > 0 ? Math.min(bars.length - 1, playedCount - 1) : -1;
+
+          bars.forEach(function (bar, index) {
+            bar.classList.toggle("is-played", index < playedCount);
+            bar.classList.toggle("is-active", index === activeIndex);
+          });
+
+          waveform.setAttribute("aria-valuemax", duration > 0 ? String(Math.round(duration)) : "100");
+          waveform.setAttribute("aria-valuenow", duration > 0 ? String(Math.round(currentTime)) : "0");
+          waveform.setAttribute("aria-valuetext", formatTime(currentTime) + " of " + formatTime(duration));
+
+          if (currentTimeEl) currentTimeEl.textContent = formatTime(currentTime);
+          if (durationEl) durationEl.textContent = formatTime(duration);
+        }
+
+        function seekTo(clientX) {
+          var rect = waveform.getBoundingClientRect();
+          if (!rect.width || !isFinite(audio.duration) || audio.duration <= 0) return;
+          var ratio = (clientX - rect.left) / rect.width;
+          var clamped = Math.max(0, Math.min(1, ratio));
+          audio.currentTime = clamped * audio.duration;
+          applyProgress();
+        }
+
+        waveform.addEventListener("click", function (event) {
+          seekTo(event.clientX);
+        });
+
+        waveform.addEventListener("keydown", function (event) {
+          if (!isFinite(audio.duration) || audio.duration <= 0) return;
+          var handled = true;
+          var step = Math.max(1, audio.duration / 20);
+
+          if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+            audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
+          } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+            audio.currentTime = Math.max(0, audio.currentTime - step);
+          } else if (event.key === "Home") {
+            audio.currentTime = 0;
+          } else if (event.key === "End") {
+            audio.currentTime = audio.duration;
+          } else {
+            handled = false;
+          }
+
+          if (handled) {
+            event.preventDefault();
+            applyProgress();
+          }
+        });
+
+        audio.addEventListener("loadedmetadata", applyProgress);
+        audio.addEventListener("timeupdate", applyProgress);
+        audio.addEventListener("play", applyProgress);
+        audio.addEventListener("pause", applyProgress);
+        audio.addEventListener("ended", applyProgress);
+        applyProgress();
+      }
+
+      function animateTerminal(container) {
+        if (!container) return;
+        var source = container.querySelector(".terminal-source code");
+        var output = container.querySelector("[data-terminal-output]");
+        if (!source || !output) return;
+
+        var fullText = source.textContent || "";
+        if (!fullText) return;
+
+        if (reduceMotionQuery.matches) {
+          output.innerHTML = renderTerminalMarkup(fullText, false);
+          container.setAttribute("data-terminal-animated", "true");
+          return;
+        }
+
+        if (container.getAttribute("data-terminal-animated") === "true") return;
+        container.setAttribute("data-terminal-animated", "true");
+
+        var duration = Math.min(2600, Math.max(1300, fullText.length * 10));
+        var startedAt = null;
+
+        function frame(timestamp) {
+          if (startedAt === null) startedAt = timestamp;
+          var elapsed = timestamp - startedAt;
+          var progress = Math.max(0, Math.min(1, elapsed / duration));
+          var visibleChars = Math.floor(fullText.length * progress);
+          output.innerHTML = renderTerminalMarkup(fullText.slice(0, visibleChars), progress < 1);
+
+          if (progress < 1) {
+            window.requestAnimationFrame(frame);
+          } else {
+            output.innerHTML = renderTerminalMarkup(fullText, false);
+          }
+        }
+
+        window.requestAnimationFrame(frame);
+      }
+
+      function setupReveals() {
+        var revealEls = Array.prototype.slice.call(document.querySelectorAll("[data-reveal]"));
+        if (!revealEls.length) return;
+
+        function showReveal(el) {
+          el.classList.add("is-visible");
+          var terminal = el.querySelector("[data-terminal-live]");
+          if (terminal) animateTerminal(terminal);
+        }
+
+        if (reduceMotionQuery.matches || typeof window.IntersectionObserver !== "function") {
+          revealEls.forEach(showReveal);
+          return;
+        }
+
+        var observer = new window.IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            showReveal(entry.target);
+            observer.unobserve(entry.target);
+          });
+        }, {
+          threshold: 0.16,
+          rootMargin: "0px 0px -10% 0px"
+        });
+
+        revealEls.forEach(function (el) {
+          observer.observe(el);
+        });
+      }
+
+      function setupActiveNav() {
+        var sections = Array.prototype.slice.call(document.querySelectorAll("[data-nav-section]"));
+        var links = Array.prototype.slice.call(document.querySelectorAll("[data-nav-link]"));
+        if (!sections.length || !links.length) return;
+
+        function setActive(id) {
+          links.forEach(function (link) {
+            var isActive = link.getAttribute("data-nav-link") === id;
+            link.classList.toggle("is-active", isActive);
+            link.setAttribute("aria-current", isActive ? "true" : "false");
+          });
+        }
+
+        function update() {
+          var marker = window.innerHeight * 0.32;
+          var activeId = sections[0].getAttribute("data-nav-section");
+
+          sections.forEach(function (section) {
+            var rect = section.getBoundingClientRect();
+            if (rect.top <= marker) {
+              activeId = section.getAttribute("data-nav-section");
+            }
+          });
+
+          setActive(activeId);
+        }
+
+        var ticking = false;
+        function requestUpdate() {
+          if (ticking) return;
+          ticking = true;
+          window.requestAnimationFrame(function () {
+            ticking = false;
+            update();
+          });
+        }
+
+        update();
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
       }
 
       document.querySelectorAll(".tab-btn").forEach(function (tab) {
@@ -1434,6 +1997,10 @@ pipx install claw-daw</code></pre>
           }, 1200);
         });
       });
+
+      setupWaveform();
+      setupReveals();
+      setupActiveNav();
     })();
   </script>
 </body>
