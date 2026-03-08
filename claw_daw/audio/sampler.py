@@ -120,9 +120,14 @@ def _render_drums(track: Track, *, project: Project, sample_rate: int) -> Sample
                 _add(L, start_s + i, s)
                 _add(R, start_s + i, s)
         else:
-            # fallback click
-            _add(L, start_s, 0.2 * vel)
-            _add(R, start_s, 0.2 * vel)
+            # fallback transient: short filtered tick instead of a one-sample click.
+            dur = max(4, int(0.006 * sample_rate))
+            for i in range(dur):
+                t = i / sample_rate
+                env = math.exp(-t * 120.0)
+                s = math.sin(2 * math.pi * 2600 * t) * 0.08 * env * vel
+                _add(L, start_s + i, s)
+                _add(R, start_s + i, s)
 
     return SamplerRenderResult(left=L, right=R, sample_rate=sample_rate)
 

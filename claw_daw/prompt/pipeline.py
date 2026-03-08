@@ -133,9 +133,9 @@ def generate_from_prompt(
                     if sub - rest > 6.0:
                         volumes["bass"] = max(60, int(volumes.get("bass", 105)) - 10)
 
-                    # Heuristic 2: overall too quiet → switch to demo preset
+                    # Heuristic 2: overall too quiet → stay on the safer clean preset
                     if full < -30.0:
-                        mastering_preset = "demo"
+                        mastering_preset = "clean"
 
         # Stop early if novelty constraint met (and we at least did one comparison).
         if prev is not None and novelty_ok:

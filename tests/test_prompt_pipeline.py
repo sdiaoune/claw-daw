@@ -60,3 +60,10 @@ def test_generate_from_prompt_writes_script_and_enforces_novelty(tmp_path):
     assert res.script_path.exists()
     txt = res.script_path.read_text(encoding="utf-8")
     assert "new_project" in txt
+
+
+def test_house_prompt_defaults_to_clean_mastering() -> None:
+    b = parse_prompt("house 124bpm")
+    gen = brief_to_script(b, seed=1, out_prefix="house_clean")
+    assert "export_preview_mp3 out/house_clean.preview.mp3 bars=8 start=0:0 preset=clean" in gen.script
+    assert "export_mp3 out/house_clean.mp3 trim=60 preset=clean" in gen.script

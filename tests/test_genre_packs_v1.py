@@ -79,3 +79,12 @@ def test_pack_similarity_changes_across_attempts():
     p1 = _project_from_script(pack.generator(5, 0, None))
     p2 = _project_from_script(pack.generator(5, 1, None))
     assert project_similarity(p1, p2) < 0.999
+
+
+def test_house_and_boom_bap_packs_default_to_clean_mastering() -> None:
+    house = get_pack_v1("house").generator(1, 0, "house_pack")
+    boom_bap = get_pack_v1("boom_bap").generator(1, 0, "boom_bap_pack")
+    assert "export_preview_mp3 out/house_pack.preview.mp3 bars=8 start=0:0 preset=clean" in house
+    assert "export_mp3 out/house_pack.mp3 trim=60 preset=clean" in house
+    assert "export_preview_mp3 out/boom_bap_pack.preview.mp3 bars=8 start=0:0 preset=clean" in boom_bap
+    assert "export_mp3 out/boom_bap_pack.mp3 trim=60 preset=clean" in boom_bap

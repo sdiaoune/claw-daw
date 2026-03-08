@@ -82,7 +82,8 @@ claw-daw quality out/my_song.json --out my_song \
   --soundfont /usr/share/sounds/sf2/default-GM.sf2 \
   --preset edm_streaming --section-gain
 ```
-This runs mix prepare -> mix spec validate -> preview gate -> full export -> master gate -> stem/bus gate.
+This runs mix prepare -> mix spec validate -> preview gate -> preview sanity gate -> full export -> master gate -> master sanity gate -> stem/bus gate.
+It is the safest default for shipping a clean render.
 
 ## Sound engineering helpers (headless scripts)
 
@@ -118,8 +119,8 @@ meter_audio out/my_song.mp3 out/my_song.meter.json
 
 - Use a mix spec (track EQ/comp/gate/expander/saturation/stereo tools, transient, sends/returns, sidechain, bus/master mono-maker) during export:
 ```txt
-export_wav out/my_song.wav preset=demo mix=tools/mix.json
-export_mp3 out/my_song.mp3 preset=demo mix=tools/mix.json
+export_wav out/my_song.wav preset=clean mix=tools/mix.json
+export_mp3 out/my_song.mp3 preset=clean mix=tools/mix.json
 export_flp out/my_song mix=tools/mix.json preset=clean
 ```
 
@@ -136,3 +137,12 @@ transient track=0 attack=0.25 sustain=-0.10
 ```bash
 claw-daw doctor --audio out/my_song.mp3  # includes LUFS (integrated+short-term), true peak, balance/tilt + mix sanity warnings
 ```
+
+Use `claw-daw doctor --audio` as the fast artifact check after export. It is meant to flag:
+- broadband hiss / white-noise or pink-noise-like beds
+- low-end rumble and DC offset
+- hot or clipped transient behavior
+
+Clean-export rule of thumb:
+- `preset=clean` is the default choice unless the brief explicitly asks for `lofi`, hiss, vinyl, crackle, or other texture-heavy artifacts
+- if you need intentional texture, make that a conscious preset/instrument choice and still run doctor + quality gates

@@ -41,3 +41,21 @@ def test_mix_sanity_detects_hot_peaks(tmp_path: Path) -> None:
     s = analyze_mix_sanity(str(wav))
     assert s.metrics["max_dbfs"] >= -1.0
     assert any("peaks" in r for r in s.reasons)
+
+
+def test_mix_sanity_detects_broadband_hiss(tmp_path: Path) -> None:
+    wav = tmp_path / "hiss.wav"
+    _ffmpeg_make("anoisesrc=color=white:sample_rate=44100:duration=1.5,highpass=f=5000,volume=0.55", wav)
+
+    s = analyze_mix_sanity(str(wav))
+    assert s.score < 0.60
+    assert any("hiss" in r for r in s.reasons)
+
+
+def test_mix_sanity_detects_low_end_rumble(tmp_path: Path) -> None:
+    wav = tmp_path / "rumble.wav"
+    _ffmpeg_make("anoisesrc=color=pink:sample_rate=44100:duration=1.5,lowpass=f=45,volume=0.8", wav)
+
+    s = analyze_mix_sanity(str(wav))
+    assert s.score < 0.60
+    assert any("rumble" in r for r in s.reasons)

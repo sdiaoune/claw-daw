@@ -2,10 +2,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from claw_daw.audio.spectrogram import band_energy_report
 from claw_daw.cli.headless import HeadlessRunner
+from claw_daw.instruments.registry import get_instrument
 from claw_daw.instruments.registry import list_instruments
 from claw_daw.io.project_json import load_project, save_project
-from claw_daw.model.types import InstrumentSpec, Project, Track
+from claw_daw.model.types import InstrumentSpec, Note, Project, Track
 
 
 def test_instrument_registry_lists_expected_ids() -> None:
@@ -49,3 +51,27 @@ def test_headless_set_instrument_clears_sampler() -> None:
     assert t.sampler is None
     assert t.instrument is not None
     assert t.instrument.id == "pluck.karplus"
+
+
+def test_noise_pad_defaults_are_cleaner_than_explicit_hiss(tmp_path: Path) -> None:
+    inst = get_instrument("noise.pad")
+    assert inst is not None
+
+    p = Project(name="pad", tempo_bpm=120)
+    t = Track(name="Pad", channel=0)
+    t.instrument = InstrumentSpec(id="noise.pad", preset="air_pad", seed=7)
+    t.notes = [Note(start=0, duration=1920, pitch=60, velocity=100)]
+    p.tracks.append(t)
+
+    clean_wav = tmp_path / "air.wav"
+    inst.render(p, 0, t.notes, str(clean_wav), 44100)
+    clean_rep = band_energy_report(str(clean_wav))
+
+    t.instrument = InstrumentSpec(id="noise.pad", preset="vinyl_hiss_pad", seed=7)
+    hiss_wav = tmp_path / "hiss.wav"
+    inst.render(p, 0, t.notes, str(hiss_wav), 44100)
+    hiss_rep = band_energy_report(str(hiss_wav))
+
+    clean_high = float(clean_rep["high_ge4k"]["mean_volume"])
+    hiss_high = float(hiss_rep["high_ge4k"]["mean_volume"])
+    assert clean_high < hiss_high - 3.0

@@ -73,7 +73,7 @@ def _autofix_for_mix_sanity(spec: BeatSpec, sanity: MixSanity | None, attempt: i
     if silence >= 0.50 or mean_db < -40.0:
         knobs["drum_density"] = min(1.0, float(knobs.get("drum_density", 0.8)) + 0.10)
         knobs["lead_density"] = min(1.0, float(knobs.get("lead_density", 0.4)) + 0.10)
-        knobs["mastering_preset"] = "demo"
+        knobs["mastering_preset"] = "clean"
 
     # Too hot / near clipping? Back off brightness and choose the safer preset.
     if max_db >= -1.0 or mean_db > -10.0:
@@ -84,8 +84,7 @@ def _autofix_for_mix_sanity(spec: BeatSpec, sanity: MixSanity | None, attempt: i
     # If harsh highs, thin leads a bit and optionally switch to "lofi" later.
     if any("highs dominate" in r for r in sanity.reasons):
         knobs["lead_density"] = max(0.05, float(knobs.get("lead_density", 0.4)) - 0.10)
-        if attempt >= 1:
-            knobs["mastering_preset"] = str(knobs.get("mastering_preset") or "lofi")
+        knobs["mastering_preset"] = "clean"
 
     # If boomy lows, nudge drum density down slightly (often kick/808).
     if any("lows dominate" in r for r in sanity.reasons):

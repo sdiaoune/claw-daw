@@ -9,6 +9,7 @@ from claw_daw.instruments.base import (
     apply_limiter,
     clamp,
     limit_polyphony,
+    midi_to_hz,
     param_float,
     param_int,
     softclip,
@@ -21,10 +22,10 @@ class NoisePadInstrument(InstrumentBase):
 
     def presets(self) -> dict[str, dict[str, float | str]]:
         return {
-            "default": {"attack": 0.6, "decay": 0.6, "sustain": 0.7, "release": 0.8, "tone": 0.4, "drive": 1.05, "width": 0.9, "polyphony": 6},
-            "air_pad": {"attack": 0.7, "decay": 0.6, "sustain": 0.75, "release": 0.9, "tone": 0.55, "drive": 1.0, "width": 1.0, "polyphony": 6},
-            "vinyl_hiss_pad": {"attack": 0.2, "decay": 0.5, "sustain": 0.5, "release": 0.7, "tone": 0.25, "drive": 1.1, "width": 0.8, "polyphony": 6},
-            "dark_wind": {"attack": 0.9, "decay": 0.7, "sustain": 0.6, "release": 1.1, "tone": 0.2, "drive": 1.05, "width": 1.1, "polyphony": 5},
+            "default": {"attack": 0.6, "decay": 0.6, "sustain": 0.7, "release": 0.8, "tone": 0.35, "drive": 1.02, "width": 0.9, "polyphony": 6, "texture": 0.16},
+            "air_pad": {"attack": 0.7, "decay": 0.6, "sustain": 0.75, "release": 0.9, "tone": 0.42, "drive": 1.0, "width": 1.0, "polyphony": 6, "texture": 0.12},
+            "vinyl_hiss_pad": {"attack": 0.2, "decay": 0.5, "sustain": 0.5, "release": 0.7, "tone": 0.25, "drive": 1.05, "width": 0.8, "polyphony": 6, "texture": 0.85},
+            "dark_wind": {"attack": 0.9, "decay": 0.7, "sustain": 0.6, "release": 1.1, "tone": 0.18, "drive": 1.03, "width": 1.1, "polyphony": 5, "texture": 0.22},
         }
 
     def render(self, project: Project, track_index: int, notes: list[Note], out_wav: str, sr: int) -> None:
@@ -38,6 +39,7 @@ class NoisePadInstrument(InstrumentBase):
         tone = clamp(param_float(params, "tone", 0.4, 0.0, 1.0), 0.0, 1.0)
         drive = max(0.5, param_float(params, "drive", 1.05, 0.1, 3.0))
         width = clamp(param_float(params, "width", 0.9, 0.0, 1.5), 0.0, 1.5)
+        texture = clamp(param_float(params, "texture", 0.16, 0.0, 1.0), 0.0, 1.0)
         max_poly = param_int(params, "polyphony", 6, 1, 12)
 
         notes = limit_polyphony(notes, max_poly)
@@ -53,7 +55,7 @@ class NoisePadInstrument(InstrumentBase):
         right: list[float] = [0.0] * total_samps
 
         base_seed = int(spec.seed) + int(track_index) * 9176
-        cutoff = 200.0 + (tone**2) * 9000.0
+        cutoff = 160.0 + (tone**2) * 5200.0
         cutoff = clamp(cutoff, 120.0, sr * 0.45)
         alpha = min(1.0, 2.0 * math.pi * cutoff / sr)
 
@@ -77,6 +79,12 @@ class NoisePadInstrument(InstrumentBase):
             rng_r = self._note_rng(base_seed + 29, n)
             lp_l = 0.0
             lp_r = 0.0
+            phase_l = rng.random() * 2.0 * math.pi
+            phase_r = rng.random() * 2.0 * math.pi
+            f0 = midi_to_hz(n.pitch)
+            detune = 2.0 ** ((width * 4.0) / 1200.0) if width > 0 else 1.0
+            inc_l = 2.0 * math.pi * f0 / sr
+            inc_r = 2.0 * math.pi * f0 * detune / sr
 
             for i in range(total):
                 if i < atk_s:
@@ -98,8 +106,18 @@ class NoisePadInstrument(InstrumentBase):
                 lp_l = lp_l + alpha * (s_l - lp_l)
                 lp_r = lp_r + alpha * (s_r - lp_r)
 
-                s_l = softclip(lp_l, drive=drive) * env * vel * 0.5
-                s_r = softclip(lp_r, drive=drive) * env * vel * 0.5
+                phase_l += inc_l
+                phase_r += inc_r
+                tone_l = math.sin(phase_l) + 0.28 * math.sin(phase_l * 2.0)
+                tone_r = math.sin(phase_r) + 0.28 * math.sin(phase_r * 2.0)
+
+                noise_mix = texture
+                tonal_mix = max(0.15, 1.0 - noise_mix)
+                raw_l = tone_l * tonal_mix * 0.85 + lp_l * noise_mix * 0.35
+                raw_r = tone_r * tonal_mix * 0.85 + lp_r * noise_mix * 0.35
+
+                s_l = softclip(raw_l, drive=drive) * env * vel * 0.55
+                s_r = softclip(raw_r, drive=drive) * env * vel * 0.55
 
                 idx = start_s + i
                 if idx >= total_samps:

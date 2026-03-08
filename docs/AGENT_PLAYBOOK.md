@@ -29,8 +29,9 @@ These are the building blocks that make agent workflows fast, repeatable, and re
    - See “Acceptance tests” below.
 
 6) **Sound engineering (mix spec + metering)** — deterministic EQ/dynamics/sidechain/sends and measurable loudness checks.
-   - Use `mix=tools/mix.json` on `export_wav/export_mp3` when the user requests mixing/mastering help.
-   - Use `meter_audio` to write LUFS/true-peak/crest/correlation stats for QA.
+  - Use `mix=tools/mix.json` on `export_wav/export_mp3` when the user requests mixing/mastering help.
+  - Use `meter_audio` to write LUFS/true-peak/crest/correlation stats for QA.
+  - Use `claw-daw doctor --audio` to catch obvious hiss, rumble, DC offset, and clipped/transient artifacts.
 
 ---
 
@@ -128,6 +129,8 @@ A reliable agent workflow is boring on purpose:
 - [ ] **Preview fast**: render 8–16 bars (`export_preview_mp3`) before full render
   - sanity-check **0:00–0:10 drums** specifically (kick/snare/hats should sound like drums; no crackle/noise)
   - sanity-check **bass translation** (audible fundamental or harmonics; not swallowed by chords)
+  - listen for broadband hiss, pink-noise-like beds, clicks, pops, zipper noise, harsh transient spikes, metallic whine, and low-end rumble
+  - stop if you hear hanging notes or unintended reverb/delay tails after the phrase ends
   - If you hear crackle/noise: switch drums to **GM drum channel 10**.
   - Note: exports now default to the safe path (sampler drums are converted to GM channel 10 unless you explicitly opt in).
 - [ ] **Apply the 6 features when useful**:
@@ -140,8 +143,18 @@ A reliable agent workflow is boring on purpose:
 - [ ] **Export artifacts**: JSON + MIDI + MP3 (and stems if requested)
 - [ ] **Run gated workflow before shipping**: `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain`
 - [ ] **Meter the final audio** (optional but recommended for agent QA): `meter_audio out/<name>.mp3 out/<name>.meter.json`
+- [ ] **Run artifact QA**: `claw-daw doctor --audio out/<name>.mp3`
 - [ ] **Repro notes**: claw-daw version + SoundFont path + any seeds
 - [ ] **Revision rule**: never overwrite—bump `_v2/_v3` and include a changelog
+
+### Clean render defaults
+
+Assume the user wants a clean export unless they explicitly ask for texture.
+
+- Use `preset=clean` for headless exports unless the brief explicitly asks for `lofi` or another texture-heavy finish
+- Treat hiss, vinyl noise, dusty crackle, distortion, grit, and deliberate noise beds as opt-in creative choices
+- Do not leave accidental artifacts in place just because they sound “vibey” on one playback system
+- If you intentionally add noise/lo-fi texture, note it clearly in the changelog and keep it scoped to the brief
 
 ---
 
@@ -284,6 +297,9 @@ These aren’t “art”—they’re guardrails. Use them as a final checklist b
 - **No broken renders**: `claw-daw --headless ...` completes cleanly and outputs JSON+MIDI+MP3.
 - **Variation**: something changes every 4–8 bars (dropouts, fills, hat language, bass turnaround, motif swap).
 - **Low end discipline**: kick and bass don’t fight (intentional gaps or alternating hits).
+- **Clean output**: no broadband hiss, white-noise/pink-noise bed, clicks, pops, crackle, clipping, digital distortion, harsh zippering, or metallic aliasing unless explicitly requested.
+- **Tail discipline**: no hanging notes, DC offset, unintended reverb tails, unintended delay repeats, or low-end rumble after the musical ending.
+- **QA passes**: `claw-daw quality ...` succeeds and `claw-daw doctor --audio out/<name>.mp3` does not report serious artifact warnings.
 
 ### Trap / modern hiphop (general)
 - half-time backbeat is present (snare/clap on 3)
@@ -317,4 +333,5 @@ These aren’t “art”—they’re guardrails. Use them as a final checklist b
 Before sending:
 - confirm all `out/<name>.*` files exist
 - confirm BPM/key/sections match the brief
+- confirm the final export is clean by ear and by QA (`claw-daw doctor --audio`)
 - include a short “what changed” summary if it’s v2+.

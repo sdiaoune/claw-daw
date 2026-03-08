@@ -98,6 +98,21 @@ claw-daw --soundfont /path/to/your.sf2
 
 Tip: run `claw-daw paths --soundfont` to see common locations on your OS.
 
+## Clean audio defaults and artifact policy
+
+claw-daw now assumes you want a clean render unless the brief explicitly asks for noise or lo-fi texture.
+
+- Default export/mastering path: `preset=clean`
+- Default preview path: clean preview first, then add texture only if requested
+- Noise-heavy pads, hiss, vinyl beds, dusty crackle, and deliberate distortion are opt-in creative choices
+- If you want lo-fi texture, ask for it explicitly via the brief, style, preset, or instrument settings
+
+For normal exports, reject renders that contain any of these by accident:
+- broadband hiss, white noise, or pink-noise-like beds
+- clicks, pops, crackle, clipping, or digital breakup
+- harsh transient spikes, zipper noise, metallic aliasing-like whine
+- low-end rumble, DC offset, hanging notes, or unintended reverb/delay tails
+
 ---
 
 ## Running the TUI
@@ -184,6 +199,8 @@ It supports:
 - style presets (tempo/swing/density/mastering defaults)
 - novelty constraints via project similarity scoring
 - optional closed-loop preview → analyze → auto-tune iteration
+
+Unless the brief explicitly asks for lo-fi texture, prompt/pack/stylepack flows now bias toward clean mastering defaults.
 
 Generate a script (no audio render):
 
@@ -314,11 +331,11 @@ Styles: `hiphop|lofi|house`
 
 ### Export
 - `export_midi <path>`
-- `export_wav [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 mix=tools/mix.json` (use `-` to stream WAV to stdout)
-- `export_mp3 [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream MP3 to stdout)
-- `export_m4a [path|"-"] preset=demo|clean|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
+- `export_wav [path|"-"] preset=clean|demo|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 mix=tools/mix.json` (use `-` to stream WAV to stdout)
+- `export_mp3 [path|"-"] preset=clean|demo|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream MP3 to stdout)
+- `export_m4a [path|"-"] preset=clean|demo|lofi|punchy|file:/path/to/afilter.txt fade=0.15 trim=60 sr=44100 br=192k mix=tools/mix.json` (use `-` to stream M4A to stdout)
 - `export_flp <path|prefix> preset=clean mix=tools/mix.json quality_preset=edm_streaming` (macOS only; creates `<name>.flp` plus `<name>.flp.assets/`)
-- `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=demo|clean|lofi sr=44100 br=192k`
+- `export_preview_mp3 <path|"-"] bars=<n> start=<bar:beat> preset=clean|demo|lofi sr=44100 br=192k`
 - `analyze_audio <in_audio> <out.json>`
 - `meter_audio <in_audio> <out.json> spectral=1` (LUFS integrated + short-term, true-peak, crest/DC offset, stereo correlation + balance, spectral tilt)
 - `export_stems <dir>`
@@ -331,6 +348,7 @@ Notes:
 - `fade` applies an end fade.
 - `mix=` is optional; when set, claw-daw renders track stems and mixes them with deterministic audio FX (EQ/dynamics/sends/sidechain).
 - Mastering is intentionally light and deterministic.
+- `preset=clean` is the safe default for normal delivery. Use `lofi` only when the brief explicitly calls for texture.
 - `export_package` meters the mastered WAV for true-peak accuracy (MP3 can overshoot).
 - `export_flp` writes `track_XX_<name>.wav` stems plus `master_ref.wav` in a sibling assets folder, then asks the local FL Studio app to save a `.flp` from the exported MIDI.
 - `export_flp` currently requires macOS + FL Studio + Accessibility access for `osascript`/System Events.
@@ -349,6 +367,36 @@ If you pass `mix=<path>` to `export_wav` / `export_mp3` / `export_m4a`, claw-daw
 - optionally apply sidechain + sends/returns
 
 This is designed for agent workflows (repeatable, diffable config), not as a full DAW replacement.
+
+### Quality workflow and artifact QA
+
+For release-ready exports, use the quality workflow:
+
+```bash
+claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain
+```
+
+This now runs both the normal loudness/stem gates and audio sanity checks that are meant to catch common accidental artifacts such as hiss, rumble, DC offset, and clipped transient behavior.
+
+For fast QA on any finished file:
+
+```bash
+claw-daw doctor --audio out/<name>.mp3
+```
+
+Use it to investigate:
+- broadband hiss or white-noise / pink-noise-like beds
+- clicks, pops, crackle, clipping, or digital distortion
+- harsh transients, zipper noise, or metallic whine
+- low-end rumble and DC offset
+
+Acceptance criteria for a clean export:
+- preview gate passes
+- master gate passes
+- stem/bus gate passes
+- `claw-daw doctor --audio` reports no serious artifact warnings
+- no audible hanging notes or unintended reverb/delay tails after the ending
+- no accidental noise floor or lo-fi texture unless explicitly requested
 
 ### Minimal `mix.json` example
 
@@ -431,6 +479,7 @@ Notes:
 - Best results come from role-based drum notes (`kick`, `snare`, `hh`, `oh`, `clap`, etc).
 - Exports that use a render region keep sample pack + instrument metadata intact. If drums disappear
   in an older build, upgrade and/or clear the render region.
+- If drums sound like crackle, harsh clicks, or white-noise bursts, switch to the safe GM-drum path and preview again before final export.
 
 This is meant for:
 - drum hits: kick/snare/hat/percs

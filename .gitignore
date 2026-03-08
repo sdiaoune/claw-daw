@@ -6,6 +6,7 @@ __pycache__/
 # Virtualenv
 .venv/
 venv/
+node_modules/
 
 # Audio / renders / assets
 out/
@@ -16,6 +17,14 @@ spectrograms/
 *.wav
 *.mp3
 *.m4a
+
+# Local video workspace outputs (DO NOT COMMIT)
+video/remotion/public/generated-media/*
+!video/remotion/public/generated-media/.gitkeep
+video/remotion/renders/*
+!video/remotion/renders/.gitkeep
+*.mp4
+*.mov
 
 # Local soundfonts / large binaries
 soundfonts/

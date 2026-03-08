@@ -18,6 +18,28 @@ from claw_daw.instruments.base import (
 from claw_daw.model.types import Note, Project
 
 
+def _bandlimited_saw(phase: float, harmonics: int) -> float:
+    if harmonics <= 0:
+        return math.sin(phase)
+    out = 0.0
+    for h in range(1, harmonics + 1):
+        out += math.sin(h * phase) / h
+    return max(-1.0, min(1.0, (-2.0 / math.pi) * out))
+
+
+def _bandlimited_square(phase: float, harmonics: int) -> float:
+    if harmonics <= 0:
+        return math.sin(phase)
+    out = 0.0
+    odd_count = 0
+    for h in range(1, harmonics + 1, 2):
+        out += math.sin(h * phase) / h
+        odd_count += 1
+    if odd_count <= 0:
+        return math.sin(phase)
+    return max(-1.0, min(1.0, (4.0 / math.pi) * out))
+
+
 class SynthBasicInstrument(InstrumentBase):
     id = "synth.basic"
 
@@ -83,6 +105,8 @@ class SynthBasicInstrument(InstrumentBase):
             f0 = midi_to_hz(n.pitch)
             inc_l = 2.0 * math.pi * f0 / sr
             inc_r = 2.0 * math.pi * f0 * detune / sr
+            harm_l = max(1, min(24, int((sr * 0.45) / max(1.0, f0))))
+            harm_r = max(1, min(24, int((sr * 0.45) / max(1.0, f0 * detune))))
 
             cutoff = params.get("cutoff_hz", params.get("cutoff", None))
             if cutoff is None:
@@ -113,11 +137,11 @@ class SynthBasicInstrument(InstrumentBase):
                     s_l = math.sin(phase_l)
                     s_r = math.sin(phase_r)
                 elif wave == "square":
-                    s_l = 1.0 if math.sin(phase_l) >= 0 else -1.0
-                    s_r = 1.0 if math.sin(phase_r) >= 0 else -1.0
+                    s_l = _bandlimited_square(phase_l, harm_l)
+                    s_r = _bandlimited_square(phase_r, harm_r)
                 else:
-                    s_l = 2.0 * (phase_l / (2.0 * math.pi) - math.floor(phase_l / (2.0 * math.pi) + 0.5))
-                    s_r = 2.0 * (phase_r / (2.0 * math.pi) - math.floor(phase_r / (2.0 * math.pi) + 0.5))
+                    s_l = _bandlimited_saw(phase_l, harm_l)
+                    s_r = _bandlimited_saw(phase_r, harm_r)
 
                 lp_l = lp_l + alpha * (s_l - lp_l)
                 lp_r = lp_r + alpha * (s_r - lp_r)

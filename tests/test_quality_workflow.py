@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 from claw_daw.io.project_json import save_project
 from claw_daw.model.types import Project, Track
-from claw_daw.quality_workflow import prepare_mix_spec, validate_mix_spec
+from claw_daw.quality_workflow import gate_mix_sanity_file, prepare_mix_spec, validate_mix_spec
 
 
 def _make_project() -> Project:
@@ -75,3 +76,27 @@ def test_validate_mix_spec_fails_for_missing_sidechain(tmp_path: Path) -> None:
     ok, checks = validate_mix_spec(str(proj_path), str(mix_path))
     assert ok is False
     assert any("sidechain kick->bass missing" in c for c in checks)
+
+
+def test_gate_mix_sanity_file_fails_hissy_render(tmp_path: Path) -> None:
+    wav = tmp_path / "hiss.wav"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-y",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-f",
+            "lavfi",
+            "-i",
+            "anoisesrc=color=white:sample_rate=44100:duration=1.5,highpass=f=5000,volume=0.55",
+            str(wav),
+        ],
+        check=True,
+    )
+
+    ok, checks, sanity = gate_mix_sanity_file(str(wav))
+    assert ok is False
+    assert sanity["score"] < 0.60
+    assert any("hiss" in line for line in checks)

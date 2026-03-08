@@ -353,7 +353,7 @@ def _init() -> dict[PackName, GenrePackV1]:
             bpm_default=124,
             swing_percent=0,
             roles=["drums", "bass", "keys"],
-            mastering_preset="demo",
+            mastering_preset="clean",
             generator=_gen_house,
         ),
         "boom_bap": GenrePackV1(
@@ -364,7 +364,7 @@ def _init() -> dict[PackName, GenrePackV1]:
             bpm_default=90,
             swing_percent=18,
             roles=["drums", "bass", "keys"],
-            mastering_preset="lofi",
+            mastering_preset="clean",
             generator=_gen_boom_bap,
         ),
     }

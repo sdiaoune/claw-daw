@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from claw_daw.audio.metering import analyze_metering
+from claw_daw.audio.sanity import analyze_mix_sanity
 from claw_daw.cli.headless import HeadlessRunner
 from claw_daw.io.project_json import load_project, save_project
 from claw_daw.model.types import Project
@@ -429,6 +430,19 @@ def gate_master_meter(
     return all(ok for _, ok, _ in checks), out
 
 
+def gate_mix_sanity_file(
+    in_audio: str,
+    *,
+    min_score: float = 0.60,
+) -> tuple[bool, list[str], dict[str, Any]]:
+    sanity = analyze_mix_sanity(in_audio)
+    ok = float(sanity.score) >= float(min_score)
+    lines = [f"{'PASS' if ok else 'FAIL'} mix_sanity score={sanity.score:.2f} (>= {min_score:.2f})"]
+    for reason in sanity.reasons:
+        lines.append(f"- {reason}")
+    return ok, lines, sanity.to_dict()
+
+
 def _role_from_filename(name: str) -> str:
     base = name.lower().replace(".wav", "")
     base = base.split("_", 1)[1] if "_" in base and base.split("_", 1)[0].isdigit() else base
@@ -598,6 +612,11 @@ def run_quality_workflow(
         if not ok:
             raise QualityWorkflowError({**report, "error": "preview_gate failed"})
 
+        ok, checks, sanity = gate_mix_sanity_file(str(preview_wav))
+        report["steps"].append({"step": "preview_mix_sanity", "ok": ok, "checks": checks, "sanity": sanity, "audio": str(preview_wav)})
+        if not ok:
+            raise QualityWorkflowError({**report, "error": "preview_mix_sanity failed"})
+
         _run_headless_lines(
             [
                 f"open_project {project_path}",
@@ -613,6 +632,12 @@ def run_quality_workflow(
         report["steps"].append({"step": "mix_gate", "ok": ok, "checks": checks, "meter": str(master_meter)})
         if not ok:
             raise QualityWorkflowError({**report, "error": "mix_gate failed"})
+
+        master_wav = out_dir_path / f"{out_name}.wav"
+        ok, checks, sanity = gate_mix_sanity_file(str(master_wav))
+        report["steps"].append({"step": "master_mix_sanity", "ok": ok, "checks": checks, "sanity": sanity, "audio": str(master_wav)})
+        if not ok:
+            raise QualityWorkflowError({**report, "error": "master_mix_sanity failed"})
 
         stem_dir = out_dir_path / f"{out_name}_stems"
         bus_dir = out_dir_path / f"{out_name}_busses"

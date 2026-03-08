@@ -162,7 +162,7 @@ class HeadlessRunner:
             rewritten: list[str] = []
             for ln in script.splitlines():
                 if ln.strip().startswith("export_mp3 "):
-                    rewritten.append(f"export_mp3 {out_prefix}.mp3 trim=60 preset=demo fade=0.15")
+                    rewritten.append(f"export_mp3 {out_prefix}.mp3 trim=60 preset=clean fade=0.15")
                 elif ln.strip().startswith("export_midi "):
                     rewritten.append(f"export_midi {out_prefix}.mid")
                 elif ln.strip().startswith("save_project "):
@@ -1299,7 +1299,7 @@ class HeadlessRunner:
             return
 
         if cmd == "export_wav":
-            # export_wav [path|"-"] [preset=demo] [fade=0.15] [sr=44100] [trim=60]
+            # export_wav [path|"-"] [preset=clean] [fade=0.15] [sr=44100] [trim=60]
             # Use "-" to stream WAV bytes to stdout.
             if self.dry_run:
                 return
@@ -1308,7 +1308,7 @@ class HeadlessRunner:
                 raise RuntimeError("soundfont not set for headless export_wav")
 
             out_wav = args[0] if args and not args[0].startswith("preset=") else _default_export_path(proj, "wav")
-            preset = "demo"
+            preset = "clean"
             fade = 0.0
             sr = 44100
             trim = None
@@ -1371,7 +1371,7 @@ class HeadlessRunner:
             return
 
         if cmd == "export_preview_mp3":
-            # export_preview_mp3 <out.mp3|"-"] bars=<n> start=<bar:beat> [preset=demo] [sr=44100] [br=192k]
+            # export_preview_mp3 <out.mp3|"-"] bars=<n> start=<bar:beat> [preset=clean] [sr=44100] [br=192k]
             # Convenience for agent loops.
             if self.dry_run:
                 return
@@ -1384,7 +1384,7 @@ class HeadlessRunner:
             start_tick = 0
             sr = 44100
             br = "192k"
-            preset = "demo"
+            preset = "clean"
             for a in args[1:]:
                 if a.startswith("bars="):
                     bars = int(a.split("=", 1)[1])
@@ -1403,7 +1403,7 @@ class HeadlessRunner:
             tmp_wav = Path(_default_export_path(proj, "wav")).with_suffix(".preview.tmp.wav")
             render_project_wav(render_proj, soundfont=sf, out_wav=str(tmp_wav), sample_rate=sr)
             norm = tmp_wav.with_suffix(".master.wav")
-            mastered = master_wav(str(tmp_wav), str(norm), sample_rate=sr, trim_seconds=None, preset=preset, fade_in_seconds=0.0, fade_out_seconds=0.0)
+            mastered = master_wav(str(tmp_wav), str(norm), sample_rate=sr, trim_seconds=None, preset=preset, fade_in_seconds=0.003, fade_out_seconds=0.01)
             encode_audio(str(mastered), out_mp3, trim_seconds=None, sample_rate=sr, codec="mp3", bitrate=br)
             Path(tmp_wav).unlink(missing_ok=True)
             Path(mastered).unlink(missing_ok=True)
@@ -1507,7 +1507,7 @@ class HeadlessRunner:
             return
 
         if cmd == "export_mp3":
-            # export_mp3 [out.mp3|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15] [mix=tools/mix.json]
+            # export_mp3 [out.mp3|"-"] [trim=60] [sr=44100] [br=192k] [preset=clean] [fade=0.15] [mix=tools/mix.json]
             # Use "-" to stream MP3 bytes to stdout.
             if self.dry_run:
                 return
@@ -1519,7 +1519,7 @@ class HeadlessRunner:
             sr = 44100
             trim = None
             br = "192k"
-            preset = "demo"
+            preset = "clean"
             fade = 0.0
             mix_path: str | None = None
             rest = args[1:] if out_mp3 == args[0] else args
@@ -1547,7 +1547,7 @@ class HeadlessRunner:
             return
 
         if cmd == "export_m4a":
-            # export_m4a [out.m4a|"-"] [trim=60] [sr=44100] [br=192k] [preset=demo] [fade=0.15] [mix=tools/mix.json]
+            # export_m4a [out.m4a|"-"] [trim=60] [sr=44100] [br=192k] [preset=clean] [fade=0.15] [mix=tools/mix.json]
             # Use "-" to stream M4A bytes to stdout.
             if self.dry_run:
                 return
@@ -1559,7 +1559,7 @@ class HeadlessRunner:
             sr = 44100
             trim = None
             br = "192k"
-            preset = "demo"
+            preset = "clean"
             fade = 0.0
             mix_path: str | None = None
             rest = args[1:] if out_m4a == args[0] else args

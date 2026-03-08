@@ -4,6 +4,7 @@ import json
 import subprocess
 from dataclasses import dataclass
 
+from claw_daw.audio.metering import measure_astats
 from claw_daw.audio.spectrogram import band_energy_report
 
 
@@ -121,6 +122,10 @@ def analyze_mix_sanity(in_audio: str) -> MixSanity:
     low = float(rep.get("low_90_200", {}).get("mean_volume", 0.0))
     mid = float(rep.get("mid_200_4k", {}).get("mean_volume", 0.0))
     high = float(rep.get("high_ge4k", {}).get("mean_volume", 0.0))
+    sub = float(rep.get("sub_lt90", {}).get("mean_volume", 0.0))
+    astats = measure_astats(in_audio) or {}
+    dc_offset = float(astats.get("dc_offset", 0.0) or 0.0)
+    crest_factor_db = float(astats.get("crest_factor_db", 0.0) or 0.0)
 
     penalties: list[tuple[float, str]] = []
 
@@ -147,14 +152,26 @@ def analyze_mix_sanity(in_audio: str) -> MixSanity:
     # Coarse balance warnings (volumes are negative; closer to 0 is louder).
     if mid != 0.0 and high != 0.0:
         high_minus_mid = high - mid
+        if high_minus_mid > 4.0 and high > -28.0:
+            penalties.append((0.25, f"highs dominate mids / broadband hiss risk (high-mid={high_minus_mid:.1f}dB)"))
         if high_minus_mid > 6.0:
             penalties.append((0.15, f"highs dominate mids (high-mid={high_minus_mid:.1f}dB)"))
     if mid != 0.0 and low != 0.0:
         low_minus_mid = low - mid
         if low_minus_mid > 7.0:
-            penalties.append((0.15, f"lows dominate mids (low-mid={low_minus_mid:.1f}dB)"))
+            penalties.append((0.22, f"lows dominate mids / low-end rumble risk (low-mid={low_minus_mid:.1f}dB)"))
         if low_minus_mid < -10.0:
             penalties.append((0.10, f"thin low end (low-mid={low_minus_mid:.1f}dB)"))
+    if low != 0.0 and sub != 0.0:
+        sub_minus_low = sub - low
+        if sub_minus_low > 5.0 and sub > -30.0:
+            penalties.append((0.20, f"sub dominates low band / rumble risk (sub-low={sub_minus_low:.1f}dB)"))
+
+    if abs(dc_offset) > 0.01:
+        penalties.append((0.15, f"dc offset present ({dc_offset:.4f})"))
+
+    if max_db >= -0.5 and 0.0 < crest_factor_db < 4.5:
+        penalties.append((0.15, f"harsh clipped transients risk (crest={crest_factor_db:.1f}dB)"))
 
     penalty = sum(p for p, _ in penalties)
     score = max(0.0, min(1.0, 1.0 - penalty))
@@ -166,6 +183,9 @@ def analyze_mix_sanity(in_audio: str) -> MixSanity:
         "low_mean_dbfs": low,
         "mid_mean_dbfs": mid,
         "high_mean_dbfs": high,
+        "sub_mean_dbfs": sub,
+        "dc_offset": float(dc_offset),
+        "crest_factor_db": float(crest_factor_db),
     }
 
     return MixSanity(score=score, reasons=[r for _, r in penalties], metrics=metrics, bands=rep)

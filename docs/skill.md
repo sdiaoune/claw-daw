@@ -20,6 +20,11 @@ The user is prompting the *agent*, not claw-daw.
 
 ## Skill Changelog
 
+### Unreleased
+- Clean exports are now the default for prompt, pack, stylepack, headless preview, and package export paths.
+- Added audio sanity gates to the quality workflow so preview and master renders fail closed on obvious hiss, rumble, DC offset, and clipped/transient artifacts.
+- Tightened guidance for avoiding broadband noise, clicks/pops, harsh transients, aliasing-like whine, low-end rumble, hanging notes, and unintended tails.
+
 ### 0.2.1 (2026-02-06)
 - Synced quality workflow guidance with repo refactor (`claw-daw quality ...`).
 - Updated `export_package` examples to use `<name>` prefix form.
@@ -154,10 +159,16 @@ Seed behavior for generators:
 - Full export + metering: `export_package <name> preset=clean mix=tools/<name>.mix.json stems=1 busses=1 meter=1`
 - Master gate: `python3 tools/mix_gate.py out/<name>.meter.json --preset edm_streaming`
 - Stem gate: `python3 tools/mix_gate_stems.py out/<name>_stems --bus-dir out/<name>_busses --preset edm_streaming --lufs-guidance`
+- Audio sanity QA: `claw-daw doctor --audio out/<name>.mp3`
 - One-shot equivalent (repo CLI): `claw-daw quality out/<name>.json --out <name> --preset edm_streaming --section-gain`
 
 7) **Quality gates before sending**
 - Check: genre acceptance tests + avoid overwriting + listen to preview
+- Reject the render if you hear or measure any of these unless the brief explicitly asks for texture:
+  - broadband hiss / white-noise or pink-noise-like beds
+  - clicks, pops, crackle, clipping, digital distortion
+  - harsh transients, zipper noise, metallic aliasing/whine
+  - DC offset, sub rumble, hanging notes, or unintended reverb/delay tails
 
 ---
 
@@ -196,6 +207,29 @@ If drums sound like crackling/noise or “not drums”, it’s almost always one
 3) **Always do a 0–10s preview before exporting stems**
 - Render a short preview (`export_preview_mp3`) and listen specifically for: kick/snare clarity + hats not crackling.
 
+### Clean render policy (default unless explicitly requested)
+
+Agents should assume the user wants a clean export unless they explicitly ask for `lofi`, hiss, vinyl, tape, dusty noise, crackle, grit, saturation-heavy textures, or other intentional artifacts.
+
+- Default mastering/export path: `preset=clean`
+- Default preview path: clean preview first, then add texture only if the brief calls for it
+- Noise-heavy instruments and presets are opt-in. If you choose a texture preset, mention it in the changelog/notes
+- Do not add reverb/delay tails to kick or bass
+- Do not leave long tails, hanging notes, or clipped render boundaries in final deliverables
+
+### Clean export acceptance criteria
+
+Before sending a beat/song, the agent should be able to say all of these are true:
+
+- Preview gate passed
+- Master gate passed
+- Stem/bus gate passed
+- `claw-daw doctor --audio out/<name>.mp3` shows no serious mix sanity warnings
+- No audible broadband hiss, white noise, pink-noise bed, crackle, clicks, pops, clipping, or digital breakup unless explicitly requested
+- No obvious low-end rumble, DC offset, zipper noise, or metallic aliasing-like whine
+- No hanging notes or unintended reverb/delay tails after the musical ending
+- Kick, snare, hats, and bass all sound intentional and distinct in the first 10 seconds
+
 ### Bass rendering sanity checklist (prevents “bass present in MIDI but inaudible” failures)
 
 If bass notes exist but you can’t hear bass, check:
@@ -229,6 +263,8 @@ If bass notes exist but you can’t hear bass, check:
   - Presets + gates: `tools/mix_presets.json`, `tools/mix_gate.py`, `tools/mix_gate_stems.py`
 - **Metering (post-export QA)**:
   - `meter_audio out/<name>.mp3 out/<name>.meter.json` (LUFS integrated+short-term, true-peak, crest/DC offset, stereo correlation+balance, spectral tilt)
+- **Artifact QA (post-export QA)**:
+  - `claw-daw doctor --audio out/<name>.mp3` (adds mix sanity warnings for hiss, rumble, hot/clipped transients, and DC offset)
 - **Bus stems (quick deliverables)**:
   - `export_busses out/busses_<name>`
 - **Drum variations + fills macro**:
